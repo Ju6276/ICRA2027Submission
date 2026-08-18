@@ -30,7 +30,7 @@ citecolor=blue
 \title{
 \vspace{0.2cm}
 \LARGE \bf 
-ForceDuo: Teacher-Guided Nominal--Residual Distillation for Multi-Rate Vision-Language-Action Control
+FoRe-VLA: Distilling Force-Conditioned Residuals for Contact-Rich Manipulation
 % Real-Time One-Step Trajectory Policies via IMLE Distillation from Multi-Modal Teachers
 % IMLE-Flow: Real-Time Multi-Modal Trajectory Distillation for Robotic Manipulation
 
@@ -97,7 +97,7 @@ ForceDuo: Teacher-Guided Nominal--Residual Distillation for Multi-Rate Vision-La
       \centering
       \includegraphics[width=0.80\linewidth,height=0.16\textheight,keepaspectratio]{figures/fig01_teaser.pdf}
       % \vspace{-0.2in}
-      \captionof{figure}{Overview of ForceDuo. A unified temporal force-aware teacher is queried with observed force history and a learned null-force token. The null-conditioned prediction supervises the slow nominal policy, while the full-minus-null behavioral difference supervises the fast force-conditioned residual policy for asynchronous multi-rate execution.
+      \captionof{figure}{Overview of FoRe-VLA. A temporal force-aware teacher is queried with observed force history and a learned null-force token. The null-conditioned output provides a non-force-conditioned reference, while full-minus-null teacher differencing provides the force-conditioned residual target. The distilled students retain online force sensing and execute as an asynchronous nominal--residual controller.
       }
       \label{fig:teaser}
       \vspace{-0.1in}
@@ -109,7 +109,7 @@ ForceDuo: Teacher-Guided Nominal--Residual Distillation for Multi-Rate Vision-La
 \pagestyle{empty}
 \setcounter{figure}{1}
 \begin{abstract}
-Vision-Language-Action (VLA) models provide strong semantic priors for general-purpose manipulation, but contact-rich behavior remains difficult because vision alone does not fully reveal rapidly changing physical interactions. Force-aware VLAs address this limitation by incorporating force/torque observations, yet their inference rate is typically much lower than the rate at which contact dynamics evolve. Slow--fast policies can react more frequently, but supervision of only the final action leaves the functional division between nominal motion and force-dependent correction ambiguous. We introduce \emph{ForceDuo}, a teacher-guided nominal--residual distillation framework that learns this division from a unified temporal force-aware VLA teacher. The frozen teacher is queried with its observed force history and with a learned null-force token. Its null-conditioned prediction defines a nominal target, while the behavioral difference between full-force and null-force predictions defines a force-conditioned residual target. These complementary targets supervise a slow vision--language--state policy that generates nominal action chunks and semantic intent, and a lightweight fast policy that continuously predicts residual corrections from native-rate force history, robot state, and the cached slow-policy context. Nominal, residual, composition, and behavior-cloning objectives jointly preserve the teacher's force-aware behavior while explicitly assigning responsibilities across temporal scales. At deployment, the teacher is removed and the two students execute asynchronously, enabling semantic reasoning at the VLA rate and high-frequency physical correction in the robot control loop.
+Vision-Language-Action (VLA) models provide strong semantic priors for general-purpose manipulation, but contact-rich behavior requires direct and timely force feedback. Existing force-aware VLAs determine where force enters the network, and recent reactive architectures determine how frequently it is processed. Neither design choice, however, explicitly identifies which part of a demonstrated action should be assigned to force-conditioned correction. When a nominal branch and a force-reactive branch are trained only against the same final action, their behavioral decomposition is underdetermined. We introduce \emph{FoRe-VLA}, a teacher-guided framework for distilling force-conditioned action residuals. A temporal force-aware teacher is first trained with synchronized vision, language, robot state, and native-rate force/torque history. After freezing the teacher, we query it twice for the same observation: once with the measured force history and once with a learned null-force token. The null-conditioned output provides a reference that is not conditioned on the current force measurement, while output-space differencing yields a force-conditioned residual target. These targets supervise a slow vision--language--state policy that predicts nominal action chunks and semantic intent, and a lightweight fast policy that predicts residual corrections from live high-frequency force feedback. This procedure is teacher output differencing rather than contrastive learning, and the residual is not assumed to be a causal force contribution. At deployment, the teacher and null token are removed; both force sensing and the fast force-conditioned student remain active, enabling responsive correction during contact-rich manipulation.
 \end{abstract}
 
 \section{Introduction}

@@ -3,7 +3,7 @@
 
 We consider contact-rich manipulation with visual observations $V_t$, a language instruction $L$, robot state $S_t$, and high-frequency force/torque measurements $F_t$.
 While vision-language reasoning is typically evaluated at a relatively low rate, physical interaction can evolve substantially faster.
-Our goal is therefore to learn a multi-rate manipulation policy consisting of a slow semantic policy and a fast force-conditioned corrective policy.
+Our goal is to learn a decomposed manipulation policy consisting of a nominal semantic policy and a force-conditioned corrective policy that can execute asynchronously.
 
 The slow policy generates a nominal reference action, while the fast policy predicts an additive correction from recent physical feedback.
 The final command sent to the robot is
@@ -23,7 +23,7 @@ We address this ambiguity using a unified force-aware teacher that provides sepa
 \begin{figure*}[t]
     \centering
     \includegraphics[width=0.98\textwidth]{figures/fig02_network_structure.pdf}
-    \caption{ForceDuo architecture. During training, a frozen temporal force-aware teacher is queried with observed force history and a learned null-force token to produce full-force and force-unavailable behaviors. Their decomposition supervises a slow nominal VLA and a fast force-conditioned residual student. During deployment, the teacher is removed: the slow student periodically caches reference actions and semantic intent, while the fast student continuously composes force-conditioned corrections with the current reference action.}
+    \caption{FoRe-VLA architecture. During training, a frozen temporal force-aware teacher is queried with measured force history and a learned null-force token. The null-conditioned output supplies the nominal reference target, and full-minus-null teacher output differencing supplies the force-conditioned residual target. During deployment, the teacher and null token are removed; the slow student caches reference actions and semantic intent, while the fast student retains live force input and continuously predicts corrective residuals.}
     \label{fig:network_structure}
 \end{figure*}
 
@@ -68,17 +68,17 @@ The full-force teacher prediction is
 
 The temporal encoder allows the unified teacher to capture short-horizon interaction dynamics, such as contact onset, impact transients, force oscillations, and recovery behavior.
 
-\subsection{Null-Force Adaptation and Teacher-Guided Decomposition}
+\subsection{Learned Null-Force Conditioning}
 \label{sec:null_decomp}
 
-To obtain a force-unavailable behavior from the same teacher, we introduce a learnable null-force token
+To query the same teacher without providing the current force measurement, we introduce a learnable null-force token
 \begin{equation}
     z_{\varnothing F}
     \in
     \mathbb{R}^{D_F}.
 \end{equation}
 The token is inserted at the same representation level as $z_k^F$, immediately before the original force--vision--language fusion module.
-It therefore represents unavailable force information rather than a physical zero-force observation.
+It represents the absence of an instance-specific force observation rather than a physical zero-force measurement. Because the same token is shared across samples, it may capture a dataset-level force prior but cannot encode the current measured force history.
 
 After training the temporal force-aware teacher, all teacher parameters are frozen and only $z_{\varnothing F}$ is optimized:
 \begin{equation}
@@ -106,7 +106,10 @@ For the same visual, linguistic, and state observation, the frozen teacher can t
     \label{eq:teacher_null}
 \end{align}
 
-We use the null-conditioned prediction as the teacher nominal target,
+\subsection{Teacher Output Differencing}
+\label{sec:teacher_differencing}
+
+We use the null-conditioned prediction as a non-force-conditioned teacher reference,
 \begin{equation}
     A_{T,k}^{\mathrm{nom}}
     =
@@ -123,8 +126,7 @@ and define the teacher-derived force-conditioned policy residual as
     \label{eq:teacher_residual}
 \end{equation}
 
-We interpret $\Delta A_{T,k}^{F}$ as a policy-space behavioral deviation associated with the availability of online force information.
-It is not assumed to be a causal or purely force-generated action component.
+We interpret $\Delta A_{T,k}^{F}$ as the change in the teacher's policy output associated with replacing the learned null condition by the measured force history. This operation is output-space teacher differencing: it introduces no positive--negative pairs or contrastive loss. Moreover, because visual observations and robot state may themselves contain cues correlated with contact, $\Delta A_{T,k}^{F}$ is not assumed to be a causal or purely force-generated action component.
 
 \subsection{Slow Nominal Student}
 \label{sec:slow}
@@ -159,7 +161,7 @@ The original action head produces $A^{\mathrm{ref}}$, while a lightweight intent
     \label{eq:intent_projection}
 \end{equation}
 
-The reference action is distilled toward the teacher's force-unavailable behavior.
+The reference action is distilled toward the teacher's null-conditioned behavior, which does not receive the current force measurement.
 The intent tokens are not required to reproduce a specific teacher hidden state; instead, they are learned jointly as task context for the fast residual policy.
 
 \subsection{Fast Force-Conditioned Residual Student}
@@ -225,7 +227,7 @@ The TCN therefore captures local force dynamics, while the Gemma action expert d
 
 The teacher supplies different behavioral targets to the two students.
 
-The slow policy is supervised by the teacher's force-unavailable nominal behavior:
+The slow policy is supervised by the teacher's null-conditioned reference behavior:
 \begin{equation}
     \mathcal{L}_{\mathrm{nom}}
     =
@@ -292,7 +294,7 @@ The overall objective is
 
 Here, $\mathcal{L}_{\mathrm{nom}}$ and $\mathcal{L}_{\mathrm{res}}$ explicitly supervise the functional responsibility of the slow and fast policies, while $\mathcal{L}_{\mathrm{comp}}$ and $\mathcal{L}_{\mathrm{BC}}$ preserve consistency with the full teacher and demonstrated robot behavior.
 
-\subsection{Asynchronous Multi-Rate Execution}
+\subsection{Asynchronous Nominal--Residual Execution}
 \label{sec:execution}
 
 At deployment, the unified teacher is discarded.

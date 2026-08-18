@@ -20,7 +20,7 @@ We compare the following policy families:
     \item \textbf{Instantaneous-force VLA:} the ForceVLA teacher using only the force observation aligned with the current visual frame;
     \item \textbf{Temporal force-aware teacher:} our unified teacher with the causal temporal force encoder;
     \item \textbf{Direct slow--fast behavior cloning:} the same student architecture trained only from final demonstrated actions, without teacher-guided nominal--residual targets;
-    \item \textbf{ForceDuo:} the complete teacher-guided decomposition and asynchronous slow--fast execution framework.
+    \item \textbf{FoRe-VLA:} the complete teacher-guided force-residual distillation and asynchronous execution framework.
 \end{enumerate}
 
 Task performance is measured by task success rate and, where applicable, stage-wise completion rate. Physical interaction quality is measured using peak force, force impulse, contact-limit violations, and recovery success after a disturbance. To evaluate the decomposition itself, we report the nominal imitation error $d(A^{\mathrm{ref}},A_T^{\mathrm{null}})$, residual imitation error $d(\Delta A,\Delta A_T^F)$, and composed action error $d(A^{\mathrm{ref}}+\Delta A,A_T^{\mathrm{full}})$. Runtime metrics include slow-policy frequency, fast-policy frequency, end-to-end action latency, and parameter count.
@@ -49,7 +49,7 @@ Table~\ref{tab:main_results} is structured to test whether explicit behavioral d
         Instantaneous-force VLA & -- & -- & -- & -- & -- & -- \\
         Temporal force-aware teacher & -- & -- & -- & -- & -- & -- \\
         Direct slow--fast behavior cloning & -- & -- & -- & -- & -- & -- \\
-        \textbf{ForceDuo (ours)} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} \\
+        \textbf{FoRe-VLA (ours)} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} \\
         \bottomrule
     \end{tabular}
 \end{table*}
@@ -59,7 +59,7 @@ The final analysis should separately discuss free-space motion, initial contact,
 \subsection{Analysis of Teacher-Guided Decomposition}
 \label{sec:exp_decomposition}
 
-We directly inspect the two teacher predictions used to construct the distillation targets. For each trajectory, we plot the magnitude of $\Delta A_T^F=A_T^{\mathrm{full}}-A_T^{\mathrm{null}}$ together with measured force and task phase. A useful decomposition should yield small residuals during unconstrained nominal motion and larger, structured corrections near contact onset, force transients, and recovery events. We additionally compare the learned null-force token with two alternatives: a zero force vector and random force-token masking. This experiment determines whether the nominal target arises from learned force unavailability rather than from an out-of-distribution physical zero.
+We directly inspect the paired teacher predictions used to construct the distillation targets. For each trajectory, we plot the magnitude of $\Delta A_T^F=A_T^{\mathrm{full}}-A_T^{\mathrm{null}}$ together with measured force and task phase. A useful decomposition should yield small residuals during unconstrained nominal motion and larger, structured corrections near contact onset, force transients, and recovery events. We additionally compare the learned null-force token with two alternatives: a zero force vector and random force-token masking. This experiment tests whether learned null conditioning provides a useful non-force-conditioned reference rather than an out-of-distribution physical zero. It does not treat the output difference as causal force attribution.
 
 \subsection{Ablation Studies}
 \label{sec:exp_ablation}
