@@ -1,0 +1,15 @@
+# Local LaTeX build products
+*.aux
+*.bbl
+*.blg
+*.brf
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+
+# Generated PDFs (figure PDFs remain tracked)
+/main.pdf
+/appendix_main.pdf

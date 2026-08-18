@@ -1,207 +1,301 @@
-\subsection{Problem Statement}
+\subsection{Problem Formulation}
+\label{sec:problem}
 
-We study real-time multimodal trajectory generation for robotic manipulation. 
-At each control step $t$, the robot receives a high-dimensional observation 
-$\mathbf{o}_t = \{\mathcal{I}_{rgb}, \mathcal{I}_{depth}, \mathcal{P}, \mathcal{S}\}$ 
-consisting of multi-view RGB images, aligned depth maps, a 3D point cloud, and proprioceptive states. 
+We consider contact-rich manipulation with visual observations $V_t$, a language instruction $L$, robot state $S_t$, and high-frequency force/torque measurements $F_t$.
+While vision-language reasoning is typically evaluated at a relatively low rate, physical interaction can evolve substantially faster.
+Our goal is therefore to learn a multi-rate manipulation policy consisting of a slow semantic policy and a fast force-conditioned corrective policy.
 
-Our goal is to generate a set of diverse and temporally coherent future action trajectories 
-$\{\boldsymbol{\tau}_k\}_{k=1}^K$, each with horizon $H$, conditioned on the current observation.
-
-This problem presents three fundamental challenges:
-
-(1) \textbf{Multimodal perception}, requiring robust fusion of heterogeneous semantic and geometric signals;
-
-(2) \textbf{Multi-modal action generation}, requiring expressive distribution learning to capture diverse behaviors and prevent mode collapse;
-
-(3) \textbf{Real-time inference}, demanding high-frequency closed-loop control, which precludes iterative sampling procedures.
-
-While diffusion- and flow-based policies can model rich multimodal distributions, they rely on iterative denoising or ODE integration, typically limiting inference to $3$–$10$ Hz. 
-Our objective is to retain their multimodal expressiveness while enabling instantaneous single-step inference suitable for real-time deployment.
-
-\subsection{Method Overview}
-
-Our key idea is to decouple expressive generative modeling from real-time control through distribution-level distillation.
-We first train a Conditional Flow Matching teacher that models a multimodal trajectory distribution in data space.
-We then distill this distribution into a one-step student policy using an IMLE-inspired set-level sample matching objective.
-The student enables single-forward-pass inference while retaining much of the teacher's multimodal trajectory diversity in practice.
-
-The framework consists of three components:
-\begin{enumerate}
-    \item A Conditional Flow Matching teacher that learns a multimodal trajectory distribution;
-    \item An IMLE-inspired one-step student policy that approximates this distribution without iterative sampling;
-    \item A multimodal observation encoder that provides geometry-aware conditioning shared by both teacher and student.
-\end{enumerate}
-
-Unlike prior works that deploy generative models directly at inference time, we treat the teacher as an offline distribution oracle.
-The student is trained on teacher-generated trajectory sets, requiring neither score matching nor multi-time supervision.
-This design encourages distributional diversity while reducing inference to a single forward pass.
-
-\begin{figure*}[t]
-    \centering
-    \includegraphics[width=0.85\linewidth]{figures/fig02_network_structure.pdf}
-    \caption{
-    Detailed training pipeline. A unified multimodal encoder conditions both the ODE-based CFM teacher and the single-step student. The student is distilled from diverse teacher trajectories using an IMLE-inspired set-level matching objective implemented with a bi-directional Chamfer distance.
-    }
-    \label{fig:framework}
-\end{figure*}
-
-\subsection{IMLE-Based One-Step Policy Distillation}
-
-To eliminate the computational bottleneck of flow-based sampling, 
-we compress the teacher distribution into a single-step student policy 
-$\pi_{\text{student}}$.
-
-\subsubsection{One-Step Student Architecture.}
-
-The student adopts an identical temporal 1D U-Net architecture to the teacher 
-to strictly isolate improvements arising from the distillation algorithm rather than model capacity.
-
-However, all time-conditioning modules (e.g., sinusoidal encodings and FiLM projections) are removed. 
-The student directly maps a Gaussian noise vector 
-$\mathbf{z} \sim \mathcal{N}(\mathbf{0}, \mathbf{I})$ 
-and observation embedding $\mathbf{E}_{obs}$ to a complete trajectory:
-
+The slow policy generates a nominal reference action, while the fast policy predicts an additive correction from recent physical feedback.
+The final command sent to the robot is
 \begin{equation}
-\hat{\boldsymbol{\tau}} = \tau_\psi(\mathbf{E}_{obs}, \mathbf{z})
-\in \mathbb{R}^{H \times D_{\text{action}}}.
+    A_t^{\mathrm{cmd}}
+    =
+    A_t^{\mathrm{ref}}
+    +
+    \Delta A_t .
+    \label{eq:action_comp}
 \end{equation}
 
-During deployment, students operated using a high-frequency control scheme: 
-only the first $T_e$ steps are executed before re-planning with updated observations.
+However, when only the demonstrated final action is supervised, the decomposition between $A_t^{\mathrm{ref}}$ and $\Delta A_t$ is underdetermined.
+Different slow--fast behaviors may produce the same commanded action, without guaranteeing that the fast branch specifically captures force-dependent correction.
+We address this ambiguity using a unified force-aware teacher that provides separate behavioral supervision for the nominal and residual components.
 
-\subsubsection{Set-Level IMLE Distillation.}
+\subsection{Temporal Force-Aware Teacher}
+\label{sec:teacher}
 
-Naive objectives such as MSE or KL divergence tend to collapse
-multi-modal outputs into mean trajectories. To mitigate this issue,
-we adopt an IMLE-inspired sample matching formulation for distribution
-distillation. The key idea follows the nearest-neighbor matching
-principle of IMLE: generated samples should cover target samples
-without requiring an explicit likelihood. In our setting, for each
-observation, we approximate the conditional trajectory distributions
-of the teacher and the student by finite trajectory sets and instantiate
-this sample matching principle using a symmetric Chamfer distance.
+We construct the teacher from ForceVLA and replace its instantaneous force representation with a causal temporal force encoder.
+For each VLA inference timestamp $t_k$, we retrieve a fixed-duration force window
+\begin{equation}
+    \mathcal{F}_k
+    =
+    \left\{
+        F(\tau)
+        \mid
+        t_k-w \leq \tau \leq t_k
+    \right\},
+    \label{eq:force_window}
+\end{equation}
+where $w$ is the history duration.
+The force samples are selected directly from the timestamped native-rate stream instead of first being downsampled to the visual observation rate.
 
-The teacher provides a discrete set of $K$ multimodal trajectories:
+A causal temporal convolutional network encodes this window as
+\begin{equation}
+    z_k^F
+    =
+    E_T^F(\mathcal{F}_k),
+    \label{eq:teacher_tcn}
+\end{equation}
+where $z_k^F$ is projected to the original ForceVLA force-fusion dimension.
+For the teacher, we retain a single force token so that the downstream multimodal fusion and action-generation pathway remains unchanged.
 
-\[
-\mathcal{T}_{\text{teacher}} = \{\boldsymbol{\tau}_i^*\}_{i=1}^K.
-\]
+The full-force teacher prediction is
+\begin{equation}
+    A_{T,k}^{\mathrm{full}}
+    =
+    T_{\theta}
+    \left(
+        V_k,L,S_k,z_k^F
+    \right).
+    \label{eq:full_teacher}
+\end{equation}
 
-The student generates $K$ hypotheses:
+The temporal encoder allows the unified teacher to capture short-horizon interaction dynamics, such as contact onset, impact transients, force oscillations, and recovery behavior.
 
-\[
-\{\hat{\boldsymbol{\tau}}_j\}_{j=1}^K.
-\]
+\subsection{Null-Force Adaptation and Teacher-Guided Decomposition}
+\label{sec:null_decomp}
 
-We minimize a symmetric Chamfer distance:
+To obtain a force-unavailable behavior from the same teacher, we introduce a learnable null-force token
+\begin{equation}
+    z_{\varnothing F}
+    \in
+    \mathbb{R}^{D_F}.
+\end{equation}
+The token is inserted at the same representation level as $z_k^F$, immediately before the original force--vision--language fusion module.
+It therefore represents unavailable force information rather than a physical zero-force observation.
 
+After training the temporal force-aware teacher, all teacher parameters are frozen and only $z_{\varnothing F}$ is optimized:
+\begin{equation}
+    \mathcal{L}_{\mathrm{null}}
+    =
+    d
+    \left(
+        T_{\theta}(V_k,L,S_k,z_{\varnothing F}),
+        A_k^{\mathrm{expert}}
+    \right),
+    \label{eq:null_training}
+\end{equation}
+where $d(\cdot,\cdot)$ denotes an action regression loss.
+
+For the same visual, linguistic, and state observation, the frozen teacher can then be queried under two force conditions:
 \begin{align}
-\mathcal{L}_{\text{Chamfer}} &=
-\frac{1}{K} \sum_{i=1}^K \min_j 
-\left\| \boldsymbol{\tau}_i^* - \hat{\boldsymbol{\tau}}_j \right\|_2^2
-\nonumber \\
-&\quad +
-\frac{1}{K} \sum_{j=1}^K \min_i 
-\left\| \boldsymbol{\tau}_i^* - \hat{\boldsymbol{\tau}}_j \right\|_2^2.
+    A_{T,k}^{\mathrm{full}}
+    &=
+    T_{\theta}(V_k,L,S_k,z_k^F),
+    \label{eq:teacher_full_again}
+    \\
+    A_{T,k}^{\mathrm{null}}
+    &=
+    T_{\theta}(V_k,L,S_k,z_{\varnothing F}).
+    \label{eq:teacher_null}
 \end{align}
 
-The first term encourages \textbf{mode covering} by penalizing teacher trajectories that are not close to any student hypothesis.
-The second term enforces \textbf{mode seeking}, preventing spurious generations outside the teacher's behavior manifold.
-
-By minimizing this objective, the student is encouraged to approximate
-the geometric and statistical diversity of the sampled teacher trajectory
-set while requiring only a single forward pass at inference time.
-
-\subsection{Conditional Flow Matching Teacher}
-
-To construct high-quality multimodal supervision for distillation, 
-we train a Conditional Flow Matching teacher to model the trajectory distribution in data space.
-
-\subsubsection{Flow Matching Objective.}
-
-Let $\boldsymbol{\tau}_1$ denote a ground-truth trajectory sampled from expert data 
-$q(\boldsymbol{\tau})$, and let 
-$\boldsymbol{\tau}_0 \sim \mathcal{N}(\mathbf{0}, \mathbf{I})$ 
-be a noise trajectory of the same dimension.
-
-CFM defines a linear probability path:
-
+We use the null-conditioned prediction as the teacher nominal target,
 \begin{equation}
-\boldsymbol{\tau}_t = (1 - t)\boldsymbol{\tau}_0 + t\boldsymbol{\tau}_1,
-\quad t \in [0,1].
+    A_{T,k}^{\mathrm{nom}}
+    =
+    A_{T,k}^{\mathrm{null}},
+    \label{eq:nominal_target}
+\end{equation}
+and define the teacher-derived force-conditioned policy residual as
+\begin{equation}
+    \Delta A_{T,k}^{F}
+    =
+    A_{T,k}^{\mathrm{full}}
+    -
+    A_{T,k}^{\mathrm{null}}.
+    \label{eq:teacher_residual}
 \end{equation}
 
-The teacher network $D_\theta$ predicts the target trajectory directly in data space:
+We interpret $\Delta A_{T,k}^{F}$ as a policy-space behavioral deviation associated with the availability of online force information.
+It is not assumed to be a causal or purely force-generated action component.
 
+\subsection{Slow Nominal Student}
+\label{sec:slow}
+
+The slow student is initialized from a non-force VLA backbone rather than from the final force-aware teacher.
+It receives only vision, language, and robot state, and is responsible for semantic reasoning and nominal motion generation.
+
+At each slow-policy update $k$, it predicts
 \begin{equation}
-\mathcal{L}_{\text{CFM}} =
-\mathbb{E}_{t, \boldsymbol{\tau}_0, \boldsymbol{\tau}_1}
-\left\|
-D_\theta(\boldsymbol{\tau}_t, t, \mathbf{E}_{obs})
-- \boldsymbol{\tau}_1
-\right\|_2^2.
+    \left(
+        A_{k:k+H}^{\mathrm{ref}},
+        Z_k^{\mathrm{intent}}
+    \right)
+    =
+    \pi_{\mathrm{slow}}
+    \left(
+        V_k,L,S_k
+    \right),
+    \label{eq:slow_policy}
+\end{equation}
+where $A_{k:k+H}^{\mathrm{ref}}$ is a nominal reference action chunk and $Z_k^{\mathrm{intent}}$ is a compact semantic representation passed to the fast policy.
+
+The slow student consists of the base VLA backbone followed by two output pathways.
+The original action head produces $A^{\mathrm{ref}}$, while a lightweight intent projector maps the VLA hidden representation to a small set of intent tokens:
+\begin{equation}
+    Z_k^{\mathrm{intent}}
+    =
+    P_{\mathrm{intent}}
+    \left(
+        H_k^{\mathrm{VLA}}
+    \right).
+    \label{eq:intent_projection}
 \end{equation}
 
-\subsubsection{Time Scheduling and Anti-Shortcut Regularization.}
+The reference action is distilled toward the teacher's force-unavailable behavior.
+The intent tokens are not required to reproduce a specific teacher hidden state; instead, they are learned jointly as task context for the fast residual policy.
 
-We sample $t$ from a logit-normal distribution to allocate more capacity to early, noisy stages. 
-To prevent trivial identity mappings as $t \to 1$, 
-we introduce a time-dependent masking mechanism that stochastically suppresses the noise embedding, 
-forcing the model to rely on the observation condition.
+\subsection{Fast Force-Conditioned Residual Student}
+\label{sec:fast}
 
-\subsubsection{Teacher Trajectory Sampling.}
+The fast student operates at a higher rate and predicts only the corrective action residual.
+Its architecture contains two components: a causal force encoder and a lightweight Transformer action expert.
 
-After training, we generate $K$ multimodal trajectories per observation by solving the corresponding ODE defined by $D_\theta$. 
-This produces an explicit discrete trajectory set:
-
-\[
-\mathcal{T}_{\text{teacher}} = 
-\{\boldsymbol{\tau}_1^{*(1)}, \dots, \boldsymbol{\tau}_1^{*(K)}\}.
-\]
-
-These sets form the supervision targets for IMLE distillation. 
-The teacher is used exclusively offline and never deployed during real-time control.
-
-\subsection{Multimodal Observation Encoding}
-
-Both teacher and student are conditioned on a shared multimodal embedding 
-$\mathbf{E}_{obs}$. 
-We design a geometry-aware encoder to robustly fuse semantic and structural signals.
-
-\subsubsection{Visual Encoding.}
-
-RGB and depth images are processed by dual ResNet-18 backbones. 
-Multi-view features are projected into a shared latent space, 
-yielding embeddings $\mathbf{f}_{rgb}$ and $\mathbf{f}_{depth}$.
-
-\subsubsection{Bi-Directional Cross-Modal Attention.}
-
-We introduce symmetric cross-attention:
-
-\begin{align}
-\mathbf{f}'_{rgb} &= \mathbf{f}_{rgb} 
-+ \text{Attn}(\mathbf{f}_{rgb}, \mathbf{f}_{depth}, \mathbf{f}_{depth}), \\
-\mathbf{f}'_{depth} &= \mathbf{f}_{depth} 
-+ \text{Attn}(\mathbf{f}_{depth}, \mathbf{f}_{rgb}, \mathbf{f}_{rgb}),
-\end{align}
-
-establishing dense semantic-geometric correspondences.
-
-\subsubsection{Adaptive Fusion and Global Embedding.}
-
-A gating network predicts modality weights 
-$\boldsymbol{\alpha} = [\alpha_{rgb}, \alpha_{depth}]$ 
-for noise-robust fusion.
-
-Point clouds are encoded via PointNet to obtain $\mathbf{h}_{pcd}$, 
-and proprioception is embedded using an MLP into $\mathbf{h}_{state}$.
-
-The final observation embedding is
-
+At each fast timestep $t$, the most recent force history is encoded by a lightweight causal TCN:
 \begin{equation}
-\mathbf{E}_{obs} = 
-[\mathbf{h}_{vis}, \mathbf{h}_{pcd}, \mathbf{h}_{state}],
+    Z_t^F
+    =
+    E_S^F
+    \left(
+        F_{t-w:t}
+    \right).
+    \label{eq:student_force}
+\end{equation}
+Unlike the teacher, the fast encoder retains multiple force tokens in order to expose short-term temporal structure to the subsequent attention module.
+
+The fast action expert follows a lightweight VLM-aligned design inspired by Realtime-VLA FLASH and consists of a single Gemma block followed by a linear residual-action head.
+The force tokens are combined with cached slow-policy intent, the latest robot state, the current reference action, and learned residual-action queries:
+\begin{equation}
+    X_t
+    =
+    \left[
+        Z_t^F;
+        \widetilde{Z}_k^{\mathrm{intent}};
+        z_t^S;
+        z_t^{\mathrm{ref}};
+        Q^{\Delta A}
+    \right],
+    \label{eq:fast_token_sequence}
+\end{equation}
+where
+\begin{equation}
+    z_t^S = P_S(S_t),
+    \qquad
+    z_t^{\mathrm{ref}} = P_A(A_t^{\mathrm{ref}}),
+\end{equation}
+and all inputs are projected to the common Gemma hidden dimension.
+
+The token sequence is processed by one Gemma block,
+\begin{equation}
+    H_t
+    =
+    \mathrm{GemmaBlock}(X_t),
+    \label{eq:gemma}
+\end{equation}
+and the hidden states associated with the residual-action queries are mapped to the corrective action:
+\begin{equation}
+    \Delta A_t
+    =
+    W_{\mathrm{res}}
+    H_t[Q^{\Delta A}].
+    \label{eq:residual_output}
 \end{equation}
 
-which conditions both teacher and student policies.
+The TCN therefore captures local force dynamics, while the Gemma action expert determines how those dynamics should modify the current nominal behavior given task intent and robot state.
+
+\subsection{Teacher-Guided Distillation Objective}
+\label{sec:loss}
+
+The teacher supplies different behavioral targets to the two students.
+
+The slow policy is supervised by the teacher's force-unavailable nominal behavior:
+\begin{equation}
+    \mathcal{L}_{\mathrm{nom}}
+    =
+    d
+    \left(
+        A^{\mathrm{ref}},
+        A_T^{\mathrm{null}}
+    \right).
+    \label{eq:nom_loss}
+\end{equation}
+
+The fast policy is supervised by the teacher-derived force-conditioned residual:
+\begin{equation}
+    \mathcal{L}_{\mathrm{res}}
+    =
+    d
+    \left(
+        \Delta A,
+        \Delta A_T^F
+    \right).
+    \label{eq:res_loss}
+\end{equation}
+
+We further encourage the composed student action to reproduce the full-force teacher behavior:
+\begin{equation}
+    \mathcal{L}_{\mathrm{comp}}
+    =
+    d
+    \left(
+        A^{\mathrm{ref}}+\Delta A,
+        A_T^{\mathrm{full}}
+    \right).
+    \label{eq:comp_loss}
+\end{equation}
+
+Finally, we retain behavior-cloning supervision from the original demonstrations:
+\begin{equation}
+    \mathcal{L}_{\mathrm{BC}}
+    =
+    d
+    \left(
+        A^{\mathrm{ref}}+\Delta A,
+        A^{\mathrm{expert}}
+    \right).
+    \label{eq:bc_loss}
+\end{equation}
+
+The overall objective is
+\begin{equation}
+\begin{split}
+    \mathcal{L}
+    =
+    &\lambda_{\mathrm{nom}}\mathcal{L}_{\mathrm{nom}}
+    +
+    \lambda_{\mathrm{res}}\mathcal{L}_{\mathrm{res}}
+    \\
+    &+
+    \lambda_{\mathrm{comp}}\mathcal{L}_{\mathrm{comp}}
+    +
+    \lambda_{\mathrm{BC}}\mathcal{L}_{\mathrm{BC}}.
+\end{split}
+    \label{eq:total_loss}
+\end{equation}
+
+Here, $\mathcal{L}_{\mathrm{nom}}$ and $\mathcal{L}_{\mathrm{res}}$ explicitly supervise the functional responsibility of the slow and fast policies, while $\mathcal{L}_{\mathrm{comp}}$ and $\mathcal{L}_{\mathrm{BC}}$ preserve consistency with the full teacher and demonstrated robot behavior.
+
+\subsection{Asynchronous Multi-Rate Execution}
+\label{sec:execution}
+
+At deployment, the unified teacher is discarded.
+The slow policy periodically updates the nominal action chunk and semantic intent, which are cached between slow-policy evaluations.
+Force measurements are continuously appended to a high-frequency ring buffer, while the latest robot state is updated independently.
+
+At every fast-policy timestep, the residual student retrieves the latest force history, current state, cached intent representation, and current nominal reference action.
+The latter is obtained from the most recently generated action chunk according to the current execution time.
+
+The final robot command is then computed using Eq.~\eqref{eq:action_comp}.
+Only the fast execution loop publishes commands to the low-level controller, while the slow policy serves as an asynchronous reference and semantic-context generator.
+
+This design allows semantic reasoning and physical feedback to operate at different temporal rates: the slow VLA provides task-level nominal behavior, whereas the fast student continuously refines that behavior using newly arriving force observations.

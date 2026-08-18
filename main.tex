@@ -30,7 +30,7 @@ citecolor=blue
 \title{
 \vspace{0.2cm}
 \LARGE \bf 
-ForceDistill: Teacher-Guided Physical Latent Distillation for Force-Aware Vision-Language-Action Models
+ForceSplit: Teacher-Guided Nominal--Residual Distillation for Force-Aware Vision-Language-Action Models
 % Real-Time One-Step Trajectory Policies via IMLE Distillation from Multi-Modal Teachers
 % IMLE-Flow: Real-Time Multi-Modal Trajectory Distillation for Robotic Manipulation
 
@@ -94,10 +94,10 @@ ForceDistill: Teacher-Guided Physical Latent Distillation for Force-Aware Vision
     \makeatletter
     \let\@oldmaketitle\@maketitle
     \renewcommand{\@maketitle}{\@oldmaketitle
-    \includegraphics[width=0.90\linewidth]{figures/fig01_teaser.pdf}
       \centering
+      \includegraphics[width=0.72\linewidth,height=0.14\textheight,keepaspectratio]{figures/fig01_teaser.pdf}
       % \vspace{-0.2in}
-      \captionof{figure}{Overview of the distribution-level distillation framework and data diversity. \textit{Top:} Teacher–student distillation framework and student-generated multi-modal trajectory distributions at inference time. \textit{Bottom:} Example manipulation tasks demonstrating diverse trajectory data collected during training.
+      \captionof{figure}{Overview of ForceSplit. A unified temporal force-aware teacher is queried with observed force history and a learned null-force token. The null-conditioned prediction supervises the slow nominal policy, while the full-minus-null behavioral difference supervises the fast force-conditioned residual policy for asynchronous multi-rate execution.
       }
       \label{fig:teaser}
       \vspace{-0.1in}
@@ -109,12 +109,7 @@ ForceDistill: Teacher-Guided Physical Latent Distillation for Force-Aware Vision
 \pagestyle{empty}
 \setcounter{figure}{1}
 \begin{abstract}
-Generative policies based on diffusion and flow matching achieve strong performance in robotic manipulation by modeling multi-modal human demonstrations. However, their reliance on iterative Ordinary Differential Equation (ODE) integration introduces substantial latency, limiting high-frequency closed-loop control. Recent single-step acceleration methods alleviate this overhead but often exhibit distributional collapse, producing averaged trajectories that fail to execute coherent manipulation strategies.
-
-We propose a framework that distills a Conditional Flow Matching (CFM) expert into a fast single-step student using an Implicit Maximum Likelihood Estimation (IMLE)-inspired set-level matching objective, implemented as a bi-directional Chamfer distance between sampled teacher and student trajectory sets. This objective promotes both mode coverage and fidelity, encouraging the student to approximate diverse modes of the teacher’s action distribution in a single forward pass. A unified perception encoder further integrates multi-view RGB, depth, point clouds, and proprioception into a geometry-aware representation.
-
-Extensive experiments demonstrate a strong balance between accuracy and speed. On RLBench, the student achieves 68.6\% success at 123.5 Hz, clearly outperforming dedicated one-step baselines such as Consistency Policy (16.3\%). In real-world deployment, it attains 70.0\% success at 125.0 Hz, providing a 43$\times$ speedup over the multi-step teacher (2.9 Hz) and enabling success on dynamic tasks where the teacher fails. The resulting high-frequency control supports real-time receding-horizon re-planning and improved robustness under dynamic disturbances.
-% Project page: \url{https://sites.google.com/view/flow2one-anonymous}.
+Vision-Language-Action (VLA) models provide strong semantic priors for general-purpose manipulation, but contact-rich behavior remains difficult because vision alone does not fully reveal rapidly changing physical interactions. Force-aware VLAs address this limitation by incorporating force/torque observations, yet their inference rate is typically much lower than the rate at which contact dynamics evolve. Slow--fast policies can react more frequently, but supervision of only the final action leaves the functional division between nominal motion and force-dependent correction ambiguous. We introduce \emph{ForceSplit}, a teacher-guided nominal--residual distillation framework that learns this division from a unified temporal force-aware VLA teacher. The frozen teacher is queried with its observed force history and with a learned null-force token. Its null-conditioned prediction defines a nominal target, while the behavioral difference between full-force and null-force predictions defines a force-conditioned residual target. These complementary targets supervise a slow vision--language--state policy that generates nominal action chunks and semantic intent, and a lightweight fast policy that continuously predicts residual corrections from native-rate force history, robot state, and the cached slow-policy context. Nominal, residual, composition, and behavior-cloning objectives jointly preserve the teacher's force-aware behavior while explicitly assigning responsibilities across temporal scales. At deployment, the teacher is removed and the two students execute asynchronously, enabling semantic reasoning at the VLA rate and high-frequency physical correction in the robot control loop.
 \end{abstract}
 
 \section{Introduction}
