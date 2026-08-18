@@ -1,0 +1,250 @@
+To thoroughly evaluate our proposed framework, we conduct both simulation and real-world experiments with three objectives:
+(i) to evaluate the effectiveness and robustness of the proposed multimodal CFM policy;
+(ii) to demonstrate the real-time inference capability of the distilled one-step student policy in dynamic scenarios; and
+(iii) to verify that the student faithfully captures the multimodal action distributions learned by the teacher.
+
+\subsection{Simulation Experiment}
+
+We conduct simulation experiments on the RLBench benchmark~\cite{james2019rlbench}.
+For a fair comparison with prior flow-based methods, we adopt the identical set of eight manipulation tasks used in PointFlowMatch~\cite{chisari2024learning} (Fig.~\ref{fig:RLBench}).
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{figures/RLBench.pdf}
+\caption{
+Eight representative manipulation tasks from the RLBench.
+Tasks are ordered from left to right and top to bottom:
+\textit{close door}, \textit{open box}, \textit{open fridge}, \textit{open oven},
+\textit{take frame off hanger}, \textit{unplug charger},
+\textit{take shoes out of box}, and \textit{put books on bookshelf}.
+}
+    \label{fig:RLBench}
+\end{figure}
+
+
+\subsubsection{Implementation Details} 
+\paragraph{Baselines.}
+We compare our method against representative imitation learning approaches, including: (i) diffusion-based policies, including Diffusion Policy \cite{chi2023diffusionpolicy} and Diffusion Policy 3D \cite{Ze2024DP3};
+and (ii) flow-matching-based approaches, including PointFlowMatch \cite{chisari2024learning} and FlowPolicy \cite{zhang2024flowpolicy}.
+
+
+\paragraph{Data Collection.} For each task, we collect 100 expert demonstrations using the RLBench built-in motion planner. The observation space consists of multi-view RGB images (5 cameras) and aligned depth maps. Point clouds are back-projected from the depth maps and downsampled via voxelization to 4,096 points.
+\paragraph{Training.}
+The multimodal CFM teacher is trained for 2,000 epochs on the expert dataset, and the best checkpoint is selected based on validation success rate.
+Using the frozen teacher, we generate 16 trajectory candidates of length 32 per observation to construct the distilled dataset.
+The student policy is then trained on this dataset for 1,500 epochs.
+
+\paragraph{Evaluation.} To ensure statistical significance, all models are evaluated on 300 unseen episodes with randomized object poses. All training and inference experiments are conducted on a workstation equipped with a NVIDIA RTX PRO 6000.
+
+
+
+\subsubsection{Results}
+\input{table/sim}
+Quantitative Results. Table ~\ref{tab:sim} summarizes the success rates (SR) and inference speeds (IS) of our distilled student model compared to several state-of-the-art (SOTA) diffusion-based and flow-based policies.
+
+Superiority of Single-Step Generation. A key observation from Table [X] is that while original diffusion-based methods like Diffusion Policy and DP3 suffer from a catastrophic performance drop when limited to 1-step inference (e.g., Diffusion Policy’s SR drops from 18.7\% to 0.0\%), our distilled Student model maintains a high average success rate of 67.3\% in a single step. This performance is not only significantly higher than other 1-step variants (e.g., 37.2\% for PointFlowMatch and 42.4\% for FlowPolicy) but also remains competitive with the 50-step Teacher model (72.6\% SR), retaining approximately 92.7\% of the teacher's capability.
+
+Balance Between Precision and Speed. In terms of inference efficiency, the Student model achieves a remarkable speed of 125.00 Hz, which is a 15.4$\times$ speedup over the CFM-Teacher (8.09 Hz). Compared to other 1-step baselines, although some methods like FlowPolicy (236.43 Hz) show higher raw frequency, their success rates are substantially lower (42.4\% vs. 67.3\%). Our method strikes the best balance between real-time responsiveness and task execution precision, making it highly suitable for high-frequency closed-loop robotic control.
+
+Task-Specific Performance. Across the eight manipulation tasks, the Student model demonstrates consistent robustness. In relatively simpler tasks like open box, the Student model achieves a 98.0\% success rate, nearly identical to the Teacher. In more complex, long-horizon tasks such as open oven and shoes box, our model significantly outperforms the 1-step FlowPolicy by 28.4\% and 30.9\% respectively. This indicates that our distillation process effectively preserves the multi-modal distribution of the action space, which is often lost in naive 1-step approximations.
+
+Consistency across Diverse Scenarios. The results also highlight the limitations of traditional Diffusion Policy in tasks requiring high precision (e.g., open oven or books shelf where SR is near 0\%). In contrast, by leveraging Conditional Flow Matching (CFM) and our distillation strategy, our model provides a much stronger foundation for learning complex manipulation, consistently outperforming the DP3 baseline in both 50-step and 1-step configurations across almost all tasks.
+
+\section{Ablation Studies}
+\label{sec:ablation}
+To investigate the contribution of individual components in our framework, we conduct ablation studies focusing on three key aspects: (1) the necessity of the trimodal sensor fusion strategy, (2) the number of distilled trajectory candidates $K$, and (3) the prediction horizon $T$. Results are averaged over the most challenging tasks and reported in Table~\ref{tab:ablation_unified}.
+
+\begin{table}[t]
+    \centering
+    \small
+    \setlength{\tabcolsep}{12pt} 
+    \renewcommand{\arraystretch}{1.15} 
+    \caption{\textbf{Ablation Studies.} We analyze the impact of sensor modalities, distillation candidates $K$, and prediction horizon $T$. Default setting: \textbf{Ours} ($K{=}16, T{=}32$, Trimodal).}
+    \label{tab:ablation_unified}
+    
+    \begin{tabular}{lc}
+        \toprule
+        \textbf{Variant} & \textbf{SR (\%)} \\
+        \midrule
+        \multicolumn{2}{l}{\textit{(a) Effect of Modality}} \\
+        \midrule
+        RGB + Depth (Concatnate) & 30.4 \\
+        RGB + Depth (Attention) & 39.6 \\
+        RGB + Depth (Gated Attention) & 66.2 \\
+        PCD + RGB & 60.7 \\
+        PCD + Depth & 59.8 \\
+        \rowcolor{gray!10} \textbf{Ours (Trimodal)} & \textbf{74.1} \\ 
+        
+        \midrule
+        \multicolumn{2}{l}{\textit{(b) Effect of Distillation Candidates $K$}} \\
+        \midrule
+        $K = 1$ & 47.3 \\
+        $K = 4$ & 58.9 \\
+        $K = 10$ & 68.1 \\
+        \textbf{$K = 16$ (Ours)} & \textbf{74.1} \\
+        
+        \midrule
+        \multicolumn{2}{l}{\textit{(c) Effect of Prediction Horizon $T$}} \\
+        \midrule
+        $T = 1$ & 30.7 \\
+        $T = 8$ & 64.8 \\
+        $T = 16$ & 70.9 \\
+        \textbf{$T = 32$ (Ours)} & \textbf{74.1} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\paragraph{Impact of Multi-Modal Fusion.}
+We first evaluate the effectiveness of our trimodal perception design, as shown in Table~\ref{tab:ablation_unified}(a).
+The results clearly demonstrate the superiority of combining Point Cloud (PCD), RGB, and Depth.
+Relying solely on 2D modalities (RGB + Depth) yields suboptimal performance, even when using advanced fusion mechanisms like attention ($39.6\%$) or gating ($66.2\%$). This suggests that explicit 3D geometric information provided by point clouds is crucial for precise manipulation.
+Furthermore, comparing dual-modal baselines (PCD+RGB at $60.7\%$ and PCD+Depth at $59.8\%$) with our full trimodal approach (\textbf{72.6\%}) confirms that neither visual texture nor depth geometry alone is sufficient; their complementary integration achieves the best robustness.
+Notably, our \textit{Attention+Gate} fusion mechanism significantly outperforms naive concatenation ($30.4\%$) and standard attention ($39.6\%$), validating the effectiveness of our specific architecture in selecting informative features.
+
+\paragraph{Effect of Distillation Candidates $K$.}
+In Table~\ref{tab:ablation_unified}(b), we analyze the sensitivity of the model to the number of distilled trajectory candidates $K$.
+We observe a monotonic improvement in Success Rate (SR) as $K$ increases from 1 to 16.
+Using a single deterministic candidate ($K=1$) results in a low SR of $47.3\%$, likely because the student policy fails to fully capture the multi-modal distribution of the teacher's behavior.
+Increasing $K$ allows the model to approximate the teacher's action distribution more accurately by covering diverse modes.
+The performance improves to $68.1\%$ at $K=10$ and reaches its peak at $K=16$ with \textbf{72.6\%}, indicating that $16$ candidates are sufficient for high-fidelity behavior cloning via distillation without incurring excessive computational overhead.
+
+\paragraph{Importance of Prediction Horizon $T$.}
+Finally, Table~\ref{tab:ablation_unified}(c) investigates the impact of the action prediction horizon $T$.
+The results highlight the importance of temporal consistency in manipulation tasks.
+A greedy, single-step prediction ($T=1$) leads to poor performance ($30.7\%$), as it lacks foresight and temporal smoothness, often resulting in jerky robot motions.
+As we extend the horizon to $T=8$ and $T=16$, the success rate improves significantly to $64.8\%$ and $70.9\%$, respectively.
+The best performance is achieved at $T=32$ (\textbf{72.6\%}), confirming that predicting longer-term trajectories enables the agent to plan more coherent motions and effectively handle complex multi-stage tasks.
+
+\subsection{Real-World Experiments}
+We evaluate the generalization capability and real-time performance of our method in real-world robotic manipulation scenarios. To this end, we deploy our policy on a physical robot platform equipped with a multi-view RGB-D perception system and design a set of challenging manipulation tasks involving dynamic objects, multi-stage execution, and human-induced disturbances.
+
+Specifically, we consider five representative real-world tasks that probe different aspects of multimodal perception, trajectory diversity, and reactive control:
+\begin{enumerate}
+    \item \textbf{Dynamic Cube Stowing:} 
+    The robot grasps one cube from three adjacent cubes while the target cube is perturbed twice by human interference. It then places the cube into a box, which is also perturbed once during the placement stage.
+
+    \item \textbf{Kitchen Microwave Loading:} 
+    The robot picks up food from the stovetop, places it into a container, grasps the container, and transfers it into a microwave oven.
+
+    \item \textbf{Kitchen Cleanup:} 
+    The robot grasps a pot from the stovetop and places it into the sink, then grasps a soap bottle from the shelf and places it into the sink.
+
+    \item \textbf{Dynamic Cabinet Opening:} 
+    The robot approaches a vertically moving cabinet door, grasps the handle at an appropriate moment, and pulls the door open while compensating for the door’s dynamic motion.
+
+    \item \textbf{Dynamic Grasping:} 
+    The robot reaches into a moving cabinet, grasps a soap bottle, and retrieves it while adapting to the cabinet’s motion.
+\end{enumerate}
+
+Figure~\ref{fig:real_setup} illustrates the real-world experimental setup and task groupings. 
+Task~(a) corresponds to \emph{Dynamic Cube Stowing}. 
+Task~(b) includes two kitchen manipulation scenarios: \emph{Microwave Loading} and \emph{Kitchen Cleanup}. 
+Task~(c) includes two cabinet-related tasks: \emph{Dynamic Cabinet Opening} and \emph{Dynamic Grasping}.
+
+\begin{figure*}[t]
+    \centering
+    \begin{subfigure}[t]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/Setup_Cube.pdf}
+        \caption{Dynamic Cube Stowing}
+        \label{fig:sub1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/Setup_Kitchen.pdf}
+        \caption{Kitchen Tasks}
+        \label{fig:sub2}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.32\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/Setup_Cabinet.pdf}
+        \caption{Cabinet Tasks}
+        \label{fig:sub3}
+    \end{subfigure}
+    \caption{
+    Real-world experimental setup. The robot is equipped with a multi-view RGB-D perception system, consisting of a wrist-mounted camera and multiple external cameras, which provides comprehensive visual coverage for dynamic manipulation. Target objects and task-relevant regions are highlighted for clarity.
+    }
+    \label{fig:real_setup}
+\end{figure*}
+
+
+\subsubsection{Implementation Details}
+
+\paragraph{Hardware Setup.}
+All real-world experiments are conducted on a 7-DoF Franka Emika Panda robotic arm equipped with a parallel gripper. 
+The perception system consists of a wrist-mounted RGB-D camera and multiple external RGB-D cameras, providing multi-view observations of the workspace.
+
+\paragraph{Task Execution and Data Collection.}
+We collect expert demonstrations for each real-world task via teleoperation using a 3D SpaceMouse.
+For each task, 300 demonstrations are recorded, exhibiting substantial trajectory diversity arising from variations in object initial configurations, grasping poses, and motion paths.
+
+Importantly, each task can be naturally decomposed into a sequence of semantic sub-stages (e.g., reaching, grasping, placing), whose number and ordering may differ across tasks.
+Figure~\ref{fig:traj_single_column} visualizes representative execution trajectories for all five tasks, illustrating that even within the same task, multiple valid trajectories and stage transitions can occur.
+This inherent variability motivates modeling a multi-modal trajectory distribution rather than a single deterministic policy.
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}{\columnwidth}
+        \centering
+        \includegraphics[width=\linewidth, height=0.16\textheight, keepaspectratio]{figures/Traj_Cube.pdf}
+        \caption{Dynamic Cube Stowing}
+    \end{subfigure}
+    \vspace{0.4em}
+    \begin{subfigure}{\columnwidth}
+        \centering
+        \includegraphics[width=\linewidth, height=0.16\textheight, keepaspectratio]{figures/Traj_Kitchen_Banana.pdf}
+        \caption{Kitchen Microwave Loading}
+    \end{subfigure}
+    \vspace{0.4em}
+    \begin{subfigure}{\columnwidth}
+        \centering
+        \includegraphics[width=\linewidth, height=0.16\textheight, keepaspectratio]{figures/Traj_Kitchen_Soap.pdf}
+        \caption{Kitchen Cleanup}
+    \end{subfigure}
+    \vspace{0.4em}
+    \begin{subfigure}{\columnwidth}
+        \centering
+        \includegraphics[width=\linewidth, height=0.16\textheight, keepaspectratio]{figures/Traj_Cabinet_Open_door.pdf}
+        \caption{Dynamic Cabinet Opening}
+    \end{subfigure}
+    \vspace{0.4em}
+    \begin{subfigure}{\columnwidth}
+        \centering
+        \includegraphics[width=\linewidth, height=0.16\textheight, keepaspectratio]{figures/Traj_Cabinet_Grasp_Soap.pdf}
+        \caption{Dynamic Grasping}
+    \end{subfigure}
+    \caption{
+    Visualization of trajectory execution and diversity for five real-world manipulation tasks.
+    Each subfigure overlays multiple expert demonstrations, illustrating diverse motion patterns
+    and task-dependent multi-stage behaviors under varying object configurations.
+    }
+    \label{fig:traj_single_column}
+\end{figure}
+During data collection, multi-view RGB images and aligned depth maps are captured.
+A point cloud is generated from a single depth view, cropped to the tabletop workspace, and downsampled to 4096 points using voxel grid filtering.
+
+
+\paragraph{Training Procedure.}
+The training pipeline follows the same procedure as in simulation.
+We first train the multimodal Conditional Flow Matching (CFM) teacher on the collected real-world demonstrations.
+The teacher is then used to generate a distilled multi-hypothesis trajectory dataset via flow-based sampling.
+Finally, a one-step student policy is trained using IMLE with a Chamfer-based diversity loss.
+All network architectures and hyperparameters are kept identical to those used in simulation experiments.
+
+\paragraph{Deployment.}
+Policy inference is performed on a workstation equipped with an NVIDIA RTX 3070 GPU.
+Predicted actions are transmitted via Ethernet to a dedicated control PC running a real-time kernel, which executes high-frequency control commands on the robot.
+For the dynamic cabinet opening task, an additional robotic arm induces continuous vertical motion of the cabinet door, controlled by a separate laptop with an NVIDIA RTX 4080 GPU.
+
+\paragraph{Evaluation Protocol.}
+For each task, we conduct 30 real-world evaluation trials and report the average task success rate together with the policy inference frequency (Hz).
+
+
+
+
+\subsubsection{Results Analysis}
+\input{table/real}
+Overall Performance and Real-Time Capability.As shown in Table~\ref{tab:comparison}, our distilled \textbf{Student} policy achieves a compelling balance between task success rate and inference speed in real-world scenarios. With an average inference speed (\textbf{Avg IS}) of \textbf{125.0 Hz}, our method is approximately \textbf{43$\times$ faster} than the CFM-Teacher (2.9 Hz) and 35$\times$ faster than the PointFlowMatch 50-step baseline (3.6 Hz). This high-frequency control capability is crucial for the dynamic tasks we designed, such as \textit{Dynamic Cabinet Opening} and \textit{Dynamic Grasping}, where the robot must react instantaneously to moving targets and disturbances.Comparison with Baselines.A critical finding is the comparison with the \textit{PointFlowMatch (1-step)} baseline. While the 1-step baseline achieves a high inference speed (210.0 Hz), its performance collapses completely, yielding a near-zero average success rate (\textbf{2.7\%}). This indicates that naive one-step generation fails to capture the complex multi-modal distributions required for these manipulation tasks. In stark contrast, our \textbf{Student} model maintains a robust average success rate of \textbf{71.3\%} using single-step inference. This demonstrates that our distillation method effectively compresses the knowledge of the teacher into a fast-reactive policy without the catastrophic performance drop seen in other methods.Preservation of Teacher Proficiency.Although the CFM-Teacher (50-step) achieves the highest average success rate (84.0\%), its slow inference speed (2.9 Hz) creates significant latency, causing "stop-and-go" behavior that is undesirable in dynamic human-robot interaction settings. Our Student model retains \textbf{$\sim$85\%} of the Teacher's performance (71.3\% vs. 84.0\%) while unlocking real-time responsiveness. Notably, in long-horizon tasks like \textit{Kitchen Cleanup}, the Student achieves an 86.7\% success rate, closely matching the Teacher's 96.7\%, proving its ability to handle multi-stage execution effectively.Robustness in Dynamic Scenarios.The results on dynamic tasks highlight the practical benefits of our method.\begin{itemize}\item In \textbf{Dynamic Cube Stowing}, despite heavy human interference (two perturbations during grasping and one during placement), the Student achieves a \textbf{76.7\%} success rate. The 125 Hz control loop allows the robot to rapidly re-plan and track the cube immediately after it is pushed away, a behavior that is difficult for the 2.9 Hz Teacher to execute smoothly despite its higher theoretical success rate.\item In \textbf{Dynamic Cabinet Opening} and \textbf{Dynamic Grasping}, where the environment itself is in motion, the Student achieves 43.3\% and 66.7\% success rates, respectively. While there is a performance gap compared to the 50-step Teacher (60.0\% and 80.0\%), the Student remains the only viable 1-step solution, as the baseline 1-step method fails completely (0.0\%) in these precision-demanding dynamic tasks.\end{itemize}

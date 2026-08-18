@@ -1,0 +1,91 @@
+% \documentclass[conference]{IEEEtran}
+\documentclass[letterpaper]{IEEEtran}
+\usepackage{times}
+\usepackage{todonotes}
+% \usepackage[numbers]{natbib}
+\usepackage{multicol}
+\usepackage{graphics,graphicx,caption,float,subcaption,booktabs,xcolor,multirow,array,color,ifthen,tabu,colortbl,dblfloatfix,url,xparse,mathtools,algorithm,algorithmic,amssymb,xspace,nicefrac,microtype,amsmath,amsfonts,bm,ragged2e,tikz,stackengine,etoolbox,xpatch,enumerate,xstring,setspace,tabularx,makecell,changepage,cuted,wrapfig, sidecap,comment, bbding, placeins}
+\usepackage{gensymb,comment}
+\usepackage{cite} % <--- before hyperref 
+
+\usepackage[pagebackref=true,breaklinks=true,colorlinks=true,bookmarks=false,citecolor=blue]{hyperref}
+\hypersetup{
+colorlinks=true,
+linkcolor=blue,
+filecolor=magenta,      
+citecolor=blue
+}
+
+% \newcommand{\lzhang}[1]{\textcolor{magenta}{#1}}
+
+
+\newcommand{\lzhang}[1]{\textcolor{black}{#1}}
+
+\usepackage{siunitx}
+\sisetup{output-exponent-marker=\ensuremath{\mathrm{e}}}
+\newcommand{\e}[1]{\times 10^{#1}}
+
+
+
+\IEEEoverridecommandlockouts                              % This command is only needed if
+                                                          % you want to use the \thanks command
+
+\overrideIEEEmargins                                      % Needed to meet printer requirements.
+
+
+\linespread{0.933}
+
+
+
+   
+%%%%%%%%% TITLE - PLEASE UPDATE
+\title{\LARGE \bf ClearDepth: Efficient Stereo Perception of Transparent Objects \\ for Robotic Manipulation}
+
+% Uncomment the following line to enable anonymous mode:
+ \newcommand{\isanonymous}{}  % 
+% IEEE not suppoer Minted，use lstlisting during submission
+\ifdefined\isanonymous
+\else
+    \newcommand{\withSuppMaterial}{}  % 
+    \newcommand{\withMinted}{}  % 
+\fi
+
+\ifdefined\isanonymous
+    \author{%
+        Anonymous Authors\\
+        % \textit{Affiliations withheld for double-blind review}
+    % \thanks{\dag Equal contribution. }
+    % \thanks{* Corresponding authors.}
+    \thanks{Affiliations withheld for double-blind review.
+    }\\
+    \thanks{
+    }\\
+    \thanks{
+    }
+    }
+\else
+    \author{
+    % <-this % stops a space
+\thanks{\dag Corresponding author. lei.zhang-1@studium.uni-hamburg.de}
+    \thanks{$^{1}$
+    % \texttt{\{name.surname\}@studium.uni-hamburg.de}
+    }
+\thanks{$^{2}$
+}
+\thanks{$^{3}$
+}
+    }
+\fi
+
+% \input{preamble}
+\begin{document}
+\input{06_appendix}
+% {
+%     \small
+%     \bibliographystyle{IEEEtran}
+%     % \bibliographystyle{abbrvnat}
+%     \bibliography{root}
+% }
+% \newpage
+% \input{appendix}
+\end{document}

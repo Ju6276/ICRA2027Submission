@@ -1,0 +1,93 @@
+\subsection{Problem Statement}
+We study real-time multimodal trajectory generation for robotic manipulation. Given a high-dimensional observation $\mathbf{o}_t$ consisting of multi-view RGB images, depth maps, point clouds, and proprioceptive states, the goal is to generate a set of diverse, temporally coherent future action trajectories $\{\boldsymbol{\tau}_k\}_{k=1}^K$ over a fixed horizon of $H$ steps.
+
+The problem poses three key challenges: 
+(1) Multimodal perception, requiring the robust fusion of heterogeneous sensory inputs with complementary semantic and geometric information; 
+(2) Multi-hypothesis generation, where multiple plausible futures must be modeled rather than a single deterministic trajectory, effectively capturing the inherent uncertainty of manipulation tasks; and 
+(3) Real-time inference, demanding high-bandwidth closed-loop control (e.g., $>100$ Hz) that fundamentally precludes iterative sampling or numerical integration procedures.
+
+Existing diffusion- and flow-based generative policies can model complex multimodal distributions but rely heavily on iterative denoising or ODE integration (typically restricted to low frequencies like $3-10$ Hz), making them unsuitable for dynamic, real-time deployment. We aim to design a policy that preserves the multimodal expressiveness of flow models while enabling instantaneous one-step inference.
+
+\subsection{Method Overview}
+To address these challenges, we decompose real-time multimodal trajectory generation into three core components:
+\begin{enumerate}
+    \item A multimodal perception encoder that fuses RGB, depth, and point-cloud observations into a unified, geometry-aware state representation;
+    \item A Conditional Flow Matching teacher, which acts as an expert to model a $K$-shot, $H$-step multimodal trajectory distribution in the data space using a temporal 1D U-Net;
+    \item An IMLE-distilled one-step student policy, which directly approximates the teacher's distribution via a single forward pass. It adopts an identical network architecture to the teacher to strictly isolate the performance gains of the distillation algorithm.
+\end{enumerate}
+
+While the teacher captures rich multimodal behaviors, its reliance on ODE-based sampling makes it unsuitable for high-frequency control. We therefore distill the teacher into a fast-reactive student using Implicit Maximum Likelihood Estimation (IMLE). This framework requires only offline teacher samples and completely avoids score matching or multi-time supervision. A bi-directional Chamfer diversity loss further ensures that the student rigorously preserves the multi-hypothesis structure of the teacher while collapsing the entire inference process to a single step.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=\linewidth]{figures/Frame.pdf}
+    \caption{
+    Overview of our framework. We encode multimodal observations into a geometry-aware representation, train a Conditional Flow Matching teacher to model multi-hypothesis trajectories, and distill it into a one-step student policy via IMLE for real-time control.
+    }
+    \label{fig:framework}
+\end{figure*}
+
+\subsection{Multimodal Observation Encoding}
+\label{sec:multimodal_encoding}
+Our policy is conditioned on rich multimodal observations to jointly capture semantic context and explicit geometric structure. At each execution time step $t$, the observation $\mathbf{o}_t = \{\mathcal{I}_{rgb}, \mathcal{I}_{depth}, \mathcal{P}, \mathcal{S}\}$ consists of multi-view RGB images, aligned depth maps, a 3D point cloud, and the robot's proprioceptive state.
+
+\paragraph{Visual Feature Extraction.}
+RGB and depth inputs are processed by a dual-stream visual encoder. For RGB images, we employ a ResNet-18 backbone to extract dense semantic features, while depth maps are encoded using a modified ResNet-18 with a single-channel input layer to emphasize explicit geometric cues. Features extracted from multiple camera views are flattened and projected into a shared latent space, yielding the modality-specific embeddings $\mathbf{f}_{rgb}, \mathbf{f}_{depth} \in \mathbb{R}^{B \times D}$.
+
+\paragraph{Bi-Directional Cross-Modal Attention.}
+To establish dense correspondences between semantic textures and geometric structures, we introduce a bi-directional cross-modal attention mechanism. Instead of relying on naive concatenation, which struggles to capture inter-modality relationships, each modality explicitly attends to the other:
+\begin{align}
+    \mathbf{f}'_{rgb} &= \mathbf{f}_{rgb} + \text{Attn}(\mathbf{f}_{rgb}, \mathbf{f}_{depth}, \mathbf{f}_{depth}), \\
+    \mathbf{f}'_{depth} &= \mathbf{f}_{depth} + \text{Attn}(\mathbf{f}_{depth}, \mathbf{f}_{rgb}, \mathbf{f}_{rgb}),
+\end{align}
+where $\text{Attn}(Q, K, V) = \text{Softmax}\left(\frac{QK^\top}{\sqrt{d}}\right)V$ denotes the scaled dot-product attention. This symmetrical formulation enriches both streams, yielding geometry-aware RGB features and semantically enhanced depth features.
+
+\paragraph{Gated Adaptive Fusion \& Global Embedding.}
+Real-world robotic environments often exhibit dynamic sensory degradation, such as lighting variations affecting RGB cameras or reflective surfaces corrupting depth sensors. To improve robustness against such modality-specific noise, a gating network adaptively predicts modality importance weights $\boldsymbol{\alpha} = [\alpha_{rgb}, \alpha_{depth}] = \text{Softmax}\bigl(G([\mathbf{f}'_{rgb}, \mathbf{f}'_{depth}])\bigr)$. The fused visual representation $\mathbf{h}_{vis}$ is then computed via the adaptively weighted sum of the projected features.
+
+In parallel, the 3D point cloud $\mathcal{P}$ is encoded using a PointNet architecture to extract a global geometric descriptor $\mathbf{h}_{pcd}$, and the robot proprioceptive state $\mathcal{S}$ is embedded into a state vector $\mathbf{h}_{state}$ via a multi-layer perceptron. Finally, all extracted features are concatenated to form the global observation embedding:
+\begin{equation}
+    \mathbf{E}_{obs} = [\mathbf{h}_{vis}, \mathbf{h}_{pcd}, \mathbf{h}_{state}].
+\end{equation}
+This highly informative, noise-resilient representation serves as the universal condition for both the generative teacher and the distilled student policies.
+
+\subsection{Policy Learning via Conditional Flow Matching}
+Given the multimodal observation embedding $\mathbf{E}_{obs}$ (e.g., comprising RGB, depth, point cloud, and proprioception), our goal is to learn a generative policy that models a multimodal distribution over future action trajectories. To achieve this, we formulate the action generation as a Conditional Flow Matching (CFM) problem, which provides stable training dynamics and strong generative capacity in continuous domains. We define a fixed action horizon $H$ for each prediction step, effectively framing the execution as a receding-horizon control problem.
+
+\paragraph{Flow Matching Formulation and Data-Space Objective.} 
+Let $\boldsymbol{\tau}_1 \in \mathbb{R}^{H \times D_{\text{action}}}$ denote a ground-truth action trajectory sequence sampled from the expert distribution $q(\boldsymbol{\tau})$, and let $\boldsymbol{\tau}_0 \sim \mathcal{N}(\mathbf{0}, \mathbf{I})$ be a pure noise sequence of the same dimension. CFM constructs a probability path that linearly interpolates between the noise and the data:
+\begin{equation}
+    \boldsymbol{\tau}_t = (1 - t)\boldsymbol{\tau}_0 + t\boldsymbol{\tau}_1, \quad t \in [0,1].
+\end{equation}
+To train the network, we minimize the following data-space objective:
+\begin{equation}
+    \mathcal{L}_{\text{CFM}} = \mathbb{E}_{t, \boldsymbol{\tau}_0, \boldsymbol{\tau}_1} \left\| D_\theta(\boldsymbol{\tau}_t, t, \mathbf{E}_{obs}) - \boldsymbol{\tau}_1 \right\|^2_2.
+\end{equation}
+
+\paragraph{Logit-Normal Time Schedule and Anti-Overfitting Masking.} 
+Instead of sampling the flow time $t$ uniformly, we employ a logit-normal distribution $\text{logit}(t) \sim \mathcal{N}(\mu_t, \sigma_t^2)$. This schedule concentrates more training capacity on the noisier, early-generation stages (i.e., $t \to 0$), which empirically improves the final generation quality. Furthermore, as $t \to 1$, the input $\boldsymbol{\tau}_t$ becomes highly identical to the target $\boldsymbol{\tau}_1$. To prevent the network from learning a trivial identity mapping that ignores the condition $\mathbf{E}_{obs}$, we introduce a flow-time-dependent masking mechanism. The noise embedding is stochastically masked to zero with a probability $f_m(t) = \frac{1}{1+e^{-k(t-m)}}$, acting as an embedding-level dropout that forces the model to heavily rely on the observation $\mathbf{E}_{obs}$ during the critical final stages of denoising.
+
+\subsection{Teacher Multi-Hypothesis Trajectory Sampling}
+Although the CFM teacher accurately models multimodal trajectory distributions, its inference requires iterative ODE solving, which introduces unacceptable latency for real-time high-frequency robot control. To enable distillation, we utilize the trained teacher to construct an offline synthetic dataset of multimodal futures. For each observation $\mathbf{E}_{obs}$, we sample $K$ independent noise vectors $\{\boldsymbol{\tau}_0^{(i)}\}_{i=1}^K \sim \mathcal{N}(\mathbf{0}, \mathbf{I})$ and solve the ODE using the reparameterized velocity field from $D_\theta$, yielding a set of explicit teacher predictions $\mathcal{T}_{\text{teacher}} = \{\boldsymbol{\tau}_1^{*(1)}, \dots, \boldsymbol{\tau}_1^{*(K)}\}$. This converts the implicit continuous flow density into a discrete set of high-quality trajectory modes.
+
+\subsection{One-Step Student Policy Learning}
+To break the computational bottleneck, we propose a sample-only, likelihood-free distillation framework to compress the teacher into a single-step student policy $\pi_{\text{student}}$. To rigorously isolate the performance gains of our distillation algorithm from architectural capacities, the student policy adopts an \textbf{identical 1D U-Net architecture} to the teacher. The critical modification is the complete removal of all time-step conditioning modules (e.g., the sinusoidal encoders and corresponding FiLM time-projections). Consequently, the student $\tau_\psi$ maps pure noise $\mathbf{z} \sim \mathcal{N}(\mathbf{0}, \mathbf{I})$ and the condition $\mathbf{E}_{obs}$ directly to a complete trajectory sequence in a single forward pass:
+\begin{equation}
+    \hat{\boldsymbol{\tau}} = \tau_\psi(\mathbf{E}_{obs}, \mathbf{z}) \in \mathbb{R}^{H \times D_{\text{action}}}.
+\end{equation}
+During closed-loop deployment, the student generates the fixed $H$-step horizon at $>100$ Hz, but only the first $T_e$ steps (Execution Horizon) are executed on the robot before re-planning with updated observations, thereby forming a highly reactive receding-horizon control loop.
+
+\subsection{Set-Level IMLE Distillation via Chamfer Matching}
+Standard distillation objectives (e.g., MSE or KL-divergence) often lead to mode collapse, where the student merely averages the multimodal outputs of the teacher into a single, sometimes physically implausible, mean trajectory. To address this, we formulate the distillation through the lens of Implicit Maximum Likelihood Estimation (IMLE), which inherently guarantees mode preservation.
+
+During training, the student model generates a set of $K$ candidate hypotheses $\{\hat{\boldsymbol{\tau}}_j\}_{j=1}^K$ conditioned on the current observation. To align this generated distribution directly with the $K$ explicit modes provided by the teacher's trajectory set $\mathcal{T}_{\text{teacher}} = \{\boldsymbol{\tau}_i^*\}_{i=1}^K$, we employ a bi-directional Chamfer distance as a set-level proxy for the IMLE objective:
+\begin{align}
+    \mathcal{L}_{\text{Chamfer}} &= \frac{1}{K} \sum_{i=1}^K \min_{j \in [K]} \left\| \boldsymbol{\tau}_i^* - \hat{\boldsymbol{\tau}}_j \right\|^2_2 \nonumber \\
+    &\quad + \frac{1}{K} \sum_{j=1}^K \min_{i \in [K]} \left\| \boldsymbol{\tau}_i^* - \hat{\boldsymbol{\tau}}_j \right\|^2_2 .
+\end{align}
+This symmetric formulation serves two critical purposes:
+\begin{itemize}
+    \item \textbf{Mode-Covering:} The first term ensures that \textit{every} multimodal behavior predicted by the teacher is successfully covered by at least one trajectory from the student's candidate pool, thereby strictly preventing mode collapse.
+    \item \textbf{Mode-Seeking:} The second term acts as a structural regularizer, ensuring that all trajectories generated by the student are grounded in the valid, physically plausible behavior manifold defined by the expert teacher.
+\end{itemize}
+By minimizing this set-level matching objective, the single-step student policy faithfully reconstructs the full geometric and statistical diversity of the teacher's flow distribution, requiring only a fraction of the computational cost.

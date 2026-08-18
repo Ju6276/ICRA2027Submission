@@ -1,0 +1,16 @@
+Vision-Language-Action (VLA) models have shown strong potential for general-purpose robotic manipulation, yet contact-rich tasks remain challenging because critical physical interactions are often difficult to infer from vision alone. Force-aware VLAs such as ForceVLA address this limitation by incorporating force/torque feedback into multimodal action generation. However, force and vision operate at very different temporal scales: visual-language reasoning is relatively slow, whereas contact forces can change within milliseconds. Recent work therefore increasingly adopts temporal force modeling and slow-fast architectures to enable faster physical feedback.
+
+While slow-fast execution improves reactivity, it introduces a less explored problem: how should behavioral responsibility be divided between the slow and fast policies? Existing methods such as FAVLA assign semantic reasoning and reactive force processing to different branches, while residual approaches such as PhaForce explicitly introduce high-frequency corrective control. Nevertheless, the role of each branch is largely prescribed by the architecture or control design. When only the final action is supervised, the decomposition itself is ambiguous: the slow policy may absorb contact-dependent behavior, while the fast policy may redundantly learn nominal task motion.
+
+We propose a teacher-guided nominal-residual distillation framework that learns this division of responsibility from a unified force-aware teacher. We first construct a temporal ForceVLA teacher that reasons over recent force history. The same teacher is then evaluated with observed force information and with a learned null-force condition. The force-unavailable prediction defines a nominal behavioral target, while the difference between the two predictions defines a force-conditioned corrective target. These targets are distilled into two temporally specialized students: a slow vision-language-state policy that generates nominal reference actions and semantic context, and a lightweight fast policy that uses high-rate force feedback to predict residual corrections.
+
+At deployment, the slow policy operates at the VLA inference rate, while the fast student continuously updates corrections using newly arriving force measurements. Unlike conventional slow-fast designs, our method does not rely solely on architectural separation to determine the function of each pathway; instead, the unified teacher explicitly supervises what should remain nominal and what should be corrected by force feedback.
+
+Our contributions are:
+\begin{enumerate}
+
+    \item a temporal force-aware VLA teacher for capturing short-horizon contact dynamics;
+    \item a teacher-guided behavioral decomposition that derives nominal and force-conditioned residual targets from the same policy; 
+    \item a multi-rate slow-fast controller that distills these targets into a semantic slow policy and a high-frequency force residual policy.
+
+\end{enumerate}

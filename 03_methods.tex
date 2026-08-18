@@ -1,0 +1,207 @@
+\subsection{Problem Statement}
+
+We study real-time multimodal trajectory generation for robotic manipulation. 
+At each control step $t$, the robot receives a high-dimensional observation 
+$\mathbf{o}_t = \{\mathcal{I}_{rgb}, \mathcal{I}_{depth}, \mathcal{P}, \mathcal{S}\}$ 
+consisting of multi-view RGB images, aligned depth maps, a 3D point cloud, and proprioceptive states. 
+
+Our goal is to generate a set of diverse and temporally coherent future action trajectories 
+$\{\boldsymbol{\tau}_k\}_{k=1}^K$, each with horizon $H$, conditioned on the current observation.
+
+This problem presents three fundamental challenges:
+
+(1) \textbf{Multimodal perception}, requiring robust fusion of heterogeneous semantic and geometric signals;
+
+(2) \textbf{Multi-modal action generation}, requiring expressive distribution learning to capture diverse behaviors and prevent mode collapse;
+
+(3) \textbf{Real-time inference}, demanding high-frequency closed-loop control, which precludes iterative sampling procedures.
+
+While diffusion- and flow-based policies can model rich multimodal distributions, they rely on iterative denoising or ODE integration, typically limiting inference to $3$–$10$ Hz. 
+Our objective is to retain their multimodal expressiveness while enabling instantaneous single-step inference suitable for real-time deployment.
+
+\subsection{Method Overview}
+
+Our key idea is to decouple expressive generative modeling from real-time control through distribution-level distillation.
+We first train a Conditional Flow Matching teacher that models a multimodal trajectory distribution in data space.
+We then distill this distribution into a one-step student policy using an IMLE-inspired set-level sample matching objective.
+The student enables single-forward-pass inference while retaining much of the teacher's multimodal trajectory diversity in practice.
+
+The framework consists of three components:
+\begin{enumerate}
+    \item A Conditional Flow Matching teacher that learns a multimodal trajectory distribution;
+    \item An IMLE-inspired one-step student policy that approximates this distribution without iterative sampling;
+    \item A multimodal observation encoder that provides geometry-aware conditioning shared by both teacher and student.
+\end{enumerate}
+
+Unlike prior works that deploy generative models directly at inference time, we treat the teacher as an offline distribution oracle.
+The student is trained on teacher-generated trajectory sets, requiring neither score matching nor multi-time supervision.
+This design encourages distributional diversity while reducing inference to a single forward pass.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.85\linewidth]{figures/fig02_network_structure.pdf}
+    \caption{
+    Detailed training pipeline. A unified multimodal encoder conditions both the ODE-based CFM teacher and the single-step student. The student is distilled from diverse teacher trajectories using an IMLE-inspired set-level matching objective implemented with a bi-directional Chamfer distance.
+    }
+    \label{fig:framework}
+\end{figure*}
+
+\subsection{IMLE-Based One-Step Policy Distillation}
+
+To eliminate the computational bottleneck of flow-based sampling, 
+we compress the teacher distribution into a single-step student policy 
+$\pi_{\text{student}}$.
+
+\subsubsection{One-Step Student Architecture.}
+
+The student adopts an identical temporal 1D U-Net architecture to the teacher 
+to strictly isolate improvements arising from the distillation algorithm rather than model capacity.
+
+However, all time-conditioning modules (e.g., sinusoidal encodings and FiLM projections) are removed. 
+The student directly maps a Gaussian noise vector 
+$\mathbf{z} \sim \mathcal{N}(\mathbf{0}, \mathbf{I})$ 
+and observation embedding $\mathbf{E}_{obs}$ to a complete trajectory:
+
+\begin{equation}
+\hat{\boldsymbol{\tau}} = \tau_\psi(\mathbf{E}_{obs}, \mathbf{z})
+\in \mathbb{R}^{H \times D_{\text{action}}}.
+\end{equation}
+
+During deployment, students operated using a high-frequency control scheme: 
+only the first $T_e$ steps are executed before re-planning with updated observations.
+
+\subsubsection{Set-Level IMLE Distillation.}
+
+Naive objectives such as MSE or KL divergence tend to collapse
+multi-modal outputs into mean trajectories. To mitigate this issue,
+we adopt an IMLE-inspired sample matching formulation for distribution
+distillation. The key idea follows the nearest-neighbor matching
+principle of IMLE: generated samples should cover target samples
+without requiring an explicit likelihood. In our setting, for each
+observation, we approximate the conditional trajectory distributions
+of the teacher and the student by finite trajectory sets and instantiate
+this sample matching principle using a symmetric Chamfer distance.
+
+The teacher provides a discrete set of $K$ multimodal trajectories:
+
+\[
+\mathcal{T}_{\text{teacher}} = \{\boldsymbol{\tau}_i^*\}_{i=1}^K.
+\]
+
+The student generates $K$ hypotheses:
+
+\[
+\{\hat{\boldsymbol{\tau}}_j\}_{j=1}^K.
+\]
+
+We minimize a symmetric Chamfer distance:
+
+\begin{align}
+\mathcal{L}_{\text{Chamfer}} &=
+\frac{1}{K} \sum_{i=1}^K \min_j 
+\left\| \boldsymbol{\tau}_i^* - \hat{\boldsymbol{\tau}}_j \right\|_2^2
+\nonumber \\
+&\quad +
+\frac{1}{K} \sum_{j=1}^K \min_i 
+\left\| \boldsymbol{\tau}_i^* - \hat{\boldsymbol{\tau}}_j \right\|_2^2.
+\end{align}
+
+The first term encourages \textbf{mode covering} by penalizing teacher trajectories that are not close to any student hypothesis.
+The second term enforces \textbf{mode seeking}, preventing spurious generations outside the teacher's behavior manifold.
+
+By minimizing this objective, the student is encouraged to approximate
+the geometric and statistical diversity of the sampled teacher trajectory
+set while requiring only a single forward pass at inference time.
+
+\subsection{Conditional Flow Matching Teacher}
+
+To construct high-quality multimodal supervision for distillation, 
+we train a Conditional Flow Matching teacher to model the trajectory distribution in data space.
+
+\subsubsection{Flow Matching Objective.}
+
+Let $\boldsymbol{\tau}_1$ denote a ground-truth trajectory sampled from expert data 
+$q(\boldsymbol{\tau})$, and let 
+$\boldsymbol{\tau}_0 \sim \mathcal{N}(\mathbf{0}, \mathbf{I})$ 
+be a noise trajectory of the same dimension.
+
+CFM defines a linear probability path:
+
+\begin{equation}
+\boldsymbol{\tau}_t = (1 - t)\boldsymbol{\tau}_0 + t\boldsymbol{\tau}_1,
+\quad t \in [0,1].
+\end{equation}
+
+The teacher network $D_\theta$ predicts the target trajectory directly in data space:
+
+\begin{equation}
+\mathcal{L}_{\text{CFM}} =
+\mathbb{E}_{t, \boldsymbol{\tau}_0, \boldsymbol{\tau}_1}
+\left\|
+D_\theta(\boldsymbol{\tau}_t, t, \mathbf{E}_{obs})
+- \boldsymbol{\tau}_1
+\right\|_2^2.
+\end{equation}
+
+\subsubsection{Time Scheduling and Anti-Shortcut Regularization.}
+
+We sample $t$ from a logit-normal distribution to allocate more capacity to early, noisy stages. 
+To prevent trivial identity mappings as $t \to 1$, 
+we introduce a time-dependent masking mechanism that stochastically suppresses the noise embedding, 
+forcing the model to rely on the observation condition.
+
+\subsubsection{Teacher Trajectory Sampling.}
+
+After training, we generate $K$ multimodal trajectories per observation by solving the corresponding ODE defined by $D_\theta$. 
+This produces an explicit discrete trajectory set:
+
+\[
+\mathcal{T}_{\text{teacher}} = 
+\{\boldsymbol{\tau}_1^{*(1)}, \dots, \boldsymbol{\tau}_1^{*(K)}\}.
+\]
+
+These sets form the supervision targets for IMLE distillation. 
+The teacher is used exclusively offline and never deployed during real-time control.
+
+\subsection{Multimodal Observation Encoding}
+
+Both teacher and student are conditioned on a shared multimodal embedding 
+$\mathbf{E}_{obs}$. 
+We design a geometry-aware encoder to robustly fuse semantic and structural signals.
+
+\subsubsection{Visual Encoding.}
+
+RGB and depth images are processed by dual ResNet-18 backbones. 
+Multi-view features are projected into a shared latent space, 
+yielding embeddings $\mathbf{f}_{rgb}$ and $\mathbf{f}_{depth}$.
+
+\subsubsection{Bi-Directional Cross-Modal Attention.}
+
+We introduce symmetric cross-attention:
+
+\begin{align}
+\mathbf{f}'_{rgb} &= \mathbf{f}_{rgb} 
++ \text{Attn}(\mathbf{f}_{rgb}, \mathbf{f}_{depth}, \mathbf{f}_{depth}), \\
+\mathbf{f}'_{depth} &= \mathbf{f}_{depth} 
++ \text{Attn}(\mathbf{f}_{depth}, \mathbf{f}_{rgb}, \mathbf{f}_{rgb}),
+\end{align}
+
+establishing dense semantic-geometric correspondences.
+
+\subsubsection{Adaptive Fusion and Global Embedding.}
+
+A gating network predicts modality weights 
+$\boldsymbol{\alpha} = [\alpha_{rgb}, \alpha_{depth}]$ 
+for noise-robust fusion.
+
+Point clouds are encoded via PointNet to obtain $\mathbf{h}_{pcd}$, 
+and proprioception is embedded using an MLP into $\mathbf{h}_{state}$.
+
+The final observation embedding is
+
+\begin{equation}
+\mathbf{E}_{obs} = 
+[\mathbf{h}_{vis}, \mathbf{h}_{pcd}, \mathbf{h}_{state}],
+\end{equation}
+
+which conditions both teacher and student policies.

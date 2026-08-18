@@ -1,0 +1,151 @@
+ \documentclass[conference]{IEEEtran}
+\usepackage{times}
+\usepackage{todonotes}
+\usepackage[numbers]{natbib}
+\usepackage{multicol}
+\usepackage{graphics,graphicx,caption,float,subcaption,booktabs,xcolor,multirow,array,color,ifthen,tabu,colortbl,dblfloatfix,url,xparse,mathtools,patchcmd,algorithm,algorithmic,amssymb,xspace,nicefrac,microtype,amsmath,amsfonts,bm,ragged2e,tikz,stackengine,etoolbox,xpatch,enumerate,xstring,setspace,tabularx,makecell,changepage,cuted,titlesec,wrapfig,tcolorbox, sidecap,comment, bbding, placeins}
+
+\usepackage{gensymb,comment}
+\usepackage[pagebackref=true,breaklinks=true,colorlinks=true,bookmarks=false,citecolor=blue]{hyperref}
+\hypersetup{
+colorlinks=true,
+linkcolor=blue,
+filecolor=magenta,      
+citecolor=blue
+}
+
+\usepackage{siunitx}
+\sisetup{output-exponent-marker=\ensuremath{\mathrm{e}}}
+\newcommand{\e}[1]{\times 10^{#1}}
+
+% comments
+% \newcommand{\lzhang}[1]{\textcolor{magenta}{#1}}
+\newcommand{\lzhang}[1]{\textcolor{black}{#1}}
+
+\IEEEoverridecommandlockouts                              % This command is only needed if
+                                                          % you want to use the \thanks command
+
+\overrideIEEEmargins                                      % Needed to meet printer requirements.
+
+\title{
+\vspace{0.2cm}
+\LARGE \bf 
+ForceDistill: Teacher-Guided Physical Latent Distillation for Force-Aware Vision-Language-Action Models
+% Real-Time One-Step Trajectory Policies via IMLE Distillation from Multi-Modal Teachers
+% IMLE-Flow: Real-Time Multi-Modal Trajectory Distillation for Robotic Manipulation
+
+}
+
+ % \newcommand{\isanonymous}{}  % 
+% IEEE not suppoer Minted，use lstlisting during submission
+
+% \author{Anonymous CVPR submission \\ Paper ID 000}
+\ifdefined\isanonymous
+    \author{%
+        Anonymous Authors
+        % \textit{Affiliations withheld for double-blind review}
+    % \thanks{\dag Equal contribution. }
+    % \thanks{* Corresponding authors.}
+    \thanks{Affiliations withheld for double-blind review.
+    }\\
+    \thanks{
+    }\\
+    \thanks{
+    }
+    }
+\else
+    \author{
+        Ju Dong$^{1,3}$, 
+        Yimeng Liu$^{2}$
+        Jian Chen,
+        Yu Fu$^{1}$, 
+        Haocheng Zhao$^{2}$,\\
+        Kaixin Bai$^{1}$,
+        Liding Zhang$^{2}$,
+        Zhaopeng Chen$^{3}$,
+        Lei Zhang$^{1\dag}$,
+        %Alois Christian Knoll$^{2}$,
+        Jianwei Zhang$^{1}$ % <-this % stops a space
+        % \thanks{\dag The first two authors contribute equally to this paper.}
+        \thanks{\dag Corresponding author. lei.zhang-1@studium.uni-hamburg.de}
+        \thanks{* The authors contributed equally to this work.}
+        \thanks{$^{1}$TAMS (Technical Aspects of Multimodal Systems), Department of Informatics, University of Hamburg, Hamburg, Germany. 
+        }
+        \thanks{$^{2}$Technical University of Munich, Germany. 
+        % \texttt{\{name.surname\}@tum.de}
+        }
+        \thanks{$^{3}$Agile Robots SE, Munich, Germany. 
+        % ~\texttt{\{name.surname\}@agile-robots.com}
+        }    
+    }
+\fi
+
+\begin{document}
+    \newcommand{\our} {LEAP Hand\xspace}
+    \newcommand{\ourablation}{LEAP-C Hand\xspace}
+    \newcommand{\ourshort}{LEAP\xspace}
+    \def\@onedot{\ifx\@let@token.\else.\null\fi\xspace}
+    \DeclareRobustCommand\onedot{\futurelet\@let@token\@onedot}
+    \newcommand{\figref}[1]{Fig\onedot~\ref{#1}}
+    \def\etal{\emph{et al}\onedot}
+    \newcommand{\secref}[1]{Sec\onedot~\ref{#1}}
+    \newcommand{\tabref}[1]{Tab\onedot~\ref{#1}}
+    \newcommand\ananye[1]{\textcolor{red}{#1}}
+    \makeatletter
+    \let\@oldmaketitle\@maketitle
+    \renewcommand{\@maketitle}{\@oldmaketitle
+    \includegraphics[width=0.90\linewidth]{figures/fig01_teaser.pdf}
+      \centering
+      % \vspace{-0.2in}
+      \captionof{figure}{Overview of the distribution-level distillation framework and data diversity. \textit{Top:} Teacher–student distillation framework and student-generated multi-modal trajectory distributions at inference time. \textit{Bottom:} Example manipulation tasks demonstrating diverse trajectory data collected during training.
+      }
+      \label{fig:teaser}
+      \vspace{-0.1in}
+      \bigskip}
+\makeatother
+\maketitle
+
+\thispagestyle{empty}
+\pagestyle{empty}
+\setcounter{figure}{1}
+\begin{abstract}
+Generative policies based on diffusion and flow matching achieve strong performance in robotic manipulation by modeling multi-modal human demonstrations. However, their reliance on iterative Ordinary Differential Equation (ODE) integration introduces substantial latency, limiting high-frequency closed-loop control. Recent single-step acceleration methods alleviate this overhead but often exhibit distributional collapse, producing averaged trajectories that fail to execute coherent manipulation strategies.
+
+We propose a framework that distills a Conditional Flow Matching (CFM) expert into a fast single-step student using an Implicit Maximum Likelihood Estimation (IMLE)-inspired set-level matching objective, implemented as a bi-directional Chamfer distance between sampled teacher and student trajectory sets. This objective promotes both mode coverage and fidelity, encouraging the student to approximate diverse modes of the teacher’s action distribution in a single forward pass. A unified perception encoder further integrates multi-view RGB, depth, point clouds, and proprioception into a geometry-aware representation.
+
+Extensive experiments demonstrate a strong balance between accuracy and speed. On RLBench, the student achieves 68.6\% success at 123.5 Hz, clearly outperforming dedicated one-step baselines such as Consistency Policy (16.3\%). In real-world deployment, it attains 70.0\% success at 125.0 Hz, providing a 43$\times$ speedup over the multi-step teacher (2.9 Hz) and enabling success on dynamic tasks where the teacher fails. The resulting high-frequency control supports real-time receding-horizon re-planning and improved robustness under dynamic disturbances.
+% Project page: \url{https://sites.google.com/view/flow2one-anonymous}.
+\end{abstract}
+
+\section{Introduction}
+\input{01_introduction}
+
+\section{Related Work}
+\label{sec:related}
+\input{02_related_work}
+
+\section{Problem Statement and Methods}\label{sec:method}
+
+\input{03_methods}
+
+\section{Experiment}
+\label{sec:experiment}
+\input{04_experiments}
+
+\section{Conclusion and Future Work}
+\label{sec:conclusion}
+\input{05_conclusion}
+
+\vspace{0.1in}
+% \noindent\textbf{Acknowledgement}
+
+{
+\small
+\bibliographystyle{IEEEtran}
+\bibliography{main}
+}
+
+% \appendix
+% \input{06_appendix}
+
+\end{document}
