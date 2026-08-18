@@ -1,0 +1,78 @@
+\documentclass[tikz,border=2pt]{standalone}
+\usepackage{amsmath,amssymb}
+\usetikzlibrary{arrows.meta,positioning,fit,calc,backgrounds}
+
+\definecolor{cTeacher}{HTML}{6C5CE7}
+\definecolor{cSlow}{HTML}{2878B5}
+\definecolor{cFast}{HTML}{E67E22}
+\definecolor{cNom}{HTML}{2E8B57}
+\definecolor{cRes}{HTML}{C0392B}
+\definecolor{cInk}{HTML}{263238}
+
+\tikzset{
+  flow/.style={-{Latex[length=2.2mm]},line width=0.75pt,draw=cInk},
+  data/.style={rounded corners=2pt,draw=cInk!65,fill=gray!7,line width=0.65pt,
+               align=center,minimum height=8mm,text width=22mm,font=\sffamily\scriptsize},
+  teacher/.style={rounded corners=3pt,draw=cTeacher,fill=cTeacher!10,line width=1.1pt,
+                  align=center,minimum height=18mm,text width=31mm,font=\sffamily\small\bfseries},
+  query/.style={rounded corners=2pt,draw=cTeacher!80,fill=white,line width=0.8pt,
+                align=center,minimum height=9mm,text width=28mm,font=\sffamily\scriptsize},
+  target/.style={rounded corners=2pt,line width=0.9pt,align=center,minimum height=9mm,
+                 text width=27mm,font=\sffamily\scriptsize\bfseries},
+  student/.style={rounded corners=3pt,line width=1.1pt,align=center,minimum height=17mm,
+                  text width=30mm,font=\sffamily\small\bfseries},
+  note/.style={font=\sffamily\tiny,align=center,text=cInk!75}
+}
+
+\begin{document}
+\begin{tikzpicture}[node distance=4mm and 8mm]
+  \node[data] (vls) {Vision $V_k$\\Language $L$\\State $S_k$};
+  \node[data,below=3mm of vls] (force) {Native-rate force history\\$\mathcal{F}_k=F_{t-w:t}$};
+
+  \node[teacher,right=9mm of $(vls.east)!0.5!(force.east)$] (teach)
+    {Temporal\\Force-Aware\\VLA Teacher};
+  \draw[flow] (vls.east) -- ([yshift=4mm]teach.west);
+  \draw[flow,draw=cFast] (force.east) -- ([yshift=-4mm]teach.west);
+
+  \node[query,right=9mm of teach,yshift=7mm] (full)
+    {Observed-force query\\$A_T^{\mathrm{full}}$};
+  \node[query,right=9mm of teach,yshift=-7mm] (null)
+    {Null-force query\\$A_T^{\mathrm{null}}$};
+  \draw[flow,draw=cTeacher] (teach.east) -- (full.west);
+  \draw[flow,draw=cTeacher] (teach.east) -- (null.west);
+  \node[note,below=0.5mm of null] {learned $z_{\varnothing F}$};
+
+  \node[target,draw=cNom,fill=cNom!10,right=10mm of full] (nom)
+    {Nominal target\\$A_T^{\mathrm{nom}}=A_T^{\mathrm{null}}$};
+  \node[target,draw=cRes,fill=cRes!9,right=10mm of null] (res)
+    {Residual target\\$\Delta A_T^F=A_T^{\mathrm{full}}-A_T^{\mathrm{null}}$};
+  \draw[flow,draw=cNom] (null.east) -- ++(4mm,0) |- (nom.west);
+  \draw[flow,draw=cRes] (full.east) -- ++(3mm,0) |- ([yshift=2mm]res.west);
+  \draw[flow,draw=cRes] (null.east) -- ++(5mm,0) |- ([yshift=-2mm]res.west);
+
+  \node[student,draw=cSlow,fill=cSlow!9,right=9mm of nom] (slow)
+    {Slow Nominal VLA\\$A^{\mathrm{ref}},\;Z^{\mathrm{intent}}$};
+  \node[student,draw=cFast,fill=cFast!10,right=9mm of res] (fast)
+    {Fast Force Residual\\$\Delta A$};
+  \draw[flow,draw=cNom] (nom.east) -- (slow.west);
+  \draw[flow,draw=cRes] (res.east) -- (fast.west);
+
+  \node[circle,draw=cInk,fill=white,line width=0.9pt,minimum size=7mm,
+        font=\sffamily\small\bfseries,right=9mm of $(slow.east)!0.5!(fast.east)$] (sum) {$+$};
+  \draw[flow,draw=cSlow] (slow.east) -- ++(4mm,0) |- (sum.north);
+  \draw[flow,draw=cFast] (fast.east) -- ++(4mm,0) |- (sum.south);
+  \node[data,right=6mm of sum,text width=23mm,draw=cInk,fill=cInk!5] (cmd)
+    {Robot command\\$A^{\mathrm{cmd}}=A^{\mathrm{ref}}+\Delta A$};
+  \draw[flow] (sum.east) -- (cmd.west);
+
+  \node[note,above=1mm of slow] {slow VLA rate};
+  \node[note,below=1mm of fast] {fast control rate};
+
+  \begin{scope}[on background layer]
+    \node[rounded corners=4pt,draw=cTeacher!35,fill=cTeacher!2,inner sep=3mm,
+          fit=(teach)(full)(null),label={[font=\sffamily\tiny\bfseries,text=cTeacher]above:ONE FROZEN TEACHER, TWO CONDITIONS}] {};
+    \node[rounded corners=4pt,draw=cInk!25,fill=gray!2,inner sep=3mm,
+          fit=(slow)(fast)(sum)(cmd),label={[font=\sffamily\tiny\bfseries,text=cInk]above:ASYNCHRONOUS MULTI-RATE DEPLOYMENT}] {};
+  \end{scope}
+\end{tikzpicture}
+\end{document}

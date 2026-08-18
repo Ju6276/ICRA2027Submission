@@ -20,7 +20,7 @@ We compare the following policy families:
     \item \textbf{Instantaneous-force VLA:} the ForceVLA teacher using only the force observation aligned with the current visual frame;
     \item \textbf{Temporal force-aware teacher:} our unified teacher with the causal temporal force encoder;
     \item \textbf{Direct slow--fast behavior cloning:} the same student architecture trained only from final demonstrated actions, without teacher-guided nominal--residual targets;
-    \item \textbf{ForceSplit:} the complete teacher-guided decomposition and asynchronous slow--fast execution framework.
+    \item \textbf{ForceDuo:} the complete teacher-guided decomposition and asynchronous slow--fast execution framework.
 \end{enumerate}
 
 Task performance is measured by task success rate and, where applicable, stage-wise completion rate. Physical interaction quality is measured using peak force, force impulse, contact-limit violations, and recovery success after a disturbance. To evaluate the decomposition itself, we report the nominal imitation error $d(A^{\mathrm{ref}},A_T^{\mathrm{null}})$, residual imitation error $d(\Delta A,\Delta A_T^F)$, and composed action error $d(A^{\mathrm{ref}}+\Delta A,A_T^{\mathrm{full}})$. Runtime metrics include slow-policy frequency, fast-policy frequency, end-to-end action latency, and parameter count.
@@ -49,7 +49,7 @@ Table~\ref{tab:main_results} is structured to test whether explicit behavioral d
         Instantaneous-force VLA & -- & -- & -- & -- & -- & -- \\
         Temporal force-aware teacher & -- & -- & -- & -- & -- & -- \\
         Direct slow--fast behavior cloning & -- & -- & -- & -- & -- & -- \\
-        \textbf{ForceSplit (ours)} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} \\
+        \textbf{ForceDuo (ours)} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} \\
         \bottomrule
     \end{tabular}
 \end{table*}

@@ -1,0 +1,119 @@
+\documentclass[tikz,border=3pt]{standalone}
+\usepackage{amsmath,amssymb}
+\usetikzlibrary{arrows.meta,positioning,fit,calc,backgrounds}
+
+\definecolor{cTeacher}{HTML}{6C5CE7}
+\definecolor{cSlow}{HTML}{2878B5}
+\definecolor{cFast}{HTML}{E67E22}
+\definecolor{cNom}{HTML}{2E8B57}
+\definecolor{cRes}{HTML}{C0392B}
+\definecolor{cInk}{HTML}{263238}
+
+\tikzset{
+  flow/.style={-{Latex[length=2.1mm]},line width=0.7pt,draw=cInk},
+  dashflow/.style={-{Latex[length=2.1mm]},line width=0.65pt,draw=cInk!65,dashed},
+  block/.style={rounded corners=2pt,draw=cInk!70,fill=white,line width=0.7pt,
+                align=center,minimum height=9mm,text width=24mm,font=\sffamily\scriptsize},
+  teacher/.style={rounded corners=3pt,draw=cTeacher,fill=cTeacher!10,line width=1pt,
+                  align=center,minimum height=15mm,text width=30mm,font=\sffamily\scriptsize\bfseries},
+  slow/.style={rounded corners=3pt,draw=cSlow,fill=cSlow!9,line width=1pt,
+               align=center,minimum height=15mm,text width=29mm,font=\sffamily\scriptsize\bfseries},
+  fast/.style={rounded corners=3pt,draw=cFast,fill=cFast!10,line width=1pt,
+               align=center,minimum height=15mm,text width=29mm,font=\sffamily\scriptsize\bfseries},
+  loss/.style={rounded corners=2pt,draw=cInk!60,fill=gray!7,line width=0.65pt,
+               align=center,minimum height=7mm,text width=21mm,font=\sffamily\tiny},
+  tag/.style={font=\sffamily\scriptsize\bfseries,text=cInk},
+  tinylabel/.style={font=\sffamily\tiny,align=center,text=cInk!75}
+}
+
+\begin{document}
+\begin{tikzpicture}[x=1cm,y=1cm]
+  % ---------------- Training ----------------
+  \node[tag,anchor=west] at (0,5.75) {TRAINING: TEACHER-GUIDED BEHAVIORAL DECOMPOSITION};
+
+  \node[block] (obs) at (1.3,4.55) {Vision $V_k$, language $L$\\robot state $S_k$};
+  \node[block,draw=cFast,fill=cFast!5] (fhist) at (1.3,3.35)
+    {Native-rate F/T window\\$\mathcal{F}_k=F_{t-w:t}$};
+  \node[block,draw=cFast,fill=cFast!8] (tcnT) at (4.0,3.35)
+    {Causal temporal encoder\\$z_k^F=E_T^F(\mathcal{F}_k)$};
+  \node[teacher] (teacher) at (6.8,4.55) {Frozen Temporal\\Force-Aware VLA};
+  \draw[flow] (obs.east) -- (teacher.west);
+  \draw[flow,draw=cFast] (fhist.east) -- (tcnT.west);
+  \draw[flow,draw=cFast] (tcnT.east) -| ([xshift=-5mm,yshift=-4mm]teacher.west) -- ([yshift=-4mm]teacher.west);
+
+  \node[block,draw=cTeacher,fill=cTeacher!5] (full) at (9.6,4.95)
+    {Full-force query\\$A_T^{\mathrm{full}}$};
+  \node[block,draw=cTeacher,fill=cTeacher!5] (null) at (9.6,3.65)
+    {Null-force query\\$A_T^{\mathrm{null}}$};
+  \node[tinylabel] at (9.6,2.95) {only $z_{\varnothing F}$ is adapted};
+  \draw[flow,draw=cTeacher] ([yshift=3mm]teacher.east) -- (full.west);
+  \draw[flow,draw=cTeacher] ([yshift=-3mm]teacher.east) -- (null.west);
+
+  \node[block,draw=cNom,fill=cNom!9] (nomt) at (12.45,4.95)
+    {Nominal target\\$A_T^{\mathrm{null}}$};
+  \node[block,draw=cRes,fill=cRes!8] (rest) at (12.45,3.65)
+    {Residual target\\$A_T^{\mathrm{full}}-A_T^{\mathrm{null}}$};
+  \draw[flow,draw=cNom] (null.east) -- ++(3mm,0) |- (nomt.west);
+  \draw[flow,draw=cRes] (full.east) -- ++(2mm,0) |- ([yshift=2mm]rest.west);
+  \draw[flow,draw=cRes] (null.east) -- ++(4mm,0) |- ([yshift=-2mm]rest.west);
+
+  \node[slow] (slowT) at (15.35,4.95) {Slow Nominal VLA\\$A^{\mathrm{ref}}, Z^{\mathrm{intent}}$};
+  \node[fast] (fastT) at (15.35,3.35) {Fast Residual Student\\$\Delta A$};
+  \draw[flow,draw=cNom] (nomt.east) -- (slowT.west);
+  \draw[flow,draw=cRes] (rest.east) -- (fastT.west);
+
+  \node[loss] (lnom) at (18.0,5.25) {$\mathcal{L}_{\mathrm{nom}}$};
+  \node[loss] (lres) at (18.0,4.35) {$\mathcal{L}_{\mathrm{res}}$};
+  \node[loss] (lcomp) at (18.0,3.45) {$\mathcal{L}_{\mathrm{comp}}$};
+  \node[loss] (lbc) at (18.0,2.55) {$\mathcal{L}_{\mathrm{BC}}$};
+  \draw[dashflow,draw=cSlow] (slowT.east) -- (lnom.west);
+  \draw[dashflow,draw=cFast] (fastT.east) -- (lres.west);
+  \draw[dashflow] (slowT.east) -- ++(4mm,0) |- (lcomp.west);
+  \draw[dashflow] (fastT.east) -- ++(6mm,0) |- (lbc.west);
+
+  \begin{scope}[on background layer]
+    \node[rounded corners=5pt,draw=cTeacher!40,fill=cTeacher!2,inner sep=2.5mm,
+          fit=(obs)(fhist)(tcnT)(teacher)(full)(null)(nomt)(rest)(slowT)(fastT)(lnom)(lbc)] {};
+  \end{scope}
+
+  % ---------------- Deployment ----------------
+  \node[tag,anchor=west] at (0,1.55) {DEPLOYMENT: ASYNCHRONOUS SLOW--FAST CONTROL (TEACHER REMOVED)};
+
+  \node[block] (obsD) at (1.3,0.35) {$V_k, L, S_k$};
+  \node[slow] (slowD) at (4.1,0.35) {Slow VLA\\low-rate update};
+  \node[block,draw=cSlow,fill=cSlow!5] (cache) at (7.05,0.35)
+    {Cached reference chunk\\$A^{\mathrm{ref}}$ and intent $Z^{\mathrm{intent}}$};
+  \draw[flow,draw=cSlow] (obsD.east) -- (slowD.west);
+  \draw[flow,draw=cSlow] (slowD.east) -- (cache.west);
+  \node[tinylabel,above=1mm of slowD] {semantic timescale};
+
+  \node[block,draw=cFast,fill=cFast!5] (forceD) at (1.3,-1.15)
+    {Latest force window\\$F_{t-w:t}$};
+  \node[block,draw=cFast,fill=cFast!8] (tcnD) at (4.1,-1.15)
+    {Causal force TCN\\multi-token $Z_t^F$};
+  \node[fast] (expert) at (10.0,-0.65)
+    {One Gemma Block\\Residual Action Expert};
+  \node[block,draw=cFast,fill=cFast!5] (delta) at (12.9,-0.65)
+    {Corrective action\\$\Delta A_t$};
+  \draw[flow,draw=cFast] (forceD.east) -- (tcnD.west);
+  \draw[flow,draw=cFast] (tcnD.east) -- (expert.west);
+  \draw[flow,draw=cFast] (expert.east) -- (delta.west);
+  \draw[flow,draw=cSlow] (cache.east) -| ([xshift=-6mm,yshift=4mm]expert.west) -- ([yshift=4mm]expert.west);
+  \node[tinylabel] at (7.25,-1.35) {$S_t$, $A_t^{\mathrm{ref}}$, intent, residual queries};
+  \draw[dashflow] (7.25,-1.15) -| ([xshift=-6mm,yshift=-4mm]expert.west) -- ([yshift=-4mm]expert.west);
+  \node[tinylabel,below=1mm of tcnD] {physical timescale};
+
+  \node[circle,draw=cInk,fill=white,line width=0.8pt,minimum size=7mm,
+        font=\sffamily\small\bfseries] (sum) at (15.2,0.05) {$+$};
+  \draw[flow,draw=cSlow] (cache.east) -- ++(7mm,0) -| (sum.north);
+  \draw[flow,draw=cFast] (delta.east) -- ++(5mm,0) -| (sum.south);
+  \node[block,draw=cInk,fill=cInk!5] (cmd) at (17.75,0.05)
+    {Robot command\\$A_t^{\mathrm{cmd}}=A_t^{\mathrm{ref}}+\Delta A_t$};
+  \draw[flow] (sum.east) -- (cmd.west);
+
+  \begin{scope}[on background layer]
+    \node[rounded corners=5pt,draw=cInk!35,fill=gray!2,inner sep=2.5mm,
+          fit=(obsD)(slowD)(cache)(forceD)(tcnD)(expert)(delta)(sum)(cmd)] {};
+  \end{scope}
+\end{tikzpicture}
+\end{document}

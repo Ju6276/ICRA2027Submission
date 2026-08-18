@@ -20,6 +20,13 @@ However, when only the demonstrated final action is supervised, the decompositio
 Different slow--fast behaviors may produce the same commanded action, without guaranteeing that the fast branch specifically captures force-dependent correction.
 We address this ambiguity using a unified force-aware teacher that provides separate behavioral supervision for the nominal and residual components.
 
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.98\textwidth]{figures/fig02_network_structure.pdf}
+    \caption{ForceDuo architecture. During training, a frozen temporal force-aware teacher is queried with observed force history and a learned null-force token to produce full-force and force-unavailable behaviors. Their decomposition supervises a slow nominal VLA and a fast force-conditioned residual student. During deployment, the teacher is removed: the slow student periodically caches reference actions and semantic intent, while the fast student continuously composes force-conditioned corrections with the current reference action.}
+    \label{fig:network_structure}
+\end{figure*}
+
 \subsection{Temporal Force-Aware Teacher}
 \label{sec:teacher}
 
