@@ -2,7 +2,7 @@
 \label{sec:exp_protocol}
 
 \subsubsection{Hardware platforms.}
-The single-arm platform consists of a seven-degree-of-freedom Franka Emika Panda manipulator observed by two Intel RealSense D405 cameras. We use a separate bimanual platform for the coordinated tasks described below. % TODO(submission): specify the bimanual robot, end effectors, F/T sensors, camera arrangement, and control computer.
+The single-arm platform consists of a seven-degree-of-freedom Franka Emika Panda manipulator observed by two Intel RealSense D405 cameras. We use a separate bimanual platform for the coordinated tasks described below.
 
 \subsubsection{Tasks and data collection.}
 We evaluate button pressing, object flipping, USB insertion, and kitchen-door opening with the single-arm platform, and plug insertion, plug removal, whiteboard wiping, and drawer opening with the bimanual platform (Table~\ref{tab:tasks}). We collect $200$ and $300$ teleoperated demonstrations per single-arm and bimanual task, respectively. Each trajectory records synchronized multi-view images, robot states, and commanded actions at $30$~Hz, together with timestamped six-axis force/torque measurements at $100$~Hz.
@@ -44,7 +44,7 @@ The primary metric is task success rate. For each method and task, we evaluate t
 
 All models are trained on two NVIDIA A100 GPUs using bfloat16 precision. We fully fine-tune the teacher for $50{,}000$ steps with AdamW, a global batch size of $32$, a peak learning rate of $2\times10^{-5}$, weight decay $0.01$, $1{,}000$ warmup steps, cosine decay, and gradient clipping at $1.0$. The teacher predicts $H{=}50$ actions at $30$~Hz and encodes the latest $100$~ms of the $100$~Hz force/torque stream. Flow-matching inference uses $N_{\mathrm{flow}}{=}10$ steps.
 
-We freeze the teacher and optimize the null token and rank-$32$ null adapter for $10{,}000$ steps with a learning rate of $10^{-4}$. The visual--language prefix is pooled into $M{=}16$ tokens. The residual student uses one pre-norm attention block and predicts $K{=}5$ corrections. It is trained for $30{,}000$ steps with AdamW, a global batch size of $128$, and a learning rate of $3\times10^{-4}$. We set $\lambda_{\mathrm{res}}=\lambda_{\mathrm{comp}}=1$ and $\beta=0.5$. Timing randomization samples the slow-policy rate from $5$--$15$~Hz, latency from $50$--$300$~ms, and scheduling jitter from $[-10,10]$~ms.
+We freeze the teacher and jointly optimize the null token and rank-$32$ null-specific adapter for $10{,}000$ steps with a learning rate of $10^{-4}$. The visual--language prefix is pooled into $M{=}16$ tokens. The residual student uses one pre-norm attention block and predicts $K{=}5$ corrections. It is trained for $30{,}000$ steps with AdamW, a global batch size of $128$, and a learning rate of $3\times10^{-4}$. We set $\lambda_{\mathrm{res}}=\lambda_{\mathrm{comp}}=1$ and $\beta=0.5$.
 
 \subsection{Quantitative Results}
 \label{sec:exp_main}

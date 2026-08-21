@@ -71,10 +71,6 @@
   \draw[dashflow,draw=cFast] (fastT.east) -- (lres.west);
   \draw[dashflow] (fastT.east) -- ++(4mm,0) |- (lcomp.west);
 
-  \node[tinylabel,text width=44mm,anchor=west] at (0.15,2.55)
-    {Timing is a distribution, not a setting: slow period, inference latency, and jitter are
-     redrawn each epoch, and the student is told its context age.};
-
   \begin{scope}[on background layer]
     \node[rounded corners=5pt,draw=cTeacher!40,fill=cTeacher!2,inner sep=2.5mm,
           fit=(obs)(fhist)(tcnT)(teacher)(full)(null)(nomt)(rest)(fastT)(lres)(lcomp)] {};
@@ -89,7 +85,7 @@
     {Cached packet: chunk\\$A_T^{\mathrm{null}}$, intent $Z^{\mathrm{intent}}$,\\timestamps};
   \draw[flow,draw=cSlow] (obsD.east) -- (slowD.west);
   \draw[flow,draw=cSlow] (slowD.east) -- (cache.west);
-  \node[rate,above=1.2mm of slowD] {$5$--$15$ Hz};
+  \node[rate,above=1.2mm of slowD] {slow update};
 
   \node[block,draw=cFast,fill=cFast!5] (forceD) at (1.3,-1.35)
     {Latest force window\\$F_{t-w_S:t}$};
@@ -104,7 +100,7 @@
   \draw[flow,draw=cFast] (expert.east) -- (delta.west);
   \draw[flow,draw=cSlow] (cache.east) -| ([xshift=-7mm,yshift=4.5mm]expert.west) -- ([yshift=4.5mm]expert.west);
   \node[tinylabel,text width=40mm] at (7.6,-1.55)
-    {$S_t$, interpolated $A^{\mathrm{ref}}(t)$, intent,\\time token $[\,(t-t_k)/c,\ \alpha_t\,]$};
+    {$S_t$, interpolated $A^{\mathrm{ref}}(t)$,\\cached intent tokens};
   \draw[dashflow] (7.6,-1.15) -| ([xshift=-7mm,yshift=-4.5mm]expert.west) -- ([yshift=-4.5mm]expert.west);
   \node[rate,below=1.2mm of tcnD] {native-rate force};
 
@@ -113,7 +109,7 @@
   \draw[flow,draw=cSlow] (cache.east) -- ++(8mm,0) -| (sum.north);
   \draw[flow,draw=cFast] (delta.east) -- ++(5mm,0) -| (sum.south);
   \node[block,draw=cInk,fill=cInk!5,text width=27mm] (cmd) at (19.3,0.05)
-    {Robot command\\$A^{\mathrm{cmd}}(t)=A^{\mathrm{ref}}(t)+\Delta\hat{A}_t$};
+    {Robot command\\pose: $(A^{\mathrm{cmd}})^p=(A^{\mathrm{ref}})^p+\Delta\hat{A}$};
   \draw[flow] (sum.east) -- (cmd.west);
 
   \begin{scope}[on background layer]
