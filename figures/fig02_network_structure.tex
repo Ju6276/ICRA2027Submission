@@ -56,7 +56,7 @@
   \node[block,draw=cNom,fill=cNom!9,text width=26mm] (nomt) at (13.0,5.35)
     {Slow reference\\$A^{\mathrm{ref}}\!\leftarrow\!A_T^{\mathrm{null}}$\\\emph{same teacher, null mode}};
   \node[block,draw=cRes,fill=cRes!8,text width=26mm] (rest) at (13.0,4.05)
-    {Conditional residual target\\$\Delta A_T^{\mathrm{cond}}=(A_T^{\mathrm{full}}\!-\!A_T^{\mathrm{null}})^{p}$};
+    {Counterfactual residual target\\$\Delta A_T^{\mathrm{cf}}=(A_T^{\mathrm{full}}\!-\!A_T^{\mathrm{null}})^{p}$};
   \draw[flow,draw=cNom] (null.east) -- ++(3mm,0) |- (nomt.west);
   \draw[flow,draw=cRes] (full.east) -- ++(2mm,0) |- ([yshift=2mm]rest.west);
   \draw[flow,draw=cRes] (null.east) -- ++(5mm,0) |- ([yshift=-2mm]rest.west);
@@ -106,7 +106,7 @@
   \node[tinylabel,text width=40mm] at (7.6,-1.55)
     {$S_t$, interpolated $A^{\mathrm{ref}}(t)$, intent,\\time token $[\,(t-t_k)/c,\ \alpha_t\,]$};
   \draw[dashflow] (7.6,-1.15) -| ([xshift=-7mm,yshift=-4.5mm]expert.west) -- ([yshift=-4.5mm]expert.west);
-  \node[rate,below=1.2mm of tcnD] {$100$ Hz sensor};
+  \node[rate,below=1.2mm of tcnD] {native-rate force};
 
   \node[circle,draw=cInk,fill=white,line width=0.8pt,minimum size=7mm,
         font=\sffamily\small\bfseries] (sum) at (16.6,0.05) {$+$};

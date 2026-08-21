@@ -51,7 +51,7 @@
   \node[target,draw=cNom,fill=cNom!10,right=10mm of full] (nom)
     {Slow reference\\$A^{\mathrm{ref}}\!\leftarrow\!A_T^{\mathrm{null}}$};
   \node[target,draw=cRes,fill=cRes!9,right=10mm of null] (res)
-    {Conditional residual target\\$\Delta A_T^{\mathrm{cond}}=A_T^{\mathrm{full}}\!-\!A_T^{\mathrm{null}}$};
+    {Counterfactual residual target\\$\Delta A_T^{\mathrm{cf}}=A_T^{\mathrm{full}}\!-\!A_T^{\mathrm{null}}$};
   \draw[flow,draw=cNom] (null.east) -- ++(4mm,0) |- (nom.west);
   \draw[flow,draw=cRes] (full.east) -- ++(3mm,0) |- ([yshift=2mm]res.west);
   \draw[flow,draw=cRes] (null.east) -- ++(5mm,0) |- ([yshift=-2mm]res.west);
@@ -73,18 +73,18 @@
 
   \node[note,above=1mm of slow] {$5$--$15$ Hz};
 
-  % The punchline: what the high-rate path costs, before and after.
+  % The punchline: what the reactive path predicts, before and after.
   \node[bad,below=7mm of fast] (before)
-    {prior fast branch: cached prefix,\\action expert per update\\$13$\,Hz};
+    {prior fast branch: cached prefix,\\full action generation};
   \node[good,below=2mm of before] (after)
-    {ours: residual only, one pass\\$417$\,Hz \ \ ($31.8\times$)};
+    {ours: counterfactual residual,\\one student pass};
   \draw[dashed,line width=0.6pt,draw=cInk!50] (fast.south) -- (before.north);
 
   \begin{scope}[on background layer]
     \node[rounded corners=4pt,draw=cTeacher!35,fill=cTeacher!2,inner sep=3mm,
           fit=(teach)(full)(null),label={[font=\sffamily\tiny\bfseries,text=cTeacher]above:ONE FROZEN TEACHER, TWO FORCE CONDITIONS}] {};
     \node[rounded corners=4pt,draw=cInk!25,fill=gray!2,inner sep=3mm,
-          fit=(slow)(fast)(sum)(cmd),label={[font=\sffamily\tiny\bfseries,text=cInk]above:ONLY THE RESIDUAL RUNS AT SENSOR RATE}] {};
+          fit=(slow)(fast)(sum)(cmd),label={[font=\sffamily\tiny\bfseries,text=cInk]above:ONLY THE RESIDUAL IS UPDATED REACTIVELY}] {};
   \end{scope}
 \end{tikzpicture}
 \end{document}

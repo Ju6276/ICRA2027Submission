@@ -30,7 +30,7 @@ citecolor=blue
 \title{
 \vspace{0.2cm}
 \LARGE \bf 
-ForceRes-VLA: High-Frequency Force Residual Learning\\for Contact-Rich Manipulation
+ForceDelta-VLA: Distilling Force-Conditioned Action\\Corrections for Contact-Rich Manipulation
 }
 
  % \newcommand{\isanonymous}{}  % 
@@ -92,7 +92,7 @@ ForceRes-VLA: High-Frequency Force Residual Learning\\for Contact-Rich Manipulat
       \centering
       \includegraphics[width=0.80\linewidth,height=0.16\textheight,keepaspectratio]{figures/fig01_teaser.pdf}
       % \vspace{-0.2in}
-      \captionof{figure}{ForceRes-VLA distills a high-rate correction policy from paired queries of one frozen force-aware teacher. The full query uses the measured force history; the null query uses an adapted null-force mode. With the vision--language prefix and flow noise shared, their action-space deviation defines a force-conditioned residual target. At deployment, the null-mode teacher supplies a slow reference and a lightweight student updates only its pose correction at the force-sensing rate.
+      \captionof{figure}{ForceDelta-VLA learns a force-reactive correction through counterfactual residual distillation. A frozen teacher is queried with the measured force history and with an adapted null-force condition while sharing its visual--language prefix and flow noise. Their difference supervises a compact residual student, and the null-mode prediction supplies the slow reference at deployment.
       }
       \label{fig:teaser}
       \vspace{-0.1in}
@@ -104,7 +104,7 @@ ForceRes-VLA: High-Frequency Force Residual Learning\\for Contact-Rich Manipulat
 \pagestyle{empty}
 \setcounter{figure}{1}
 \begin{abstract}
-Force feedback can expose contact events that are invisible in images, but exploiting it at sensor rate remains difficult for Vision-Language-Action (VLA) policies. Existing slow--fast designs cache visual--language features yet repeatedly regenerate complete action chunks in their fast branch, leaving flow-matching inference on the critical control path. We introduce ForceRes-VLA, a residual distillation framework that assigns the fast branch a smaller problem: predicting how a force-conditioned teacher deviates from an adapted null-force mode. A frozen temporal force-aware teacher is evaluated in paired full and null modes while sharing its visual--language prefix and initial flow noise. The resulting action-space difference provides explicit conditional-residual supervision, and the null-mode prediction supplies the slow reference; thus, no separate reference policy is trained. A lightweight causal student uses native-rate force history, cached task context, robot state, and reference age to update pose corrections asynchronously. Timing randomization over slow-policy period, latency, and jitter makes the student robust to deployment schedules. On an RTX~4090, the residual path requires $2.4$~ms per update ($417$~Hz), compared with $76.1$~ms ($13$~Hz) for a ten-step cached-prefix action expert. We evaluate the method on eight single-arm and bimanual tasks using task success, interaction safety, contact recovery, residual fidelity, and runtime.
+Force feedback reveals contact dynamics that may be unobservable in images, yet force-aware Vision-Language-Action (VLA) policies remain costly to update because their reactive pathway regenerates complete action chunks. We introduce ForceDelta-VLA, which replaces full-action regeneration with \emph{counterfactual residual distillation}. A frozen temporal force-aware teacher is queried twice for the same visual observation, instruction, and robot state: a factual query uses the measured force history, while a counterfactual query uses an adapted null-force condition. Sharing the visual--language prefix and initial flow noise couples the two predictions, and their action-space difference defines an explicit target for force-responsive correction. The counterfactual prediction supplies a slow reference, while a lightweight causal student combines native-rate force history, cached task context, robot state, and reference age to update only the pose residual. Timing-randomized training exposes the student to the context staleness encountered during asynchronous execution. We evaluate ForceDelta-VLA on eight single-arm and bimanual tasks using task success, interaction forces, recovery behavior, residual fidelity, and execution cost.
 % TODO(submission): add the principal task-level result after completing the robot evaluation.
 \end{abstract}
 
