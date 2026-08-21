@@ -108,7 +108,7 @@ The teacher is a stochastic sampler, so two independent queries would differ by 
     \epsilon \sim \mathcal{N}(0,I).
     \label{eq:teacher_null}
 \end{align}
-Sec.~\ref{sec:exp_ablation} reports what happens when $\epsilon$ is drawn independently. Reusing the prefix additionally halves the cost of extraction, the vision--language pass being its dominant term.
+The draw is keyed deterministically to the sample index rather than to sampler state, so the pairing holds even when the two branches are evaluated in separate passes over the dataset. Sec.~\ref{sec:exp_ablation} reports what happens when $\epsilon$ is drawn independently. Reusing the prefix additionally halves the cost of extraction, the vision--language pass being its dominant term.
 
 The counterfactual prediction is the reference,
 \begin{equation}
@@ -215,7 +215,7 @@ The two terms differ in what they constrain: Eq.~\eqref{eq:res_loss} keeps the s
 \subsection{Timing-Randomized Training and Asynchronous Execution}
 \label{sec:rate_agnostic}
 
-The reference age depends on the slow policy's rate and inference latency, neither of which is fixed in practice. A student trained at one operating point learns that point, so we treat timing as a distribution rather than a setting. Targets are extracted once at the full observation rate, and each epoch redraws a slow update period from $[1/f_{\max}, 1/f_{\min}]$, an inference latency $\ell$ from $[\ell_{\min},\ell_{\max}]$, and per-update jitter from $[-\eta,\eta]$. A packet published at $t_k$ becomes usable only at $t_k+\ell$, control instants before that are excluded, and a packet overtaken in flight by a newer one is discarded. Since the student never sees a zero-age context, it is never trained on a condition unattainable on hardware.
+The reference age depends on the slow policy's rate and inference latency, neither of which is fixed in practice. A student trained at one operating point learns that point, so we treat timing as a distribution rather than a setting. Targets are extracted once at the full observation rate, and every $N_\tau$ training steps we redraw a slow update period from $[1/f_{\max}, 1/f_{\min}]$, an inference latency $\ell$ from $[\ell_{\min},\ell_{\max}]$, and per-update jitter from $[-\eta,\eta]$, then reassign packets to control instants. A packet published at $t_k$ becomes usable only at $t_k+\ell$, control instants before that are excluded, and a packet overtaken in flight by a newer one is discarded. Since the student never sees a zero-age context, it is never trained on a condition unattainable on hardware.
 
 Rather than infer the operating point, the student is told it,
 \begin{equation}
@@ -238,14 +238,14 @@ where $c$ is a fixed scale covering the randomized band and $t_j$ the chunk wayp
 \REQUIRE demonstrations $\mathcal{D}$, frozen teacher $T_\theta$, chunk length $K$
 \STATE optimize $z_{\varnothing F}$, $(W_{\mathrm{in}},W_{\mathrm{out}})$ by Eq.~\eqref{eq:null_training}
 \FOR{each observation $k$ in $\mathcal{D}$}
-\STATE compute prefix $H_k$ and its key/value cache; draw $\epsilon\sim\mathcal{N}(0,I)$
-\STATE $A^{\mathrm{full}}_{T,k}\!\leftarrow\!T_\theta(\cdot,z_k^F;\epsilon)$, \quad $A^{\mathrm{null}}_{T,k}\!\leftarrow\!T_\theta(\cdot,z_{\varnothing F};\epsilon)$
+\STATE compute prefix $H_k$ and its key/value cache; key $\epsilon_k\sim\mathcal{N}(0,I)$ to $k$
+\STATE $A^{\mathrm{full}}_{T,k}\!\leftarrow\!T_\theta(\cdot,z_k^F;\epsilon_k)$, \quad $A^{\mathrm{null}}_{T,k}\!\leftarrow\!T_\theta(\cdot,z_{\varnothing F};\epsilon_k)$
 \STATE $Z_k^{\mathrm{intent}}\!\leftarrow\!\mathrm{Pool}_M(H_k,m_k)$; \; $\Delta A^{\mathrm{cf}}_{T,k}$ by Eq.~\eqref{eq:teacher_residual}
 \STATE store $(A^{\mathrm{null}}_{T,k},\,\Delta A^{\mathrm{cf}}_{T,k},\,Z_k^{\mathrm{intent}},\,t_k)$
 \ENDFOR
-\FOR{each training epoch}
-\STATE redraw slow period, latency $\ell$, and jitter; assign packets to observations
-\STATE form $A^{\mathrm{ref}}(t)$ and $\gamma_t$ by Eq.~\eqref{eq:time_features}
+\FOR{each training step}
+\STATE every $N_\tau$ steps: redraw slow period, latency $\ell$, and jitter; reassign packets
+\STATE form $A^{\mathrm{ref}}(t)$, window $\mathcal{F}_t$, and $\gamma_t$ by Eq.~\eqref{eq:time_features}
 \STATE minimize Eq.~\eqref{eq:total_loss} over the student
 \ENDFOR
 \ENSURE reactive residual student
