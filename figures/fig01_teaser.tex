@@ -21,39 +21,45 @@
                  text width=27mm,font=\sffamily\scriptsize\bfseries},
   student/.style={rounded corners=3pt,line width=1.1pt,align=center,minimum height=17mm,
                   text width=30mm,font=\sffamily\small\bfseries},
+  slowbox/.style={rounded corners=3pt,draw=cSlow,fill=cSlow!9,line width=1pt,align=center,
+                  minimum height=17mm,text width=30mm,font=\sffamily\scriptsize\bfseries},
+  bad/.style={rounded corners=2pt,draw=cInk!45,fill=gray!8,line width=0.7pt,align=center,
+              text width=33mm,font=\sffamily\tiny},
+  good/.style={rounded corners=2pt,draw=cFast,fill=cFast!12,line width=0.9pt,align=center,
+               text width=33mm,font=\sffamily\tiny\bfseries},
   note/.style={font=\sffamily\tiny,align=center,text=cInk!75}
 }
 
 \begin{document}
 \begin{tikzpicture}[node distance=4mm and 8mm]
   \node[data] (vls) {Vision $V_k$\\Language $L$\\State $S_k$};
-  \node[data,below=3mm of vls] (force) {Native-rate force history\\$\mathcal{F}_k=F_{t-w:t}$};
+  \node[data,below=3mm of vls] (force) {Native-rate force history\\$\mathcal{F}_k=F_{t_k-w:t_k}$};
 
   \node[teacher,right=9mm of $(vls.east)!0.5!(force.east)$] (teach)
-    {Temporal\\Force-Aware\\VLA Teacher};
+    {Frozen Temporal\\Force-Aware\\VLA Teacher};
   \draw[flow] (vls.east) -- ([yshift=4mm]teach.west);
   \draw[flow,draw=cFast] (force.east) -- ([yshift=-4mm]teach.west);
 
   \node[query,right=9mm of teach,yshift=7mm] (full)
-    {Observed-force query\\$A_T^{\mathrm{full}}$};
+    {Observed-force query\\$A_T^{\mathrm{full}}(\epsilon)$};
   \node[query,right=9mm of teach,yshift=-7mm] (null)
-    {Null-force query\\$A_T^{\mathrm{null}}$};
+    {Null-force query\\$A_T^{\mathrm{null}}(\epsilon)$};
   \draw[flow,draw=cTeacher] (teach.east) -- (full.west);
   \draw[flow,draw=cTeacher] (teach.east) -- (null.west);
-  \node[note,below=0.5mm of null] {learned $z_{\varnothing F}$};
+  \node[note,below=0.5mm of null,text width=30mm] {learned $z_{\varnothing F}$, shared prefix\\and shared noise $\epsilon$};
 
   \node[target,draw=cNom,fill=cNom!10,right=10mm of full] (nom)
-    {Nominal target\\$A_T^{\mathrm{nom}}=A_T^{\mathrm{null}}$};
+    {Slow reference\\$A^{\mathrm{ref}}\!\leftarrow\!A_T^{\mathrm{null}}$};
   \node[target,draw=cRes,fill=cRes!9,right=10mm of null] (res)
-    {Residual target\\$\Delta A_T^F=A_T^{\mathrm{full}}-A_T^{\mathrm{null}}$};
+    {Force-attributable target\\$\Delta A_T^F=A_T^{\mathrm{full}}\!-\!A_T^{\mathrm{null}}$};
   \draw[flow,draw=cNom] (null.east) -- ++(4mm,0) |- (nom.west);
   \draw[flow,draw=cRes] (full.east) -- ++(3mm,0) |- ([yshift=2mm]res.west);
   \draw[flow,draw=cRes] (null.east) -- ++(5mm,0) |- ([yshift=-2mm]res.west);
 
-  \node[student,draw=cSlow,fill=cSlow!9,right=9mm of nom] (slow)
-    {Slow Nominal VLA\\$A^{\mathrm{ref}},\;Z^{\mathrm{intent}}$};
+  \node[slowbox,right=9mm of nom] (slow)
+    {Cached chunk + intent\\interpolated, age known};
   \node[student,draw=cFast,fill=cFast!10,right=9mm of res] (fast)
-    {Fast Force Residual\\$\Delta A$};
+    {Fast Residual Student\\$44.7$\,M, one pass\\$\Delta\hat{A}_{1:K}$};
   \draw[flow,draw=cNom] (nom.east) -- (slow.west);
   \draw[flow,draw=cRes] (res.east) -- (fast.west);
 
@@ -62,17 +68,23 @@
   \draw[flow,draw=cSlow] (slow.east) -- ++(4mm,0) |- (sum.north);
   \draw[flow,draw=cFast] (fast.east) -- ++(4mm,0) |- (sum.south);
   \node[data,right=6mm of sum,text width=23mm,draw=cInk,fill=cInk!5] (cmd)
-    {Robot command\\$A^{\mathrm{cmd}}=A^{\mathrm{ref}}+\Delta A$};
+    {Robot command\\$A^{\mathrm{cmd}}=A^{\mathrm{ref}}+\Delta\hat{A}$};
   \draw[flow] (sum.east) -- (cmd.west);
 
-  \node[note,above=1mm of slow] {slow VLA rate};
-  \node[note,below=1mm of fast] {fast control rate};
+  \node[note,above=1mm of slow] {$5$--$15$ Hz};
+
+  % The punchline: what the high-rate path costs, before and after.
+  \node[bad,below=7mm of fast] (before)
+    {prior fast branch: cached prefix,\\action expert $\times$ $10$ flow steps\\$76.1$\,ms $\rightarrow$ $13$\,Hz};
+  \node[good,below=2mm of before] (after)
+    {ours: residual only, one pass\\$2.4$\,ms $\rightarrow$ $417$\,Hz \ \ ($31.8\times$)};
+  \draw[dashed,line width=0.6pt,draw=cInk!50] (fast.south) -- (before.north);
 
   \begin{scope}[on background layer]
     \node[rounded corners=4pt,draw=cTeacher!35,fill=cTeacher!2,inner sep=3mm,
-          fit=(teach)(full)(null),label={[font=\sffamily\tiny\bfseries,text=cTeacher]above:ONE FROZEN TEACHER, TWO CONDITIONS}] {};
+          fit=(teach)(full)(null),label={[font=\sffamily\tiny\bfseries,text=cTeacher]above:ONE FROZEN TEACHER, TWO FORCE CONDITIONS}] {};
     \node[rounded corners=4pt,draw=cInk!25,fill=gray!2,inner sep=3mm,
-          fit=(slow)(fast)(sum)(cmd),label={[font=\sffamily\tiny\bfseries,text=cInk]above:ASYNCHRONOUS NOMINAL--RESIDUAL DEPLOYMENT}] {};
+          fit=(slow)(fast)(sum)(cmd),label={[font=\sffamily\tiny\bfseries,text=cInk]above:ONLY THE RESIDUAL RUNS AT SENSOR RATE}] {};
   \end{scope}
 \end{tikzpicture}
 \end{document}

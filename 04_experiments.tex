@@ -1,98 +1,144 @@
 \subsection{Experimental Objectives}
 \label{sec:exp_objectives}
 
-Our evaluation is designed to answer four questions. First, does native-rate temporal force history improve the unified teacher over instantaneous or visually synchronized force input? Second, does the learned null-force condition produce a useful behavioral decomposition into nominal and force-conditioned components? Third, can the distilled slow--fast students preserve the teacher's task performance while improving contact responsiveness? Finally, which architectural inputs and loss terms are necessary for the fast branch to learn corrective rather than redundant nominal behavior?
+Our evaluation answers four questions, in order of how much of the paper depends on them. First, does supervising the high-rate branch with the force-attributable deviation rather than the full action actually change the attainable control rate? Second, is there enough signal in that deviation for a small student to learn, and does the student use force rather than inferring corrections from context? Third, does executing at the sensor rate improve contact outcomes over the $13$--$33$~Hz that a cached-prefix action expert attains? Fourth, does randomized-timing training let one student transfer across deployment rates?
+
+The first question is settled by measurement and is reported below. The third is the one on which the contribution stands or falls: a favorable latency table is worthless if reacting at $100$~Hz does not improve contact behavior, and we state in Sec.~\ref{sec:exp_criteria} the outcomes that would refute the decomposition.
+
+\subsection{Attainable Rate of the High-Rate Path}
+\label{sec:exp_latency}
+
+We measure the per-update cost of the two designs on the same device, an RTX~4090, at batch size one. For the cached-prefix baseline we supply the vision--language key/value cache directly and time one action-expert forward over $816$ prefix tokens and $51$ suffix tokens, then multiply by the sampler's denoising steps; the vision--language expert is replaced by a narrow placeholder that is never executed, so the measurement isolates the incremental cost that caching leaves behind. For our student we time one full forward pass including the force encoder and the intent projector.
+
+\begin{table}[t]
+    \centering
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \caption{Per-update cost of the high-rate path (RTX~4090, batch size $1$, vision--language prefix cached in both rows). The action expert is the design used by cached-prefix fast branches; $N_{\mathrm{flow}}$ is its denoising step count. Measured under concurrent GPU load, so both rows are conservative.}
+    \label{tab:latency}
+    \begin{tabular}{lccc}
+        \toprule
+        \textbf{High-rate path} & \textbf{Params} & \textbf{Latency} & \textbf{Rate} \\
+        \midrule
+        Action expert, $N_{\mathrm{flow}}{=}1$ & $334$~M & $7.6$~ms & $132$~Hz \\
+        Action expert, $N_{\mathrm{flow}}{=}4$ & $334$~M & $30.4$~ms & $33$~Hz \\
+        Action expert, $N_{\mathrm{flow}}{=}10$ & $334$~M & $76.1$~ms & $13$~Hz \\
+        \midrule
+        \textbf{Residual student (ours)} & $\mathbf{44.7}$~\textbf{M} & $\mathbf{2.4}$~\textbf{ms} & $\mathbf{417}$~\textbf{Hz} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Table~\ref{tab:latency} shows a $31.8\times$ reduction at the standard $N_{\mathrm{flow}}{=}10$ setting. Two observations matter more than the ratio. First, the $13$~Hz figure is consistent with the $15$~Hz that ForceVLA2 reports on the same GPU class~\cite{li2026forcevla2}, which supports the measurement being faithful rather than an artifact of our harness. Second, a \emph{single} action-expert forward already consumes $76\%$ of a $10$~ms budget, so the limitation is not a step-count choice that could be tuned away: reaching $100$~Hz with that path would require one-step flow matching, which is not a usable sampler for this policy class. Our student clears the same budget with a factor of four in reserve.
 
 \subsection{Tasks and Evaluation Protocol}
 \label{sec:exp_protocol}
 
-We evaluate on contact-rich manipulation tasks that require both semantic task progression and rapid physical adaptation. The benchmark should cover four complementary interaction regimes: contact establishment, constrained motion along a surface or mechanism, precision insertion or assembly, and recovery from externally induced disturbances. For every task, training demonstrations contain synchronized multi-view visual observations, language instructions, robot states, commanded actions, and timestamped six-axis force/torque measurements. Force is retained at its native sensing rate; visual and policy observations keep their original timestamps.
+We evaluate on contact-rich manipulation tasks spanning four interaction regimes: contact establishment, constrained motion along a surface or mechanism, precision insertion, and recovery from externally induced disturbance. At least one task must be one in which force closure is necessary --- where a vision-only policy fails outright --- since that is the regime in which a force-attributable correction can be decisive. For every task, demonstrations contain synchronized multi-view images, language instructions, robot states, commanded actions, and timestamped six-axis force/torque measurements retained at their native rate.
 
-% TODO: Replace the bracketed fields after the final robot tasks and dataset split are fixed.
-We report results over \textbf{[N]} evaluation trials per task using \textbf{[K]} random seeds. Object configurations, initial robot poses, and contact conditions are randomized within the task-specific workspace. A trial is successful only if the task goal is completed without violating the predefined safety limits. All methods are trained on the same demonstration split and evaluated with the same control interface and hardware.
+% TODO: Fix N, K, and the task list once the robot evaluation is scheduled.
+We report \textbf{[N]} trials per task over \textbf{[K]} seeds, randomizing object configuration, initial pose, and contact conditions. A trial succeeds only if the goal is reached without violating predefined force limits. All methods share the demonstration split, the control interface, and the hardware.
 
 \subsection{Baselines and Metrics}
 \label{sec:exp_baselines}
 
-We compare the following policy families:
 \begin{enumerate}
-    \item \textbf{Vision--language nominal policy:} a non-force VLA executed without a fast residual branch;
-    \item \textbf{Instantaneous-force VLA:} the ForceVLA teacher using only the force observation aligned with the current visual frame;
-    \item \textbf{Temporal force-aware teacher:} our unified teacher with the causal temporal force encoder;
-    \item \textbf{Direct slow--fast behavior cloning:} the same student architecture trained only from final demonstrated actions, without teacher-guided nominal--residual targets;
-    \item \textbf{FoRe-VLA:} the complete teacher-guided force-residual distillation and asynchronous execution framework.
+    \item \textbf{Vision--language policy:} no force input and no high-rate branch.
+    \item \textbf{Instantaneous-force teacher:} force sampled only at the visual frame, isolating the value of native-rate history.
+    \item \textbf{Temporal force-aware teacher:} our teacher, executed as a monolithic policy at its attainable rate. This is the performance ceiling our students are distilled from and the rate floor they must beat.
+    \item \textbf{Cached-prefix fast branch:} the teacher's action expert re-run against the cached prefix, in the manner of FAVLA and LIFT~\cite{li2026favla,lv2026lift}, executed at the rate Table~\ref{tab:latency} permits. This is the baseline the contribution is measured against.
+    \item \textbf{Direct slow--fast behavior cloning:} our student architecture trained from demonstrated actions alone, without paired teacher targets. Isolates the supervision from the architecture.
+    \item \textbf{FoRe-VLA:} the full method.
 \end{enumerate}
 
-Task performance is measured by task success rate and, where applicable, stage-wise completion rate. Physical interaction quality is measured using peak force, force impulse, contact-limit violations, and recovery success after a disturbance. To evaluate the decomposition itself, we report the nominal imitation error $d(A^{\mathrm{ref}},A_T^{\mathrm{null}})$, residual imitation error $d(\Delta A,\Delta A_T^F)$, and composed action error $d(A^{\mathrm{ref}}+\Delta A,A_T^{\mathrm{full}})$. Runtime metrics include slow-policy frequency, fast-policy frequency, end-to-end action latency, and parameter count.
+Task metrics are success rate and stage-wise completion. Interaction quality is measured by peak force, force impulse, limit violations, and post-disturbance recovery rate. Decomposition quality is measured by residual error $d(\Delta \hat{A},\Delta A_T^F)$ and composed error $d(A^{\mathrm{ref}}{+}\Delta \hat{A},A_T^{\mathrm{full}})$, each reported against a zero-residual baseline so that the numbers state how much of the deviation was actually captured. Errors are reported in physical units on the reconstructed absolute pose, not on normalized deltas, and separately for translation and rotation. Runtime metrics are slow rate, fast rate, end-to-end latency, and parameter count.
 
 \subsection{Implementation Details}
 \label{sec:exp_implementation}
 
-The temporal teacher uses force windows of duration $w_T=\textbf{[TBD]}$ sampled directly from the timestamped force stream. The fast student uses a shorter causal window $w_S=\textbf{[TBD]}$ and executes at \textbf{[TBD]}~Hz, whereas the slow VLA updates its nominal action chunk and intent tokens at \textbf{[TBD]}~Hz. The slow student predicts chunks of horizon $H=\textbf{[TBD]}$. All action losses use the same distance function $d(\cdot,\cdot)$ as defined in the method, with weights $\lambda_{\mathrm{nom}}$, $\lambda_{\mathrm{res}}$, $\lambda_{\mathrm{comp}}$, and $\lambda_{\mathrm{BC}}$ selected on a held-out validation split. The unified teacher is frozen before null-token adaptation and student distillation.
+The teacher is a $\pi_0$-style ForceVLA with LoRA adapters on both the vision--language backbone and the action expert, an action horizon of $H{=}50$ at a $30$~Hz action rate. Its causal TCN force encoder reads a $100$~ms window from the timestamped stream at $100$~Hz, rejecting samples older than $12$~ms. Null adaptation uses rank $\rho{=}32$ on the $9$ pose channels. Target extraction uses $N_{\mathrm{flow}}{=}10$ and pools the prefix into $M{=}16$ bins of width $2048$.
+
+The student uses one attention block of width $1024$, MLP dimension $4096$, $8$ query heads over $1$ key/value head, head dimension $256$, intent width $1024$, and emits $K{=}5$ steps with step decay $\beta{=}0.5$; its force encoder reads the same $100$~ms window at $100$~Hz. Randomized timing draws the slow rate from $[5,15]$~Hz, the inference latency from $[50,300]$~ms, and per-update jitter from $\pm10$~ms, with age scale $c{=}0.6$~s chosen to cover that band without clipping. Demonstrations are restricted to episodes whose force stream sustains at least $100$~Hz.
 
 \subsection{Main Comparison}
 \label{sec:exp_main}
-
-Table~\ref{tab:main_results} is structured to test whether explicit behavioral decomposition improves the performance--responsiveness trade-off. In addition to overall task success, the contact metrics distinguish policies that merely complete a task from policies that react safely and consistently during physical interaction.
 
 \begin{table*}[t]
     \centering
     \small
     \setlength{\tabcolsep}{5pt}
-    \caption{Main comparison on contact-rich manipulation. Values are intentionally left open until the evaluation is complete. Higher is better for success and recovery; lower is better for force, latency, and violations.}
+    \caption{Main comparison on contact-rich manipulation. Higher is better for success and recovery; lower is better for force, latency, and violations. Values pending the robot evaluation.}
     \label{tab:main_results}
     \begin{tabular}{lcccccc}
         \toprule
         \textbf{Method} & \textbf{Success (\%)} & \textbf{Recovery (\%)} & \textbf{Peak Force} & \textbf{Violations} & \textbf{Latency (ms)} & \textbf{Fast Rate (Hz)} \\
         \midrule
-        Vision--language nominal policy & -- & -- & -- & -- & -- & -- \\
-        Instantaneous-force VLA & -- & -- & -- & -- & -- & -- \\
+        Vision--language policy & -- & -- & -- & -- & -- & -- \\
+        Instantaneous-force teacher & -- & -- & -- & -- & -- & -- \\
         Temporal force-aware teacher & -- & -- & -- & -- & -- & -- \\
-        Direct slow--fast behavior cloning & -- & -- & -- & -- & -- & -- \\
-        \textbf{FoRe-VLA (ours)} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} \\
+        Cached-prefix fast branch~\cite{li2026favla,lv2026lift} & -- & -- & -- & -- & $76.1$ & $13$ \\
+        Direct slow--fast behavior cloning & -- & -- & -- & -- & $2.4$ & $417$ \\
+        \textbf{FoRe-VLA (ours)} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & $\mathbf{2.4}$ & $\mathbf{417}$ \\
         \bottomrule
     \end{tabular}
 \end{table*}
 
-The final analysis should separately discuss free-space motion, initial contact, sustained contact, and disturbance recovery. This separation is important because the expected benefit of the fast residual branch is concentrated around physical interaction; similar free-space behavior between the nominal and composed policies would therefore be evidence of specialization rather than a negative result.
+Results are analyzed separately for free-space motion, contact onset, sustained contact, and disturbance recovery. This separation matters because the correction is expected to be concentrated around interaction: nominal and composed policies behaving alike in free space is evidence of specialization, not a negative result.
 
-\subsection{Analysis of Teacher-Guided Decomposition}
+\subsection{Execution Rate Ablation}
+\label{sec:exp_rate}
+
+This is the decisive experiment. We hold the trained student fixed and cap its execution rate at $13$, $30$, $50$, and $100$~Hz, matching the first three to what Table~\ref{tab:latency} permits for a cached-prefix action expert, and measure peak contact force, impulse, and success. We additionally replay matched contact events under three settings --- slow branch only, slow and fast synchronized at the slow rate, and full asynchronous execution --- reporting the delay from a detected force change to the first corrective command, the maximum force before recovery, and the time to return to the nominal trajectory.
+
+If contact outcomes at $100$~Hz do not improve on $30$~Hz, the latency advantage of Table~\ref{tab:latency} buys nothing and the frequency-decomposition argument fails, independently of how well the residual is fit.
+
+\subsection{Analysis of the Counterfactual Decomposition}
 \label{sec:exp_decomposition}
 
-We directly inspect the paired teacher predictions used to construct the distillation targets. For each trajectory, we plot the magnitude of $\Delta A_T^F=A_T^{\mathrm{full}}-A_T^{\mathrm{null}}$ together with measured force and task phase. A useful decomposition should yield small residuals during unconstrained nominal motion and larger, structured corrections near contact onset, force transients, and recovery events. We additionally compare the learned null-force token with two alternatives: a zero force vector and random force-token masking. This experiment tests whether learned null conditioning provides a useful non-force-conditioned reference rather than an out-of-distribution physical zero. It does not treat the output difference as causal force attribution.
+We inspect the paired teacher predictions used as targets. For each trajectory we plot $\lVert\Delta A_T^F\rVert$ against measured force and task phase; a useful decomposition yields small deviations during unconstrained motion and larger, structured ones near contact onset, transients, and recovery.
+
+We compare the learned null condition against two alternatives that prior work uses: a zero force vector, matching zero-padding interventions~\cite{idr2026causal}, and random force-token masking. This tests our claim in Sec.~\ref{sec:null_decomp} that a learned null mode keeps the teacher in distribution, whereas a zero-padded input conflates the force contribution with the teacher's degradation under an invalid input. We also report the teacher-to-demonstration gap $d(A_T^{\mathrm{full}},A^{\mathrm{expert}})$ broken down by translation, rotation, and gripper, since it bounds what any student distilled from this teacher can achieve.
+
+\subsection{Refutation Criteria}
+\label{sec:exp_criteria}
+
+We fix the thresholds before reporting, so that a weak decomposition is recognized as such rather than rationalized. Let $\sigma_F^2 = \mathbb{E}\lVert\Delta A_T^F\rVert^2$ be the energy of the force-attributable deviation and $\sigma_R^2 = \mathbb{E}\lVert A^{\mathrm{ref}} - A_T^{\mathrm{null}}\rVert^2$ the reference error the slow branch incurs from staleness alone.
+
+\begin{enumerate}
+    \item \textbf{Signal magnitude.} $\sigma_F^2/\sigma_R^2 \geq 1$ indicates the force-attributable component is at least comparable to the staleness error and is worth a dedicated branch. Below $0.25$ the composed error is dominated by reference staleness, and raising the slow rate would be the better intervention.
+    \item \textbf{Force dependence.} The reduction in residual error relative to a zero-residual baseline must exceed that of a force-ablated student by at least $10$ percentage points. If zeroing the force input barely degrades the student, it is inferring corrections from intent, state, and reference, and the premise of the method is void.
+    \item \textbf{Contact locality.} The margin in criterion~2 must be larger in contact strata than in free space. If it is not, the student has learned something that is not contact-driven.
+\end{enumerate}
 
 \subsection{Ablation Studies}
 \label{sec:exp_ablation}
 
-We perform four groups of ablations:
 \begin{enumerate}
-    \item \textbf{Temporal force representation:} instantaneous force, force history downsampled to the visual rate, and native-rate causal force history;
-    \item \textbf{Decomposition strategy:} no decomposition, zero-force subtraction, learned null-force subtraction, and the complete frozen-teacher adaptation;
-    \item \textbf{Fast-policy context:} removing slow-policy intent, current robot state, nominal reference action, or the multi-token force sequence;
-    \item \textbf{Training objective:} removing $\mathcal{L}_{\mathrm{nom}}$, $\mathcal{L}_{\mathrm{res}}$, $\mathcal{L}_{\mathrm{comp}}$, or $\mathcal{L}_{\mathrm{BC}}$ individually.
+    \item \textbf{Force representation:} instantaneous, history downsampled to the visual rate, and native-rate causal history.
+    \item \textbf{Counterfactual construction:} learned null condition, zero-force padding, learned token without the rank-$\rho$ adapter, and independent rather than shared flow noise. The last isolates the claim in Sec.~\ref{sec:teacher_differencing} that noise coupling is necessary for the target to be meaningful.
+    \item \textbf{Student context:} removing cached intent, state, the reference token, the time token, or the multi-token force sequence.
+    \item \textbf{Timing scheme:} fixed slow rate and latency versus randomized, evaluated at both the trained operating point and unseen rates, to test rate transfer.
+    \item \textbf{Chunk emission:} $K{=}1$ versus $K{=}5$ under injected inference stalls.
 \end{enumerate}
 
 \begin{table}[t]
     \centering
     \small
     \setlength{\tabcolsep}{3pt}
-    \caption{Template for the principal ablations. The final version should report both task and physical-interaction metrics.}
+    \caption{Principal ablations. The final version reports both task and interaction metrics.}
     \label{tab:ablation}
     \begin{tabularx}{\columnwidth}{>{\raggedright\arraybackslash}Xccc}
         \toprule
         \textbf{Variant} & \textbf{Success (\%)} & \textbf{Residual Error} & \textbf{Violations} \\
         \midrule
         Full model & -- & -- & -- \\
-        Without temporal force history & -- & -- & -- \\
-        Without learned null-force token & -- & -- & -- \\
-        Without intent context & -- & -- & -- \\
-        Without $\mathcal{L}_{\mathrm{res}}$ & -- & -- & -- \\
-        Without $\mathcal{L}_{\mathrm{comp}}$ & -- & -- & -- \\
+        Zero-force padding instead of learned null & -- & -- & -- \\
+        Independent instead of shared flow noise & -- & -- & -- \\
+        Without native-rate force history & -- & -- & -- \\
+        Without cached intent & -- & -- & -- \\
+        Without time token & -- & -- & -- \\
+        Fixed instead of randomized timing & -- & -- & -- \\
+        $K{=}1$ instead of $K{=}5$ & -- & -- & -- \\
         \bottomrule
     \end{tabularx}
 \end{table}
-
-\subsection{Asynchronous Execution and Disturbance Recovery}
-\label{sec:exp_async}
-
-To isolate the benefit of multi-rate execution, we replay matched contact events under three deployment settings: slow policy only, slow and fast policies synchronized at the VLA rate, and the complete asynchronous controller. We measure the delay from a detected force change to the first corrective command, the maximum force reached before recovery, and the time required to return to the nominal trajectory. These measurements test whether the fast branch provides a genuine control advantage beyond architectural capacity or additional force input.
