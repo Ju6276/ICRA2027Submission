@@ -32,7 +32,7 @@ Table~\ref{tab:latency} reports a $31.8\times$ reduction at the standard $N_{\ma
 \subsection{Tasks and Protocol}
 \label{sec:exp_protocol}
 
-We evaluate on eight real-robot tasks, four single-arm and four bimanual, listed in Table~\ref{tab:tasks}. They span the interaction regimes in which force feedback is expected to matter: precision insertion and extraction under geometric constraint, sustained surface contact requiring force regulation, constrained motion along an articulated mechanism, and contact establishment against a force threshold. For every task, demonstrations contain synchronized multi-view images, language instructions, robot states, commanded actions, and timestamped six-axis force/torque measurements retained at their native rate.
+We evaluate on eight real-robot tasks, four single-arm and four bimanual, listed in Table~\ref{tab:tasks}. They span the interaction regimes in which force feedback is expected to matter: contact establishment against a force threshold, sustained surface contact requiring force regulation, constrained motion along an articulated mechanism, and precision insertion and extraction under geometric constraint. Wiping appears in both settings, with the single-arm variant acting on a fixed board and the bimanual variant on a board held by the other arm, so that the contact loop closes through two moving limbs. For every task, demonstrations contain synchronized multi-view images, language instructions, robot states, commanded actions, and timestamped six-axis force/torque measurements retained at their native rate.
 
 \begin{table}[t]
     \centering
@@ -45,16 +45,16 @@ We evaluate on eight real-robot tasks, four single-arm and four bimanual, listed
         \textbf{Task} & \textbf{Interaction regime} \\
         \midrule
         \multicolumn{2}{l}{\emph{Single-arm}} \\
-        Plug insertion & precision insertion, force closure \\
-        Plug removal & extraction under geometric constraint \\
+        Button pressing & contact establishment, force threshold \\
+        Object flipping & contact reconfiguration against a surface \\
         Whiteboard wiping & sustained contact, force regulation \\
-        Drawer opening & constrained motion, articulated \\
+        Cabinet door opening & constrained motion, articulated \\
         \midrule
         \multicolumn{2}{l}{\emph{Bimanual}} \\
-        Button pressing & contact establishment, force threshold \\
-        Object flipping & contact reconfiguration, coordination \\
-        Whiteboard wiping & sustained contact with a held surface \\
-        Cabinet door opening & constrained motion, articulated \\
+        Plug insertion & precision insertion, force closure \\
+        Plug removal & extraction under geometric constraint \\
+        Whiteboard wiping & sustained contact against a held surface \\
+        Drawer opening & coordinated constrained motion \\
         \bottomrule
     \end{tabularx}
 \end{table}
@@ -91,7 +91,7 @@ The student is a single attention block over the condition set of Eq.~\eqref{eq:
         \toprule
         & \multicolumn{4}{c}{\textbf{Single-arm}} & \multicolumn{4}{c}{\textbf{Bimanual}} & & \\
         \cmidrule(lr){2-5}\cmidrule(lr){6-9}
-        \textbf{Method} & Insert & Remove & Wipe & Drawer & Button & Flip & Wipe & Cabinet & \textbf{Avg.} & \textbf{Rate (Hz)} \\
+        \textbf{Method} & Button & Flip & Wipe & Cabinet & Insert & Remove & Wipe & Drawer & \textbf{Avg.} & \textbf{Rate (Hz)} \\
         \midrule
         $\pi_{0.5}$~\cite{black2025pi05} & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- \\
         ForceVLA~\cite{yu2025forcevla} & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- \\
