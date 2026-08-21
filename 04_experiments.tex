@@ -37,7 +37,7 @@ We evaluate button pressing, object flipping, USB insertion, and kitchen-door op
 
 We compare against four published policies. $\pi_{0.5}$~\cite{black2025pi05} is a vision--language policy without force input. ForceVLA~\cite{yu2025forcevla} fuses instantaneous force through a force-aware mixture of experts, and TA-VLA~\cite{zhang2025tavla} conditions its decoder on torque history. ImplicitRDP~\cite{chen2025implicitrdp} is a visual--force diffusion policy with structural slow--fast processing.
 
-The primary metric is task success rate. For each method and task, we evaluate two training seeds with ten trials per seed. We report success for each task and the mean success rate over the four single-arm and four bimanual tasks separately.
+The primary metric is task success rate. For each method and task, we evaluate two training seeds with ten trials per seed, and report per-task success together with the mean over the four single-arm and the four bimanual tasks separately. We additionally report two interaction metrics over successful trials: the peak contact force, taken as the maximum force magnitude recorded during the trial, and the task completion time. Both are averaged per task group.
 
 \subsection{Implementation Details}
 \label{sec:exp_implementation}
@@ -50,6 +50,7 @@ We freeze the teacher and optimize the null token and rank-$32$ null adapter for
 \label{sec:exp_main}
 
 \subsubsection{Task performance.}
+Table~\ref{tab:main_results} reports success rate, and Table~\ref{tab:interaction} the interaction metrics over successful trials.
 
 \begin{table*}[t]
     \centering
@@ -71,6 +72,27 @@ We freeze the teacher and optimize the null token and rank-$32$ null adapter for
         \bottomrule
     \end{tabular}
 \end{table*}
+
+\begin{table}[t]
+    \centering
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \caption{Interaction metrics over successful trials, averaged within each task group. Lower is better. Values pending the robot evaluation.}
+    \label{tab:interaction}
+    \begin{tabular}{lcccc}
+        \toprule
+        & \multicolumn{2}{c}{\textbf{Peak force} (N)} & \multicolumn{2}{c}{\textbf{Completion time} (s)} \\
+        \cmidrule(lr){2-3}\cmidrule(lr){4-5}
+        \textbf{Method} & Single & Bi. & Single & Bi. \\
+        \midrule
+        $\pi_{0.5}$~\cite{black2025pi05} & -- & -- & -- & -- \\
+        ForceVLA~\cite{yu2025forcevla} & -- & -- & -- & -- \\
+        TA-VLA~\cite{zhang2025tavla} & -- & -- & -- & -- \\
+        ImplicitRDP~\cite{chen2025implicitrdp} & -- & -- & -- & -- \\
+        \textbf{ForceDelta-VLA (ours)} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
 \subsection{Qualitative Results}
 
