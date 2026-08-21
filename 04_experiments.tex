@@ -29,7 +29,7 @@ We evaluate button pressing, object flipping, USB insertion, and cabinet-door op
         Plug insertion & precision insertion, force closure \\
         Plug removal & extraction under geometric constraint \\
         Whiteboard wiping & sustained contact against a held surface \\
-        Drawer opening & coordinated constrained motion \\
+        Drawer opening & friction-dominated articulated motion \\
         \bottomrule
     \end{tabularx}
 \end{table}
@@ -39,7 +39,7 @@ We evaluate button pressing, object flipping, USB insertion, and cabinet-door op
 
 We compare against four published policies. $\pi_{0.5}$~\cite{black2025pi05} is a vision--language policy without force input. ForceVLA~\cite{yu2025forcevla} fuses instantaneous force through a force-aware mixture of experts, and TA-VLA~\cite{zhang2025tavla} conditions its decoder on torque history. ImplicitRDP~\cite{chen2025implicitrdp} is a visual--force diffusion policy with structural slow--fast processing.
 
-The primary metric is task success rate. For each method and task, we evaluate two training seeds with ten trials per seed, and report per-task success together with the mean over the four single-arm and four bimanual tasks. We additionally report peak contact force over all trials and task completion time over successful trials. Peak contact force is the maximum force magnitude recorded before success or termination. Both interaction metrics are averaged separately for the single-arm and bimanual task groups.
+We evaluate two training seeds with ten trials per seed. We report per-task success rate and the mean over each platform. For successful trials, we additionally report peak contact force and task completion time, averaged separately over the single-arm and bimanual tasks. Lower values indicate safer interaction and faster execution, respectively.
 
 \subsection{Implementation Details}
 \label{sec:exp_implementation}
@@ -64,7 +64,17 @@ Table~\ref{tab:main_results} reports success rate for each task and the two plat
         \toprule
         & \multicolumn{4}{c}{\textbf{Single-arm}} & \multicolumn{4}{c}{\textbf{Bimanual}} & & \\
         \cmidrule(lr){2-5}\cmidrule(lr){6-9}
-        \textbf{Method} & Button & Flip & USB & Door & Insert & Remove & Wipe & Drawer & \textbf{Single Avg.} & \textbf{Bi. Avg.} \\
+        \textbf{Method}
+        & \shortstack{Button\\Press}
+        & \shortstack{Object\\Flip}
+        & \shortstack{USB\\Insertion}
+        & \shortstack{Cabinet\\Opening}
+        & \shortstack{Plug\\Insertion}
+        & \shortstack{Plug\\Removal}
+        & \shortstack{Board\\Wiping}
+        & \shortstack{Drawer\\Opening}
+        & \shortstack{\textbf{Single-arm}\\\textbf{Avg.}}
+        & \shortstack{\textbf{Bimanual}\\\textbf{Avg.}} \\
         \midrule
         $\pi_{0.5}$~\cite{black2025pi05} & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- \\
         ForceVLA~\cite{yu2025forcevla} & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- \\
@@ -78,14 +88,14 @@ Table~\ref{tab:main_results} reports success rate for each task and the two plat
 \begin{table}[t]
     \centering
     \small
-    \setlength{\tabcolsep}{4pt}
-    \caption{Interaction metrics averaged within each task group. Peak force is computed over all trials; completion time is computed over successful trials. Lower is better.}
+    \setlength{\tabcolsep}{3pt}
+    \caption{Interaction metrics over successful trials, averaged within each task group. Lower values indicate safer interaction and faster execution, respectively.}
     \label{tab:interaction}
     \begin{tabular}{lcccc}
         \toprule
         & \multicolumn{2}{c}{\textbf{Peak force} (N)} & \multicolumn{2}{c}{\textbf{Completion time} (s)} \\
         \cmidrule(lr){2-3}\cmidrule(lr){4-5}
-        \textbf{Method} & Single & Bi. & Single & Bi. \\
+        \textbf{Method} & {\scriptsize Single-arm} & {\scriptsize Bimanual} & {\scriptsize Single-arm} & {\scriptsize Bimanual} \\
         \midrule
         $\pi_{0.5}$~\cite{black2025pi05} & -- & -- & -- & -- \\
         ForceVLA~\cite{yu2025forcevla} & -- & -- & -- & -- \\
@@ -110,7 +120,7 @@ We categorize failed trials into three groups: perception or task-selection erro
 \label{sec:exp_ablation}
 
 \begin{enumerate}
-    \item \textbf{Prediction target:} a fast policy that predicts the complete factual-teacher action, a residual policy supervised by $\left(A_k^*\right)^p-\left(A_{T,k}^{\mathrm{null}}\right)^p$, and the proposed paired teacher residual.
+    \item \textbf{Prediction target:} a residual policy supervised by $\left(A_k^*\right)^p-\left(A_{T,k}^{\mathrm{null}}\right)^p$ and the proposed paired teacher residual.
     \item \textbf{Force representation:} instantaneous, history downsampled to the visual rate, and native-rate causal history.
     \item \textbf{Counterfactual construction:} zero-force input, a learned null token, the learned token with the null adapter, and independent rather than shared flow noise.
 \end{enumerate}
@@ -126,7 +136,6 @@ We categorize failed trials into three groups: perception or task-selection erro
         \textbf{Variant} & \textbf{Single-arm} & \textbf{Bimanual} \\
         \midrule
         Full model & -- & -- \\
-        Full-action fast branch & -- & -- \\
         Demonstration-derived residual & -- & -- \\
         Instantaneous force only & -- & -- \\
         Force history at $30$~Hz & -- & -- \\
