@@ -30,14 +30,17 @@
 \begin{document}
 \begin{tikzpicture}[x=1cm,y=1cm]
   % ---------------- Training ----------------
-  \node[tag,anchor=west] at (0,5.95) {TRAINING: PAIRED COUNTERFACTUAL TARGETS FROM A FROZEN TEACHER};
+  \node[tag,anchor=west] at (0,6.15) {THREE-STAGE TRAINING};
+  \node[rate,fill=cTeacher!12] at (5.9,6.15) {STAGE 1: TRAIN FORCE TEACHER};
+  \node[rate,fill=cNom!12] at (10.3,6.15) {STAGE 2: LEARN NULL MODE};
+  \node[rate,fill=cFast!12] at (15.2,6.15) {STAGE 3: PAIRED TARGETS + RESIDUAL DISTILLATION};
 
   \node[block] (obs) at (1.3,4.75) {Vision $V_k$, language $L$\\robot state $S_k$};
   \node[block,draw=cFast,fill=cFast!5] (fhist) at (1.3,3.45)
     {Native-rate F/T window\\$\mathcal{F}_k=F_{t_k-w:t_k}$};
   \node[block,draw=cFast,fill=cFast!8] (tcnT) at (4.05,3.45)
     {Causal temporal encoder\\$z_k^F=E_T^F(\mathcal{F}_k)$};
-  \node[teacher] (teacher) at (6.9,4.75) {Frozen Temporal\\Force-Aware VLA};
+  \node[teacher] (teacher) at (6.9,4.75) {Temporal Force-Aware VLA\\train Stage 1; then freeze};
   \draw[flow] (obs.east) -- (teacher.west);
   \draw[flow,draw=cFast] (fhist.east) -- (tcnT.west);
   \draw[flow,draw=cFast] (tcnT.east) -| ([xshift=-5mm,yshift=-4.5mm]teacher.west) -- ([yshift=-4.5mm]teacher.west);
@@ -66,14 +69,12 @@
   \draw[flow,draw=cRes] (rest.east) -- (fastT.west);
   \draw[flow,draw=cNom] (nomt.east) -- ++(3mm,0) |- ([yshift=4mm]fastT.west);
 
-  \node[loss] (lres) at (19.4,5.05) {$\mathcal{L}_{\mathrm{res}}$};
-  \node[loss] (lcomp) at (19.4,4.05) {$\mathcal{L}_{\mathrm{comp}}$};
+  \node[loss] (lres) at (19.4,4.55) {$\mathcal{L}_{\mathrm{distill}}$};
   \draw[dashflow,draw=cFast] (fastT.east) -- (lres.west);
-  \draw[dashflow] (fastT.east) -- ++(4mm,0) |- (lcomp.west);
 
   \begin{scope}[on background layer]
     \node[rounded corners=5pt,draw=cTeacher!40,fill=cTeacher!2,inner sep=2.5mm,
-          fit=(obs)(fhist)(tcnT)(teacher)(full)(null)(nomt)(rest)(fastT)(lres)(lcomp)] {};
+          fit=(obs)(fhist)(tcnT)(teacher)(full)(null)(nomt)(rest)(fastT)(lres)] {};
   \end{scope}
 
   % ---------------- Deployment ----------------
@@ -102,7 +103,7 @@
   \node[tinylabel,text width=40mm] at (7.6,-1.55)
     {$S_t$, interpolated $A^{\mathrm{ref}}(t)$,\\cached intent tokens};
   \draw[dashflow] (7.6,-1.15) -| ([xshift=-7mm,yshift=-4.5mm]expert.west) -- ([yshift=-4.5mm]expert.west);
-  \node[rate,below=1.2mm of tcnD] {native-rate force};
+  \node[rate,below=1.2mm of tcnD] {timestamped 100 Hz force};
 
   \node[circle,draw=cInk,fill=white,line width=0.8pt,minimum size=7mm,
         font=\sffamily\small\bfseries] (sum) at (16.6,0.05) {$+$};

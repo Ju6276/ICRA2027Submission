@@ -1,88 +1,87 @@
-\documentclass[tikz,border=2pt]{standalone}
+\documentclass[tikz,border=3pt]{standalone}
 \usepackage{amsmath,amssymb}
 \usetikzlibrary{arrows.meta,positioning,fit,calc,backgrounds}
 
-\definecolor{cTeacher}{HTML}{6C5CE7}
 \definecolor{cSlow}{HTML}{2878B5}
 \definecolor{cFast}{HTML}{E67E22}
-\definecolor{cNom}{HTML}{2E8B57}
 \definecolor{cRes}{HTML}{C0392B}
 \definecolor{cInk}{HTML}{263238}
+\definecolor{cBad}{HTML}{7F8C8D}
+\definecolor{cGood}{HTML}{2E8B57}
 
 \tikzset{
-  flow/.style={-{Latex[length=2.2mm]},line width=0.75pt,draw=cInk},
-  data/.style={rounded corners=2pt,draw=cInk!65,fill=gray!7,line width=0.65pt,
-               align=center,minimum height=8mm,text width=22mm,font=\sffamily\scriptsize},
-  teacher/.style={rounded corners=3pt,draw=cTeacher,fill=cTeacher!10,line width=1.1pt,
-                  align=center,minimum height=18mm,text width=31mm,font=\sffamily\small\bfseries},
-  query/.style={rounded corners=2pt,draw=cTeacher!80,fill=white,line width=0.8pt,
-                align=center,minimum height=9mm,text width=28mm,font=\sffamily\scriptsize},
-  target/.style={rounded corners=2pt,line width=0.9pt,align=center,minimum height=9mm,
-                 text width=27mm,font=\sffamily\scriptsize\bfseries},
-  student/.style={rounded corners=3pt,line width=1.1pt,align=center,minimum height=17mm,
-                  text width=30mm,font=\sffamily\small\bfseries},
-  slowbox/.style={rounded corners=3pt,draw=cSlow,fill=cSlow!9,line width=1pt,align=center,
-                  minimum height=17mm,text width=30mm,font=\sffamily\scriptsize\bfseries},
-  bad/.style={rounded corners=2pt,draw=cInk!45,fill=gray!8,line width=0.7pt,align=center,
-              text width=33mm,font=\sffamily\tiny},
-  good/.style={rounded corners=2pt,draw=cFast,fill=cFast!12,line width=0.9pt,align=center,
-               text width=33mm,font=\sffamily\tiny\bfseries},
+  flow/.style={-{Latex[length=2.2mm]},line width=0.8pt,draw=cInk},
+  dashflow/.style={-{Latex[length=2.2mm]},line width=0.75pt,dashed,draw=cInk!60},
+  box/.style={rounded corners=3pt,draw=cInk!65,fill=white,line width=0.8pt,
+              align=center,minimum height=11mm,text width=29mm,font=\sffamily\scriptsize},
+  slow/.style={rounded corners=3pt,draw=cSlow,fill=cSlow!10,line width=1pt,
+               align=center,minimum height=13mm,text width=31mm,font=\sffamily\scriptsize\bfseries},
+  fast/.style={rounded corners=3pt,draw=cFast,fill=cFast!11,line width=1pt,
+               align=center,minimum height=13mm,text width=31mm,font=\sffamily\scriptsize\bfseries},
+  tag/.style={rounded corners=2pt,inner sep=2pt,font=\sffamily\tiny\bfseries},
+  title/.style={font=\sffamily\small\bfseries,text=cInk},
   note/.style={font=\sffamily\tiny,align=center,text=cInk!75}
 }
 
 \begin{document}
-\begin{tikzpicture}
-  % Top: paired target construction.
-  \node[data] (vls) at (0,2.0) {Vision $V_k$\\Language $L$\\State $S_k$};
-  \node[data] (force) at (0,0.65) {Native-rate force history\\$\mathcal{F}_k=F_{t_k-w:t_k}$};
-  \node[teacher] (teach) at (3.7,1.32) {Frozen Temporal\\Force-Aware\\VLA Teacher};
-  \draw[flow] (vls.east) -- ([yshift=4mm]teach.west);
-  \draw[flow,draw=cFast] (force.east) -- ([yshift=-4mm]teach.west);
+\begin{tikzpicture}[x=1cm,y=1cm]
+  % Motivation: semantic intent is slow, physical interaction changes quickly.
+  \node[title] at (1.65,3.05) {CONTACT-RICH INTERACTION};
+  \node[box,draw=cSlow,fill=cSlow!7] (intent) at (1.65,1.85)
+    {Semantic intent\\``insert the connector''};
+  \node[tag,fill=cSlow!12,text=cSlow] at (1.65,0.98) {SLOWLY VARYING};
 
-  \node[query] (full) at (7.35,2.05) {Observed-force query\\$A_T^{\mathrm{full}}(\epsilon)$};
-  \node[query] (null) at (7.35,0.58) {Null-force query\\$A_T^{\mathrm{null}}(\epsilon)$};
-  \draw[flow,draw=cTeacher] (teach.east) -- (full.west);
-  \draw[flow,draw=cTeacher] (teach.east) -- (null.west);
-  \node[note,text width=31mm] at (7.35,-0.18)
-    {learned $z_{\varnothing F}$; shared prefix and noise $\epsilon$};
+  \node[box,draw=cFast,fill=cFast!7] (contact) at (1.65,-0.25)
+    {Physical interaction\\contact, slip, constraint};
+  \begin{scope}[shift={(0.55,-1.25)}]
+    \draw[line width=0.55pt,draw=cInk!45] (0,0) -- (2.2,0);
+    \draw[line width=1.1pt,draw=cRes]
+      (0,0.05) -- (0.35,0.04) -- (0.62,0.10) -- (0.82,0.85) --
+      (1.02,0.28) -- (1.28,0.55) -- (1.55,0.18) -- (1.85,0.12) -- (2.2,0.10);
+    \node[note] at (1.1,-0.25) {force/torque transient};
+  \end{scope}
+  \node[tag,fill=cFast!14,text=cFast] at (1.65,-1.82) {RAPIDLY VARYING};
 
-  \node[target,draw=cNom,fill=cNom!10] (nom) at (11.05,2.05)
-    {Slow reference\\$A^{\mathrm{ref}}\!\leftarrow\!A_T^{\mathrm{null}}$};
-  \node[target,draw=cRes,fill=cRes!9] (res) at (11.05,0.58)
-    {Counterfactual residual target\\$\Delta A_T^{\mathrm{cf}}=A_T^{\mathrm{full}}\!-\!A_T^{\mathrm{null}}$};
-  \draw[flow,draw=cNom] (null.east) -- ++(4mm,0) |- (nom.west);
-  \draw[flow,draw=cRes] (full.east) -- ++(3mm,0) |- ([yshift=2mm]res.west);
-  \draw[flow,draw=cRes] (null.east) -- ++(5mm,0) |- ([yshift=-2mm]res.west);
+  % Conventional force-aware VLA.
+  \node[title] at (8.3,3.05) {FULL-ACTION REGENERATION};
+  \node[box] (forceOld) at (5.15,1.55) {New force\\measurement};
+  \node[box,draw=cBad,fill=gray!8,text width=35mm] (genOld) at (8.3,1.55)
+    {Generative action expert\\iterative full-chunk inference};
+  \node[box,draw=cBad,fill=gray!8] (actOld) at (11.55,1.55)
+    {Complete action chunk\\semantic motion + correction};
+  \draw[flow] (forceOld.east) -- (genOld.west);
+  \draw[flow] (genOld.east) -- (actOld.west);
+  \node[note,text width=67mm] at (8.35,0.72)
+    {Every physical update recomputes motion already represented by the policy.};
 
-  % Bottom: asynchronous deployment.
-  \node[slowbox] (slow) at (4.25,-2.05)
-    {Cached reference + intent\\slow update};
-  \node[student,draw=cFast,fill=cFast!10] (fast) at (8.55,-2.05)
-    {Fast Residual Student\\one pass\\$\Delta\hat{A}_{1:K}$};
+  % ForceDelta-VLA factorization.
+  \node[title,text=cGood] at (8.3,-0.05) {FORCEDELTA-VLA: UPDATE ONLY THE CORRECTION};
+  \node[slow] (ref) at (5.15,-1.15)
+    {Semantic reference\\$A^{\mathrm{ref}}$};
+  \node[tag,fill=cSlow!12,text=cSlow] at (5.15,-2.02) {REUSED BETWEEN SLOW UPDATES};
+
+  \node[fast] (res) at (8.75,-1.15)
+    {Force-conditioned residual\\$\Delta\hat A$ in one pass};
+  \node[tag,fill=cFast!14,text=cFast] at (8.75,-2.02) {UPDATED ASYNCHRONOUSLY};
+
   \node[circle,draw=cInk,fill=white,line width=0.9pt,minimum size=8mm,
-        font=\sffamily\small\bfseries] (sum) at (11.55,-2.05) {$+$};
-  \node[data,text width=27mm,draw=cInk,fill=cInk!5] (cmd) at (14.25,-2.05)
-    {Robot command\\$A^{\mathrm{cmd}}=A^{\mathrm{ref}}+\Delta\hat{A}$};
+        font=\sffamily\small\bfseries] (sum) at (11.55,-1.15) {$+$};
+  \node[box,draw=cGood,fill=cGood!8,text width=30mm] (cmd) at (14.15,-1.15)
+    {Composed command\\$(A^{\mathrm{cmd}})^p=(A^{\mathrm{ref}})^p+\Delta\hat A$};
+  \draw[flow,draw=cSlow] (ref.east) -- (sum.west);
+  \draw[flow,draw=cFast] (res.east) -- (sum.west);
+  \draw[flow,draw=cGood] (sum.east) -- (cmd.west);
 
-  \draw[flow,draw=cNom] (nom.south) -- ++(0,-5mm) -| (slow.north);
-  \draw[flow,draw=cRes] (res.south) -- ++(0,-5mm) -| (fast.north);
-  \draw[flow,draw=cSlow] (slow.east) -- (sum.west);
-  \draw[flow,draw=cFast] (fast.east) -- (sum.west);
-  \draw[flow] (sum.east) -- (cmd.west);
-
-  \node[bad] (before) at (6.35,-4.0)
-    {full-action fast branch:\\iterative generation};
-  \node[good] (after) at (10.0,-4.0)
-    {ForceDelta-VLA:\\one residual pass};
-  \draw[dashed,line width=0.6pt,draw=cInk!50,-{Latex[length=1.8mm]}]
-    (before.east) -- (after.west);
+  \draw[dashflow,draw=cFast] (contact.east) -- ++(0.55,0) |- (res.west);
+  \draw[dashflow,draw=cSlow] (intent.east) -- ++(0.55,0) |- (ref.west);
 
   \begin{scope}[on background layer]
-    \node[rounded corners=4pt,draw=cTeacher!35,fill=cTeacher!2,inner sep=3mm,
-          fit=(vls)(force)(teach)(full)(null)(nom)(res),
-          label={[font=\sffamily\tiny\bfseries,text=cTeacher]above:PAIRED TEACHER QUERIES CONSTRUCT THE CORRECTION TARGET}] {};
-    \node[rounded corners=4pt,draw=cInk!25,fill=gray!2,inner sep=3mm,
-          fit=(slow)(fast)(sum)(cmd)] {};
+    \node[rounded corners=5pt,draw=cInk!22,fill=gray!1,inner sep=3mm,
+          fit=(intent)(contact)] {};
+    \node[rounded corners=5pt,draw=cBad!35,fill=gray!2,inner sep=3mm,
+          fit=(forceOld)(genOld)(actOld)] {};
+    \node[rounded corners=5pt,draw=cGood!45,fill=cGood!2,inner sep=3mm,
+          fit=(ref)(res)(sum)(cmd)] {};
   \end{scope}
 \end{tikzpicture}
 \end{document}
