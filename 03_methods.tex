@@ -1,4 +1,4 @@
-\subsection{Problem Formulation}
+\subsection{Problem Formulation and Overview}
 \label{sec:problem}
 
 We consider contact-rich manipulation with visual observations $V$, a language instruction $L$, robot state $S$, and force/torque measurements $F$ delivered on a timestamped stream. Three assumptions define the setting. (A1) Force is available at both training and deployment, at a rate one to two orders of magnitude above the vision--language inference rate. (A2) A force-conditioned teacher policy $T_\theta$ has been trained on the demonstrations and is thereafter frozen. (A3) Demonstrations provide the executed action and synchronized sensor streams, but no decomposition of that action into components.
@@ -28,12 +28,14 @@ This factorization determines the cost of high-rate control: $A^{\mathrm{ref}}$ 
 \begin{figure*}[t]
     \centering
     \includegraphics[width=0.98\textwidth]{figures/fig02_network_structure.pdf}
-    \caption{FoRe-VLA architecture. A frozen temporal force-aware teacher is queried twice on the same observation under a shared vision--language prefix and a shared flow-matching noise draw, once with the measured force window and once with a learned null-force condition. The null-conditioned chunk provides the slow reference and its pooled prefix the cached intent, while the full-minus-null deviation provides the target of the high-rate student. At deployment the null-mode chunk is cached and interpolated, and the student consumes force at the sensor rate to emit a short chunk of pose corrections.}
+    \caption{ForceRes-VLA architecture. A frozen temporal force-aware teacher is queried twice on the same observation under a shared vision--language prefix and a shared flow-matching noise draw, once with the measured force window and once with a learned null-force condition. The null-conditioned chunk provides the slow reference and its pooled prefix the cached intent, while the full-minus-null deviation provides the target of the high-rate student. At deployment the null-mode chunk is cached and interpolated, and the student consumes force at the sensor rate to emit a short chunk of pose corrections.}
     \label{fig:network_structure}
 \end{figure*}
 
-\subsection{Temporal Force-Aware Teacher}
+\subsection{Paired Full/Null Teacher Targets}
 \label{sec:teacher}
+
+\subsubsection{Temporal force-aware teacher.}
 
 The teacher extends ForceVLA~\cite{yu2025forcevla}, a $\pi_0$-style flow-matching policy~\cite{black2024pi0}, by replacing its instantaneous force representation with a causal temporal encoder. For each teacher inference timestamp $t_k$ we retrieve a fixed-duration window
 \begin{equation}
@@ -63,7 +65,7 @@ projected to the force-fusion dimension of the base model. A single force token 
 \end{equation}
 The temporal encoder exposes short-horizon interaction dynamics such as contact onset, impact transients, oscillation, and recovery, which a single force sample at the visual rate cannot represent.
 
-\subsection{Learned Null-Force Condition}
+\subsubsection{Adapted null-force mode.}
 \label{sec:null_decomp}
 
 To query the teacher without supplying the current measurement we introduce a learnable token
@@ -90,9 +92,9 @@ with $h$ the action-expert hidden state and $\sigma$ the SiLU nonlinearity, unde
     \right).
     \label{eq:null_training}
 \end{equation}
-Eq.~\eqref{eq:null_training} yields a force-free \emph{mode} of the same network rather than a separate policy: no force-free VLA is trained or deployed.
+Eq.~\eqref{eq:null_training} yields an adapted null-force \emph{mode} of the same teacher rather than a separately trained reference policy. This mode is retained as the slow branch at deployment.
 
-\subsection{Paired Counterfactual Differencing}
+\subsubsection{Shared-noise paired differencing.}
 \label{sec:teacher_differencing}
 
 The teacher is frozen and queried twice. Since it is a flow-matching sampler, two independent queries would differ by both the force condition and the sampling noise. We therefore share every remaining source of variation: the vision--language prefix and its key/value cache are computed once, and a single noise draw $\epsilon$ initializes both integrations,
@@ -109,18 +111,18 @@ The teacher is frozen and queried twice. Since it is a flow-matching sampler, tw
     \epsilon \sim \mathcal{N}(0,I).
     \label{eq:teacher_null}
 \end{align}
-Coupling $\epsilon$ is necessary rather than merely convenient: under independent draws the difference below is dominated by sampling variance. Sharing the prefix additionally halves extraction cost, the vision--language pass being the dominant term.
+Coupling $\epsilon$ removes sampling variation from the comparison; Sec.~\ref{sec:exp_decomposition} quantifies the noise introduced by independent draws. Sharing the prefix also avoids a redundant vision--language pass during offline extraction.
 
 The null-conditioned chunk serves as the reference,
 \begin{equation}
-    A_{T,k}^{\mathrm{nom}}
+    A_{T,k}^{\mathrm{ref}}
     =
     A_{T,k}^{\mathrm{null}},
     \label{eq:nominal_target}
 \end{equation}
-and the deviation attributable to force conditioning is
+and their conditional deviation is
 \begin{equation}
-    \Delta A_{T,k}^{F}
+    \Delta A_{T,k}^{\mathrm{cond}}
     =
     \left(A_{T,k}^{\mathrm{full}}\right)^{p}
     -
@@ -128,9 +130,12 @@ and the deviation attributable to force conditioning is
     \in \mathbb{R}^{H \times 9}.
     \label{eq:teacher_residual}
 \end{equation}
-We interpret $\Delta A_{T,k}^{F}$ as the change in the teacher's output when the learned null condition is replaced by the measured force history. This is output-space differencing, involving neither positive--negative pairs nor a contrastive objective. It is also not a causal attribution: vision and state condition both branches and may themselves carry contact cues, so the deviation is a conditional difference.
+We interpret $\Delta A_{T,k}^{\mathrm{cond}}$ as the teacher's output change between its adapted null mode and measured-force mode. The null-specific adapter is active only in the former, so the target reflects the complete mode change rather than an intervention on a single token. It is output-space regression, not contrastive learning, and it is not a causal attribution: vision and state condition both branches and may themselves carry contact cues.
 
-\subsection{Slow Reference and Cached Intent}
+\subsection{High-Rate Residual Policy}
+\label{sec:residual_policy}
+
+\subsubsection{Slow reference and cached intent.}
 \label{sec:slow}
 
 The slow branch is the frozen teacher in null mode; no nominal policy is distilled. Each slow update yields the reference chunk $A_{T,k}^{\mathrm{null}}$ and, from the same forward pass, a compact context for the high-rate branch. The vision--language prefix $H_k \in \mathbb{R}^{S \times d}$ contains several hundred tokens and is compressed by mean pooling into $M$ contiguous bins under the prefix mask,
@@ -145,7 +150,7 @@ with an accompanying validity mask. Pooling is fixed rather than learned so that
 
 Between slow updates the reference is interpolated at the teacher's action period $\tau_A$ from the cached chunk, and the staleness of that chunk is exposed to the student (Sec.~\ref{sec:rate_agnostic}). The high-rate branch receives no fresh image; visual information reaches it through $Z_k^{\mathrm{intent}}$ alone, as in the fast expert of FAVLA~\cite{li2026favla}. This is consistent with Eq.~\eqref{eq:teacher_residual}, in which the vision--language prefix is shared and therefore not a source of variation in the target.
 
-\subsection{High-Rate Residual Student}
+\subsubsection{Residual student.}
 \label{sec:fast}
 
 The student consumes force and emits pose corrections. A causal TCN of the same family as the teacher's, operating on a shorter window at the sensor rate, encodes the newest measurements,
@@ -188,7 +193,7 @@ with $W_{\mathrm{res}}$ zero-initialized so that optimization begins from the id
 
 Emitting $K$ steps spaced by $\tau_A$ rather than a single correction provides tolerance to the student's own latency and to an unknown deployment rate: when an update is late or the actuator outruns the student, later steps of the previous chunk remain valid commands. The construction is causal despite extending forward in time, because the teacher generated its entire chunk from the single observation at $t_k$; step $j$ is the teacher's response to the currently observable force $j$ action periods ahead, and no future force or state enters the label.
 
-\subsection{Distillation Objective}
+\subsubsection{Training objective.}
 \label{sec:loss}
 
 Only the student is trained. Let $\Delta A^{F}_{T,1:K}$ and $A^{\mathrm{full}}_{T,1:K}$ denote the leading $K$ steps of the teacher targets and $w_j \propto \beta^{\,j-1}$ normalized step weights. The first term preserves residual specialization,
@@ -198,7 +203,7 @@ Only the student is trained. Let $\Delta A^{F}_{T,1:K}$ and $A^{\mathrm{full}}_{
     \sum_{j=1}^{K} w_j \,
     d\!\left(
         \Delta \hat{A}_{t,j},\;
-        \Delta A^{F}_{T,j}
+        \Delta A^{\mathrm{cond}}_{T,j}
     \right),
     \label{eq:res_loss}
 \end{equation}
@@ -222,9 +227,9 @@ giving
     \lambda_{\mathrm{comp}}\mathcal{L}_{\mathrm{comp}}.
     \label{eq:total_loss}
 \end{equation}
-The decay $\beta < 1$ reflects that the first step executes in the common case while later steps execute only when the student stalls or is outrun. No nominal-imitation term appears, the slow reference being a frozen teacher rather than a trained policy, and no behavior-cloning term on the demonstrated action appears, since the teacher's imitation error is not force-attributable and would contaminate the target of Eq.~\eqref{eq:teacher_residual}.
+The decay $\beta < 1$ reflects that the first step executes in the common case while later steps execute only when the student stalls or is outrun. No reference-imitation term appears because the slow reference is supplied by the frozen teacher, and no behavior-cloning term is applied to the student because it would mix total-action imitation with the conditional-residual target.
 
-\subsection{Rate-Agnostic Target Generation}
+\subsection{Timing-Randomized Training and Execution}
 \label{sec:rate_agnostic}
 
 A student trained at a single slow rate and latency learns that operating point. We instead treat timing as a distribution. Targets are extracted once at full rate, and each training epoch redraws a schedule: a slow update period from $[1/f_{\max}, 1/f_{\min}]$, an inference latency $\ell$ from $[\ell_{\min}, \ell_{\max}]$, and per-update jitter from $[-\eta,\eta]$. A packet published at $t_k$ becomes usable only at $t_k + \ell$; earlier control instants are excluded, and a packet overtaken in flight by a newer one is discarded. Modeling latency explicitly also excludes the physically unrealizable case of a zero-age context, which unconstrained extraction would otherwise admit.
@@ -255,8 +260,8 @@ Algorithm~\ref{alg:pipeline} summarizes the procedure.
 \FOR{each observation row $k$ in $\mathcal{D}$}
 \STATE compute prefix $H_k$ and its key/value cache; draw $\epsilon\sim\mathcal{N}(0,I)$
 \STATE $A^{\mathrm{full}}_{T,k}\!\leftarrow\!T_\theta(\cdot,z_k^F;\epsilon)$, \quad $A^{\mathrm{null}}_{T,k}\!\leftarrow\!T_\theta(\cdot,z_{\varnothing F};\epsilon)$
-\STATE $Z_k^{\mathrm{intent}}\!\leftarrow\!\mathrm{Pool}_M(H_k,m_k)$, \quad $\Delta A^F_{T,k}$ by Eq.~\eqref{eq:teacher_residual}
-\STATE store $(A^{\mathrm{null}}_{T,k},\,\Delta A^F_{T,k},\,Z_k^{\mathrm{intent}},\,t_k)$
+\STATE $Z_k^{\mathrm{intent}}\!\leftarrow\!\mathrm{Pool}_M(H_k,m_k)$, \quad $\Delta A^{\mathrm{cond}}_{T,k}$ by Eq.~\eqref{eq:teacher_residual}
+\STATE store $(A^{\mathrm{null}}_{T,k},\,\Delta A^{\mathrm{cond}}_{T,k},\,Z_k^{\mathrm{intent}},\,t_k)$
 \ENDFOR
 \STATE \emph{Student training:}
 \FOR{each epoch}
@@ -268,12 +273,12 @@ Algorithm~\ref{alg:pipeline} summarizes the procedure.
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{Complexity and Attainable Rate}
+\subsubsection{Computational cost.}
 \label{sec:complexity}
 
 Existing fast--slow force policies cache the vision--language prefix but retain an action expert in the high-rate loop, so each update costs $N_{\mathrm{flow}}$ denoising passes over that expert. Ours costs one deterministic pass over a small network. Writing $L_{\mathrm{AE}},d_{\mathrm{AE}}$ and $L_{S},d_{S}$ for the respective depths and widths, the per-update cost is $\mathcal{O}\!\left(N_{\mathrm{flow}} L_{\mathrm{AE}} d_{\mathrm{AE}}^{2}\right)$ against $\mathcal{O}\!\left(L_{S} d_{S}^{2}\right)$, with both the step count and the depth--width product reduced. Sec.~\ref{sec:exp_latency} reports the measured consequence.
 
-\subsection{Asynchronous Execution}
+\subsubsection{Asynchronous execution.}
 \label{sec:execution}
 
 At deployment the teacher runs in null mode as the slow branch on its own thread, publishing a packet containing the reference chunk, the pooled intent bins, the observation timestamp, and the time at which the packet became available. Force is appended to a ring buffer at the sensor rate and state is updated independently.

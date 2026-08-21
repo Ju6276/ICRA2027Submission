@@ -30,7 +30,7 @@ citecolor=blue
 \title{
 \vspace{0.2cm}
 \LARGE \bf 
-FoRe-VLA: Distilling Force-Attributable Action Residuals\\for High-Rate Contact-Rich Manipulation
+ForceRes-VLA: High-Frequency Force Residual Learning\\for Contact-Rich Manipulation
 }
 
  % \newcommand{\isanonymous}{}  % 
@@ -92,7 +92,7 @@ FoRe-VLA: Distilling Force-Attributable Action Residuals\\for High-Rate Contact-
       \centering
       \includegraphics[width=0.80\linewidth,height=0.16\textheight,keepaspectratio]{figures/fig01_teaser.pdf}
       % \vspace{-0.2in}
-      \captionof{figure}{Overview of FoRe-VLA. A frozen temporal force-aware teacher is queried twice on the same observation under a shared vision--language prefix and a shared flow-matching noise draw, once with the measured force history and once with a learned null-force condition. The null-conditioned chunk becomes the slow reference, and the full-minus-null deviation is the sole learning target of the high-rate student. Since that target is simpler than a complete action chunk, the high-rate path reduces from a cached-prefix action expert to a single small forward pass, as quantified in Table~\ref{tab:latency}.
+      \captionof{figure}{ForceRes-VLA distills a high-rate correction policy from paired queries of one frozen force-aware teacher. The full query uses the measured force history; the null query uses an adapted null-force mode. With the vision--language prefix and flow noise shared, their action-space deviation defines a force-conditioned residual target. At deployment, the null-mode teacher supplies a slow reference and a lightweight student updates only its pose correction at the force-sensing rate.
       }
       \label{fig:teaser}
       \vspace{-0.1in}
@@ -104,8 +104,8 @@ FoRe-VLA: Distilling Force-Attributable Action Residuals\\for High-Rate Contact-
 \pagestyle{empty}
 \setcounter{figure}{1}
 \begin{abstract}
-Contact-rich manipulation requires corrective action within a control cycle, yet the high-rate branch of current slow--fast force-aware Vision-Language-Action (VLA) models still regenerates a complete action chunk. Caching the vision--language prefix removes the perception cost but not the generation cost, so each high-rate update performs a full flow-matching denoise and the branch remains an order of magnitude slower than a contemporary force sensor. We argue that this branch need not reproduce the action, only the component of it attributable to force. Demonstrations, however, label the total action and never this component, leaving the decomposition underdetermined. We recover the missing label by querying a frozen temporal force-aware teacher twice on the same observation, once with the measured force history and once with a learned null-force condition, under a shared vision--language prefix and a shared flow-matching noise draw so that the force condition is the only difference between the two samples. The deviation between the two outputs supervises a lightweight residual student that consumes force at the sensor rate, while the teacher's null-conditioned chunk serves directly as the slow reference, so that no separate nominal policy is distilled. Replacing action generation in this branch with a single deterministic forward pass reduces its measured per-update cost by more than an order of magnitude, placing it within the sampling period of a $100$~Hz force sensor. We additionally randomize the slow update period, inference latency, and jitter while generating targets and condition the student on the measured age of its cached context, and examine whether one trained student transfers across slow-branch rates unseen in training. We evaluate on eight contact-rich single-arm and bimanual manipulation tasks against $\pi_{0.5}$, ForceVLA, and TA-VLA.
-% TODO: append the task-level result sentence once the robot evaluation is complete.
+Force feedback can expose contact events that are invisible in images, but exploiting it at sensor rate remains difficult for Vision-Language-Action (VLA) policies. Existing slow--fast designs cache visual--language features yet repeatedly regenerate complete action chunks in their fast branch, leaving flow-matching inference on the critical control path. We introduce ForceRes-VLA, a residual distillation framework that assigns the fast branch a smaller problem: predicting how a force-conditioned teacher deviates from an adapted null-force mode. A frozen temporal force-aware teacher is evaluated in paired full and null modes while sharing its visual--language prefix and initial flow noise. The resulting action-space difference provides explicit conditional-residual supervision, and the null-mode prediction supplies the slow reference; thus, no separate reference policy is trained. A lightweight causal student uses native-rate force history, cached task context, robot state, and reference age to update pose corrections asynchronously. Timing randomization over slow-policy period, latency, and jitter makes the student robust to deployment schedules. On an RTX~4090, the residual path requires $2.4$~ms per update ($417$~Hz), compared with $76.1$~ms ($13$~Hz) for a ten-step cached-prefix action expert. We evaluate the method on eight single-arm and bimanual tasks using task success, interaction safety, contact recovery, residual fidelity, and runtime.
+% TODO(submission): add the principal task-level result after completing the robot evaluation.
 \end{abstract}
 
 \section{Introduction}
@@ -115,15 +115,15 @@ Contact-rich manipulation requires corrective action within a control cycle, yet
 \label{sec:related}
 \input{02_related_work}
 
-\section{Problem Statement and Methods}\label{sec:method}
+\section{Method}\label{sec:method}
 
 \input{03_methods}
 
-\section{Experiment}
+\section{Experiments}
 \label{sec:experiment}
 \input{04_experiments}
 
-\section{Conclusion and Future Work}
+\section{Conclusion}
 \label{sec:conclusion}
 \input{05_conclusion}
 

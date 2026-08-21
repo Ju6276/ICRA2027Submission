@@ -1,7 +1,7 @@
-\subsection{Experimental Objectives}
+\subsection{Evaluation Questions}
 \label{sec:exp_objectives}
 
-The evaluation addresses four questions. First, does supervising the high-rate branch with the force-attributable deviation rather than the full action change the attainable control rate? Second, does the deviation carry sufficient structure for a small student to learn, and does the student rely on force rather than inferring corrections from context? Third, does execution at the sensor rate improve contact outcomes relative to the rate a cached-prefix action expert attains? Fourth, does randomized-timing training permit a single student to transfer across deployment rates?
+The evaluation addresses four questions: (Q1) Does conditional-residual supervision improve task success and interaction safety over full-action fast branches? (Q2) Does the learned residual depend on force and concentrate around contact? (Q3) Does higher update rate reduce reaction delay and adverse force transients? (Q4) Does timing randomization improve transfer across slow-policy rates and latencies?
 
 \subsection{Attainable Rate of the High-Rate Path}
 \label{sec:exp_latency}
@@ -59,8 +59,8 @@ We evaluate on eight real-robot tasks, four single-arm and four bimanual, listed
     \end{tabularx}
 \end{table}
 
-% TODO: Fix N and K once the robot evaluation is scheduled.
-We report \textbf{[N]} trials per task over \textbf{[K]} seeds, randomizing object configuration, initial pose, and contact conditions. A trial is successful only if the goal is reached without violating predefined force limits. All methods share the demonstration split, the control interface, and the hardware.
+% TODO(submission): insert the finalized number of trials and random seeds.
+For each task, we randomize object configuration, initial pose, and contact conditions. A trial is successful only if the goal is reached without violating predefined force limits. All methods share the demonstration split, control interface, evaluation initializations, and hardware. We report the number of trials and random seeds with the completed robot results.
 
 \subsection{Baselines and Metrics}
 \label{sec:exp_baselines}
@@ -69,7 +69,7 @@ We compare against three published policies and our own method. $\pi_{0.5}$~\cit
 
 Two additional variants isolate our own design. A \emph{cached-prefix fast branch}, in which the teacher's action expert is re-run against the cached prefix in the manner of FAVLA and LIFT~\cite{li2026favla,lv2026lift} at the rate permitted by Table~\ref{tab:latency}, holds the slow--fast structure fixed and varies only what the high-rate branch computes. A \emph{direct slow--fast} variant trains our student architecture from demonstrated actions alone, without paired teacher targets, separating the supervision from the architecture.
 
-Task metrics are success rate and stage-wise completion. Interaction quality is measured by peak force, force impulse, limit violations, and post-disturbance recovery rate. Decomposition quality is measured by the residual error $d(\Delta \hat{A},\Delta A_T^F)$ and the composed error $d(A^{\mathrm{ref}}{+}\Delta \hat{A},A_T^{\mathrm{full}})$, each relative to a zero-residual baseline so that the reported quantity is the fraction of the deviation captured. Errors are computed in physical units on the reconstructed absolute pose rather than on normalized deltas, and reported separately for translation and rotation. Runtime metrics are the slow rate, the fast rate, end-to-end latency, and parameter count.
+Task metrics are success rate and stage-wise completion. Interaction quality is measured by peak force, force impulse, limit violations, and post-disturbance recovery rate. Decomposition quality is measured by the residual error $d(\Delta \hat{A},\Delta A_T^{\mathrm{cond}})$ and the composed error $d(A^{\mathrm{ref}}{+}\Delta \hat{A},A_T^{\mathrm{full}})$, each relative to a zero-residual baseline so that the reported quantity is the fraction of the deviation captured. Errors are computed in physical units on the reconstructed absolute pose rather than on normalized deltas, and reported separately for translation and rotation. Runtime metrics are the slow rate, the fast rate, end-to-end latency, and parameter count.
 
 \subsection{Implementation Details}
 \label{sec:exp_implementation}
@@ -99,7 +99,7 @@ The student is a single attention block over the condition set of Eq.~\eqref{eq:
         \midrule
         Cached-prefix fast branch~\cite{li2026favla,lv2026lift} & -- & -- & -- & -- & -- & -- & -- & -- & -- & $13$ \\
         Direct slow--fast, no paired targets & -- & -- & -- & -- & -- & -- & -- & -- & -- & $417$ \\
-        \textbf{FoRe-VLA (ours)} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & $\mathbf{417}$ \\
+        \textbf{ForceRes-VLA (ours)} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & $\mathbf{417}$ \\
         \bottomrule
     \end{tabular}
 \end{table*}
@@ -109,14 +109,14 @@ Interaction metrics are reported alongside success in the supplementary material
 \subsection{Execution Rate}
 \label{sec:exp_rate}
 
-The trained student is held fixed and its execution rate capped at $13$, $30$, $50$, and $100$~Hz, the first three matching the rates that Table~\ref{tab:latency} permits for a cached-prefix action expert, and peak contact force, impulse, and success rate are measured at each. Matched contact events are additionally replayed under three configurations, namely the slow branch alone, the slow and fast branches synchronized at the slow rate, and full asynchronous execution. For each we report the delay from a detected force change to the first corrective command, the maximum force preceding recovery, and the time to return to the nominal trajectory. This isolates the benefit attributable to rate from the benefit attributable to the residual itself: the latency reduction of Table~\ref{tab:latency} is consequential only insofar as contact outcomes improve with rate.
+The trained student is held fixed and its execution rate capped at $13$, $30$, $50$, and $100$~Hz, the first three matching the rates that Table~\ref{tab:latency} permits for a cached-prefix action expert, and peak contact force, impulse, and success rate are measured at each. Matched contact events are additionally replayed under three configurations: the slow branch alone, both branches synchronized at the slow rate, and full asynchronous execution. For each, we report the delay from a detected force change to the first corrective command, the maximum force preceding recovery, and the time to return to the reference trajectory. This separates the effect of update rate from the effect of residual correction itself: the latency reduction of Table~\ref{tab:latency} is consequential only insofar as contact outcomes improve with rate.
 
-\subsection{Analysis of the Counterfactual Decomposition}
+\subsection{Residual Decomposition Analysis}
 \label{sec:exp_decomposition}
 
-We inspect the paired teacher predictions used as targets. For each trajectory, $\lVert\Delta A_T^F\rVert$ is plotted against measured force and task phase; a useful decomposition exhibits small deviations during unconstrained motion and larger, structured deviations near contact onset, transients, and recovery.
+We inspect the paired teacher predictions used as targets. For each trajectory, $\lVert\Delta A_T^{\mathrm{cond}}\rVert$ is plotted against measured force and task phase; a useful decomposition exhibits small deviations during unconstrained motion and larger, structured deviations near contact onset, transients, and recovery.
 
-Three quantities characterize the decomposition. The first is the relative magnitude of the force-attributable signal, $\sigma_F^2/\sigma_R^2$, where $\sigma_F^2 = \mathbb{E}\lVert\Delta A_T^F\rVert^2$ and $\sigma_R^2 = \mathbb{E}\lVert A^{\mathrm{ref}} - A_T^{\mathrm{null}}\rVert^2$ is the reference error incurred by staleness alone. A ratio near or above unity indicates that the force-attributable component is comparable to the staleness error and thus warrants a dedicated branch, whereas a small ratio would indicate that the composed error is dominated by staleness and that increasing the slow rate is the more effective intervention. The second is the student's dependence on force, obtained by comparing its residual-error reduction against that of a force-ablated student; a small gap would indicate that corrections are being inferred from intent, state, and reference rather than from force. The third is the locality of that gap, reported separately for contact strata and free space, since a correction that is genuinely contact-driven should exhibit a larger margin under contact.
+Three quantities characterize the decomposition. The first is the relative magnitude of the conditional residual, $\sigma_C^2/\sigma_R^2$, where $\sigma_C^2 = \mathbb{E}\lVert\Delta A_T^{\mathrm{cond}}\rVert^2$ and $\sigma_R^2 = \mathbb{E}\lVert A^{\mathrm{ref}} - A_T^{\mathrm{null}}\rVert^2$ is the reference error incurred by staleness alone. A ratio near or above unity indicates that the conditional residual is comparable to the staleness error and thus warrants a dedicated branch, whereas a small ratio would indicate that the composed error is dominated by staleness and that increasing the slow rate is the more effective intervention. The second is the student's dependence on force, obtained by comparing its residual-error reduction against that of a force-ablated student; a small gap would indicate that corrections are being inferred from intent, state, and reference rather than from force. The third is the locality of that gap, reported separately for contact strata and free space, since a correction that is genuinely contact-driven should exhibit a larger margin under contact.
 
 We further compare the learned null condition against two alternatives used in prior work, a zero force vector as in zero-padding interventions~\cite{idr2026causal} and random force-token masking, testing the claim of Sec.~\ref{sec:null_decomp} that a learned null mode keeps the teacher in distribution. The teacher-to-demonstration gap $d(A_T^{\mathrm{full}},A^{\mathrm{expert}})$ is reported by translation, rotation, and gripper, as it bounds the accuracy attainable by any student distilled from this teacher.
 

@@ -51,7 +51,7 @@
   \node[target,draw=cNom,fill=cNom!10,right=10mm of full] (nom)
     {Slow reference\\$A^{\mathrm{ref}}\!\leftarrow\!A_T^{\mathrm{null}}$};
   \node[target,draw=cRes,fill=cRes!9,right=10mm of null] (res)
-    {Force-attributable target\\$\Delta A_T^F=A_T^{\mathrm{full}}\!-\!A_T^{\mathrm{null}}$};
+    {Conditional residual target\\$\Delta A_T^{\mathrm{cond}}=A_T^{\mathrm{full}}\!-\!A_T^{\mathrm{null}}$};
   \draw[flow,draw=cNom] (null.east) -- ++(4mm,0) |- (nom.west);
   \draw[flow,draw=cRes] (full.east) -- ++(3mm,0) |- ([yshift=2mm]res.west);
   \draw[flow,draw=cRes] (null.east) -- ++(5mm,0) |- ([yshift=-2mm]res.west);

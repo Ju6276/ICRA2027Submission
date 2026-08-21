@@ -54,9 +54,9 @@
   \draw[flow,draw=cTeacher] ([yshift=-3.5mm]teacher.east) -- (null.west);
 
   \node[block,draw=cNom,fill=cNom!9,text width=26mm] (nomt) at (13.0,5.35)
-    {Slow reference\\$A^{\mathrm{ref}}\!\leftarrow\!A_T^{\mathrm{null}}$\\\emph{no student trained}};
+    {Slow reference\\$A^{\mathrm{ref}}\!\leftarrow\!A_T^{\mathrm{null}}$\\\emph{same teacher, null mode}};
   \node[block,draw=cRes,fill=cRes!8,text width=26mm] (rest) at (13.0,4.05)
-    {Residual target\\$\Delta A_T^F=(A_T^{\mathrm{full}}\!-\!A_T^{\mathrm{null}})^{p}$};
+    {Conditional residual target\\$\Delta A_T^{\mathrm{cond}}=(A_T^{\mathrm{full}}\!-\!A_T^{\mathrm{null}})^{p}$};
   \draw[flow,draw=cNom] (null.east) -- ++(3mm,0) |- (nomt.west);
   \draw[flow,draw=cRes] (full.east) -- ++(2mm,0) |- ([yshift=2mm]rest.west);
   \draw[flow,draw=cRes] (null.east) -- ++(5mm,0) |- ([yshift=-2mm]rest.west);
