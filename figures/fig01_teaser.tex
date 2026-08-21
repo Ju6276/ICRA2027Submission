@@ -59,7 +59,7 @@
   \node[slowbox,right=9mm of nom] (slow)
     {Cached chunk + intent\\interpolated, age known};
   \node[student,draw=cFast,fill=cFast!10,right=9mm of res] (fast)
-    {Fast Residual Student\\$44.7$\,M, one pass\\$\Delta\hat{A}_{1:K}$};
+    {Fast Residual Student\\one pass\\$\Delta\hat{A}_{1:K}$};
   \draw[flow,draw=cNom] (nom.east) -- (slow.west);
   \draw[flow,draw=cRes] (res.east) -- (fast.west);
 
@@ -75,9 +75,9 @@
 
   % The punchline: what the high-rate path costs, before and after.
   \node[bad,below=7mm of fast] (before)
-    {prior fast branch: cached prefix,\\action expert $\times$ $10$ flow steps\\$76.1$\,ms $\rightarrow$ $13$\,Hz};
+    {prior fast branch: cached prefix,\\action expert per update\\$13$\,Hz};
   \node[good,below=2mm of before] (after)
-    {ours: residual only, one pass\\$2.4$\,ms $\rightarrow$ $417$\,Hz \ \ ($31.8\times$)};
+    {ours: residual only, one pass\\$417$\,Hz \ \ ($31.8\times$)};
   \draw[dashed,line width=0.6pt,draw=cInk!50] (fast.south) -- (before.north);
 
   \begin{scope}[on background layer]

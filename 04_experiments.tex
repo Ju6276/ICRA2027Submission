@@ -6,7 +6,7 @@ The evaluation addresses four questions. First, does supervising the high-rate b
 \subsection{Attainable Rate of the High-Rate Path}
 \label{sec:exp_latency}
 
-The per-update cost of the two designs is measured on the same device at batch size one. For the cached-prefix baseline the vision--language key/value cache is supplied directly and one action-expert forward pass is timed over $816$ prefix and $51$ suffix tokens, then scaled by the sampler's denoising step count; the vision--language expert is replaced by a narrow placeholder that is never executed, so the measurement isolates the incremental cost that caching leaves behind. For the student, one complete forward pass is timed, including the force encoder and the intent projector.
+The per-update cost of the two designs is measured on the same device at batch size one. For the cached-prefix baseline the vision--language key/value cache is supplied directly and one action-expert forward pass is timed over $816$ prefix and $51$ suffix tokens, then scaled by the sampler's denoising step count, so that the measurement isolates the incremental cost remaining after caching. For the student, one complete forward pass is timed, including the force encoder and the intent projector.
 
 \begin{table}[t]
     \centering
@@ -27,36 +27,56 @@ The per-update cost of the two designs is measured on the same device at batch s
     \end{tabular}
 \end{table}
 
-Table~\ref{tab:latency} reports a $31.8\times$ reduction at the standard $N_{\mathrm{flow}}{=}10$ setting. Two aspects are more informative than the ratio itself. The $13$~Hz figure agrees with the $15$~Hz reported by ForceVLA2 on the same GPU class~\cite{li2026forcevla2}, indicating that the measurement reflects the design rather than the harness. Furthermore, a single action-expert forward pass already consumes $76\%$ of a $10$~ms budget, so the constraint is not a step-count choice that can be tuned away; attaining $100$~Hz along that path would require one-step flow matching, which is not an established sampler for this policy class. The student meets the same budget with a factor of four in reserve.
+Table~\ref{tab:latency} reports a $31.8\times$ reduction at the standard $N_{\mathrm{flow}}{=}10$ setting. Two aspects of the measurement are more informative than the ratio. The $13$~Hz figure is consistent with the $15$~Hz reported by ForceVLA2 on the same GPU class~\cite{li2026forcevla2}, which supports its validity. Furthermore, a single action-expert forward pass already consumes $76\%$ of a $10$~ms budget, so the constraint is not a step-count choice that can be tuned away; attaining $100$~Hz along that path would require one-step flow matching, which is not an established sampler for this policy class.
 
-\subsection{Tasks and Evaluation Protocol}
+\subsection{Tasks and Protocol}
 \label{sec:exp_protocol}
 
-Evaluation covers contact-rich manipulation tasks spanning four interaction regimes: contact establishment, constrained motion along a surface or mechanism, precision insertion, and recovery from externally induced disturbance. At least one task requires force closure, so that a vision-only policy fails outright, this being the regime in which a force-attributable correction is expected to be decisive. For every task, demonstrations contain synchronized multi-view images, language instructions, robot states, commanded actions, and timestamped six-axis force/torque measurements retained at their native rate.
+We evaluate on eight real-robot tasks, four single-arm and four bimanual, listed in Table~\ref{tab:tasks}. They span the interaction regimes in which force feedback is expected to matter: precision insertion and extraction under geometric constraint, sustained surface contact requiring force regulation, constrained motion along an articulated mechanism, and contact establishment against a force threshold. For every task, demonstrations contain synchronized multi-view images, language instructions, robot states, commanded actions, and timestamped six-axis force/torque measurements retained at their native rate.
 
-% TODO: Fix N, K, and the task list once the robot evaluation is scheduled.
+\begin{table}[t]
+    \centering
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \caption{Evaluation tasks and the interaction regime each is intended to probe.}
+    \label{tab:tasks}
+    \begin{tabularx}{\columnwidth}{l>{\raggedright\arraybackslash}X}
+        \toprule
+        \textbf{Task} & \textbf{Interaction regime} \\
+        \midrule
+        \multicolumn{2}{l}{\emph{Single-arm}} \\
+        Plug insertion & precision insertion, force closure \\
+        Plug removal & extraction under geometric constraint \\
+        Whiteboard wiping & sustained contact, force regulation \\
+        Drawer opening & constrained motion, articulated \\
+        \midrule
+        \multicolumn{2}{l}{\emph{Bimanual}} \\
+        Button pressing & contact establishment, force threshold \\
+        Object flipping & contact reconfiguration, coordination \\
+        Whiteboard wiping & sustained contact with a held surface \\
+        Cabinet door opening & constrained motion, articulated \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+% TODO: Fix N and K once the robot evaluation is scheduled.
 We report \textbf{[N]} trials per task over \textbf{[K]} seeds, randomizing object configuration, initial pose, and contact conditions. A trial is successful only if the goal is reached without violating predefined force limits. All methods share the demonstration split, the control interface, and the hardware.
 
 \subsection{Baselines and Metrics}
 \label{sec:exp_baselines}
 
-\begin{enumerate}
-    \item \textbf{Vision--language policy:} no force input and no high-rate branch.
-    \item \textbf{Instantaneous-force teacher:} force sampled only at the visual frame, isolating the value of native-rate history.
-    \item \textbf{Temporal force-aware teacher:} our teacher executed as a monolithic policy at its attainable rate, providing the accuracy ceiling of the distillation and the rate floor of the comparison.
-    \item \textbf{Cached-prefix fast branch:} the teacher's action expert re-run against the cached prefix in the manner of FAVLA and LIFT~\cite{li2026favla,lv2026lift}, executed at the rate permitted by Table~\ref{tab:latency}. This is the primary point of comparison.
-    \item \textbf{Direct slow--fast behavior cloning:} the student architecture trained from demonstrated actions alone, without paired teacher targets, isolating the supervision from the architecture.
-    \item \textbf{FoRe-VLA:} the full method.
-\end{enumerate}
+We compare against three published policies and our own method. $\pi_{0.5}$~\cite{black2025pi05} is a vision--language policy without force input, establishing what visual feedback alone attains on these tasks. ForceVLA~\cite{yu2025forcevla} fuses instantaneous force through a force-aware mixture of experts, and isolates the value of force conditioning without native-rate history or rate separation. TA-VLA~\cite{zhang2025tavla} injects torque into the decoder and summarizes torque history into a single token, and is the closest single-system treatment of force history. All baselines are trained on the same demonstrations and executed at their attainable rates.
+
+Two additional variants isolate our own design. A \emph{cached-prefix fast branch}, in which the teacher's action expert is re-run against the cached prefix in the manner of FAVLA and LIFT~\cite{li2026favla,lv2026lift} at the rate permitted by Table~\ref{tab:latency}, holds the slow--fast structure fixed and varies only what the high-rate branch computes. A \emph{direct slow--fast} variant trains our student architecture from demonstrated actions alone, without paired teacher targets, separating the supervision from the architecture.
 
 Task metrics are success rate and stage-wise completion. Interaction quality is measured by peak force, force impulse, limit violations, and post-disturbance recovery rate. Decomposition quality is measured by the residual error $d(\Delta \hat{A},\Delta A_T^F)$ and the composed error $d(A^{\mathrm{ref}}{+}\Delta \hat{A},A_T^{\mathrm{full}})$, each relative to a zero-residual baseline so that the reported quantity is the fraction of the deviation captured. Errors are computed in physical units on the reconstructed absolute pose rather than on normalized deltas, and reported separately for translation and rotation. Runtime metrics are the slow rate, the fast rate, end-to-end latency, and parameter count.
 
 \subsection{Implementation Details}
 \label{sec:exp_implementation}
 
-The teacher is a $\pi_0$-style ForceVLA with LoRA adapters on both the vision--language backbone and the action expert, an action horizon of $H{=}50$ at a $30$~Hz action rate. Its causal TCN force encoder reads a $100$~ms window from the timestamped stream at $100$~Hz, rejecting samples older than $12$~ms. Null adaptation uses rank $\rho{=}32$ on the $9$ pose channels. Target extraction uses $N_{\mathrm{flow}}{=}10$ and pools the prefix into $M{=}16$ bins of width $2048$.
+The teacher extends ForceVLA with a causal temporal force encoder, using LoRA adapters on both the vision--language backbone and the action expert and an action horizon of $H{=}50$ at a $30$~Hz action rate. Its force encoder reads a $100$~ms window from the timestamped stream at $100$~Hz. Null adaptation uses rank $\rho{=}32$ on the pose channels, and target extraction uses $N_{\mathrm{flow}}{=}10$ with the prefix pooled into $M{=}16$ bins.
 
-The student uses one attention block of width $1024$, MLP dimension $4096$, $8$ query heads over $1$ key/value head, head dimension $256$, intent width $1024$, and emits $K{=}5$ steps with step decay $\beta{=}0.5$; its force encoder reads the same $100$~ms window at $100$~Hz. Randomized timing draws the slow rate from $[5,15]$~Hz, the inference latency from $[50,300]$~ms, and per-update jitter from $\pm10$~ms, with age scale $c{=}0.6$~s chosen to cover that band without clipping. Demonstrations are restricted to episodes whose force stream sustains at least $100$~Hz.
+The student is a single attention block over the condition set of Eq.~\eqref{eq:fast_token_sequence}, emitting $K{=}5$ steps with step decay $\beta{=}0.5$, and reads the same $100$~ms force window. Randomized timing draws the slow rate from $[5,15]$~Hz, the inference latency from $[50,300]$~ms, and per-update jitter from $\pm10$~ms, with the age scale $c$ set to cover that band. Demonstrations are restricted to episodes whose force stream sustains at least $100$~Hz. Remaining hyperparameters are given in the supplementary material.
 
 \subsection{Main Comparison}
 \label{sec:exp_main}
@@ -64,24 +84,27 @@ The student uses one attention block of width $1024$, MLP dimension $4096$, $8$ 
 \begin{table*}[t]
     \centering
     \small
-    \setlength{\tabcolsep}{5pt}
-    \caption{Main comparison on contact-rich manipulation. Higher is better for success and recovery; lower is better for force, latency, and violations. Values pending the robot evaluation.}
+    \setlength{\tabcolsep}{4pt}
+    \caption{Success rate (\%) on eight contact-rich manipulation tasks. Values pending the robot evaluation.}
     \label{tab:main_results}
-    \begin{tabular}{lcccccc}
+    \begin{tabular}{lcccccccccc}
         \toprule
-        \textbf{Method} & \textbf{Success (\%)} & \textbf{Recovery (\%)} & \textbf{Peak Force} & \textbf{Violations} & \textbf{Latency (ms)} & \textbf{Fast Rate (Hz)} \\
+        & \multicolumn{4}{c}{\textbf{Single-arm}} & \multicolumn{4}{c}{\textbf{Bimanual}} & & \\
+        \cmidrule(lr){2-5}\cmidrule(lr){6-9}
+        \textbf{Method} & Insert & Remove & Wipe & Drawer & Button & Flip & Wipe & Cabinet & \textbf{Avg.} & \textbf{Rate (Hz)} \\
         \midrule
-        Vision--language policy & -- & -- & -- & -- & -- & -- \\
-        Instantaneous-force teacher & -- & -- & -- & -- & -- & -- \\
-        Temporal force-aware teacher & -- & -- & -- & -- & -- & -- \\
-        Cached-prefix fast branch~\cite{li2026favla,lv2026lift} & -- & -- & -- & -- & $76.1$ & $13$ \\
-        Direct slow--fast behavior cloning & -- & -- & -- & -- & $2.4$ & $417$ \\
-        \textbf{FoRe-VLA (ours)} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & $\mathbf{2.4}$ & $\mathbf{417}$ \\
+        $\pi_{0.5}$~\cite{black2025pi05} & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- \\
+        ForceVLA~\cite{yu2025forcevla} & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- \\
+        TA-VLA~\cite{zhang2025tavla} & -- & -- & -- & -- & -- & -- & -- & -- & -- & -- \\
+        \midrule
+        Cached-prefix fast branch~\cite{li2026favla,lv2026lift} & -- & -- & -- & -- & -- & -- & -- & -- & -- & $13$ \\
+        Direct slow--fast, no paired targets & -- & -- & -- & -- & -- & -- & -- & -- & -- & $417$ \\
+        \textbf{FoRe-VLA (ours)} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & \textbf{--} & $\mathbf{417}$ \\
         \bottomrule
     \end{tabular}
 \end{table*}
 
-Results are analyzed separately for free-space motion, contact onset, sustained contact, and disturbance recovery, since the correction is expected to concentrate around interaction. Agreement between the reference and composed policies in free space therefore constitutes evidence of specialization rather than a negative result.
+Interaction metrics are reported alongside success in the supplementary material, and results are analyzed separately for free-space motion, contact onset, sustained contact, and disturbance recovery, since the correction is expected to concentrate around interaction. Agreement between the reference and composed policies in free space therefore constitutes evidence of specialization rather than a negative result.
 
 \subsection{Execution Rate}
 \label{sec:exp_rate}

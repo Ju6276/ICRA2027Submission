@@ -8,7 +8,7 @@ Actions are expressed in the end-effector frame as
     A = [\, p \in \mathbb{R}^{3};\; r \in \mathbb{R}^{6};\; g \in \mathbb{R} \,] \in \mathbb{R}^{10},
     \label{eq:action_space}
 \end{equation}
-where $r$ denotes the first two columns of the rotation matrix~\cite{zhou2019continuity} and $A^{p} \in \mathbb{R}^{9}$ the pose component. This representation is required because the targets of Sec.~\ref{sec:teacher_differencing} are action \emph{differences}, and the branch cut of an Euler parameterization at $\pm\pi$ introduces spurious $2\pi$ displacements into precisely that quantity.
+where $r$ denotes the first two columns of the rotation matrix~\cite{zhou2019continuity} and $A^{p} \in \mathbb{R}^{9}$ the pose component. A continuous rotation parameterization is necessary here because the targets of Sec.~\ref{sec:teacher_differencing} are action \emph{differences}, for which the branch cut of an Euler parameterization at $\pm\pi$ would introduce spurious $2\pi$ displacements.
 
 Let $t_k$ denote the observation timestamp of the most recent slow update and $t$ the current control instant. The command is a reference plus a correction,
 \begin{equation}
@@ -155,7 +155,7 @@ The student consumes force and emits pose corrections. A causal TCN of the same 
     E_S^F\!\left(F_{t-w_S:t}\right),
     \label{eq:student_force}
 \end{equation}
-with the validity mask applied at the stem so that unpopulated slots contribute zero independently of normalization.
+with the validity mask applied at the encoder input so that unpopulated slots do not contribute.
 
 The remaining inputs form an unordered set of conditions: the cached intent bins, the current state, the current reference action, and a time token. Each is projected to a common width and tagged with a learned type embedding,
 \begin{equation}
@@ -171,7 +171,7 @@ The remaining inputs form an unordered set of conditions: the cached intent bins
     \right],
     \label{eq:fast_token_sequence}
 \end{equation}
-where $\gamma_t$ is the time feature of Sec.~\ref{sec:rate_agnostic} and $q$ a learned residual query. Positional encodings are omitted, since the conditions admit no meaningful ordering and index-based encodings would additionally shift under a change of $M$. A single pre-norm block with grouped-query attention processes the set, conditions attending to one another bidirectionally while the query is excluded from their view,
+where $\gamma_t$ is the time feature of Sec.~\ref{sec:rate_agnostic} and $q$ a learned residual query. Positional encodings are omitted, the conditions admitting no meaningful ordering. A single pre-norm block with grouped-query attention processes the set, conditions attending to one another bidirectionally while the query is excluded from their view,
 \begin{equation}
     H_t = \mathrm{Block}(X_t),
     \label{eq:gemma}
@@ -222,12 +222,12 @@ giving
     \lambda_{\mathrm{comp}}\mathcal{L}_{\mathrm{comp}}.
     \label{eq:total_loss}
 \end{equation}
-The decay $\beta < 1$ reflects that step $1$ executes in the common case while later steps execute only when the student stalls or is outrun. No nominal-imitation term appears, the slow reference being a frozen teacher rather than a trained policy. No behavior-cloning term on the demonstrated action appears either: such a term would require the student to absorb the teacher's imitation error, which is not force-attributable and would contaminate the target of Eq.~\eqref{eq:teacher_residual}. The teacher-to-demonstration gap is instead reported as a separate diagnostic.
+The decay $\beta < 1$ reflects that the first step executes in the common case while later steps execute only when the student stalls or is outrun. No nominal-imitation term appears, the slow reference being a frozen teacher rather than a trained policy, and no behavior-cloning term on the demonstrated action appears, since the teacher's imitation error is not force-attributable and would contaminate the target of Eq.~\eqref{eq:teacher_residual}.
 
 \subsection{Rate-Agnostic Target Generation}
 \label{sec:rate_agnostic}
 
-A student trained at a single slow rate and latency learns that operating point. We instead treat timing as a distribution. Targets are extracted once at full rate, and each training epoch redraws a schedule: a slow update period from $[1/f_{\max}, 1/f_{\min}]$, an inference latency $\ell$ from $[\ell_{\min}, \ell_{\max}]$, and per-update jitter from $[-\eta,\eta]$. Redrawing operates on the stored unjittered grid, so jitter is applied once and does not compound across resamplings. A packet published at $t_k$ becomes usable only at $t_k + \ell$; earlier rows are excluded, and a packet overtaken in flight by a newer one is discarded. This excludes the physically unrealizable case of zero-age context, which unconstrained extraction admits.
+A student trained at a single slow rate and latency learns that operating point. We instead treat timing as a distribution. Targets are extracted once at full rate, and each training epoch redraws a schedule: a slow update period from $[1/f_{\max}, 1/f_{\min}]$, an inference latency $\ell$ from $[\ell_{\min}, \ell_{\max}]$, and per-update jitter from $[-\eta,\eta]$. A packet published at $t_k$ becomes usable only at $t_k + \ell$; earlier control instants are excluded, and a packet overtaken in flight by a newer one is discarded. Modeling latency explicitly also excludes the physically unrealizable case of a zero-age context, which unconstrained extraction would otherwise admit.
 
 The student is then conditioned on the value of its context,
 \begin{equation}
@@ -241,7 +241,7 @@ The student is then conditioned on the value of its context,
     \alpha_t = \frac{t - t_j}{\tau_A} \in [0,1),
     \label{eq:time_features}
 \end{equation}
-where $c$ is a fixed age scale and $\alpha_t$ the interpolation fraction between the chunk waypoints bracketing $t$. The two features are not collinear: age accumulates across a slow period while $\alpha_t$ is periodic within it, so jointly they identify both the staleness of the semantic context and the position of the command within an action interval. The scale $c$ must be identical offline and online and must cover the randomized band without clipping, a clipped age concealing the staleness the student is intended to compensate.
+where $c$ is a fixed age scale covering the randomized band and $\alpha_t$ the interpolation fraction between the chunk waypoints bracketing $t$. The two features are not collinear: age accumulates across a slow period while $\alpha_t$ is periodic within it, so jointly they identify both the staleness of the semantic context and the position of the command within an action interval.
 
 Algorithm~\ref{alg:pipeline} summarizes the procedure.
 
@@ -278,6 +278,4 @@ Existing fast--slow force policies cache the vision--language prefix but retain 
 
 At deployment the teacher runs in null mode as the slow branch on its own thread, publishing a packet containing the reference chunk, the pooled intent bins, the observation timestamp, and the time at which the packet became available. Force is appended to a ring buffer at the sensor rate and state is updated independently.
 
-The student occupies a second thread. Each cycle it reads the most recent packet, force window, and state, and publishes a command chunk stamped with its validity interval. A third loop samples that chunk at the control instant and applies Eq.~\eqref{eq:action_comp}. Separating publication from consumption prevents the actuator from blocking on inference: a late student update degrades to executing a later step of the previous chunk, the case for which Eq.~\eqref{eq:residual_output} is supervised. When no unexpired chunk is available the actuator holds rather than extrapolating.
-
-Two consistency conditions govern correctness. The state and force window presented to the student must use the normalization statistics of training, and the reference must be rebased onto the state observed by its packet rather than the current state. Both are verified against a contract recorded during target extraction, which fixes the pooled bin count, action width, chunk length, action period, age scale, and trained timing band.
+The student occupies a second thread. Each cycle it reads the most recent packet, force window, and state, and publishes a command chunk stamped with its validity interval. A third loop samples that chunk at the control instant and applies Eq.~\eqref{eq:action_comp}, rebasing the reference onto the state observed by its own packet rather than the current state. Separating publication from consumption prevents the actuator from blocking on inference, since a late student update degrades to executing a later step of the previous chunk, the case for which Eq.~\eqref{eq:residual_output} is supervised. When no unexpired chunk is available the actuator holds rather than extrapolating.

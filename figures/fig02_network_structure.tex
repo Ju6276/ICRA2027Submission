@@ -62,7 +62,7 @@
   \draw[flow,draw=cRes] (null.east) -- ++(5mm,0) |- ([yshift=-2mm]rest.west);
 
   \node[fast,text width=31mm] (fastT) at (16.5,4.55)
-    {Fast Residual Student\\TCN + one block, $44.7$\,M\\$\Delta\hat{A}_{1:K}$};
+    {Fast Residual Student\\$\Delta\hat{A}_{1:K}$};
   \draw[flow,draw=cRes] (rest.east) -- (fastT.west);
   \draw[flow,draw=cNom] (nomt.east) -- ++(3mm,0) |- ([yshift=4mm]fastT.west);
 
@@ -96,7 +96,7 @@
   \node[block,draw=cFast,fill=cFast!8] (tcnD) at (4.2,-1.35)
     {Causal force TCN\\$Z_t^F$};
   \node[fast,text width=31mm] (expert) at (10.6,-0.75)
-    {Residual Student\\one attention block\\$2.4$\,ms / $417$ Hz};
+    {Residual Student\\one attention block};
   \node[block,draw=cFast,fill=cFast!5,text width=25mm] (delta) at (13.9,-0.75)
     {$K$-step correction\\$\Delta\hat{A}_{t,1:K}$};
   \draw[flow,draw=cFast] (forceD.east) -- (tcnD.west);
