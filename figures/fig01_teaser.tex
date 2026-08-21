@@ -31,60 +31,58 @@
 }
 
 \begin{document}
-\begin{tikzpicture}[node distance=4mm and 8mm]
-  \node[data] (vls) {Vision $V_k$\\Language $L$\\State $S_k$};
-  \node[data,below=3mm of vls] (force) {Native-rate force history\\$\mathcal{F}_k=F_{t_k-w:t_k}$};
-
-  \node[teacher,right=9mm of $(vls.east)!0.5!(force.east)$] (teach)
-    {Frozen Temporal\\Force-Aware\\VLA Teacher};
+\begin{tikzpicture}
+  % Top: paired target construction.
+  \node[data] (vls) at (0,2.0) {Vision $V_k$\\Language $L$\\State $S_k$};
+  \node[data] (force) at (0,0.65) {Native-rate force history\\$\mathcal{F}_k=F_{t_k-w:t_k}$};
+  \node[teacher] (teach) at (3.7,1.32) {Frozen Temporal\\Force-Aware\\VLA Teacher};
   \draw[flow] (vls.east) -- ([yshift=4mm]teach.west);
   \draw[flow,draw=cFast] (force.east) -- ([yshift=-4mm]teach.west);
 
-  \node[query,right=9mm of teach,yshift=7mm] (full)
-    {Observed-force query\\$A_T^{\mathrm{full}}(\epsilon)$};
-  \node[query,right=9mm of teach,yshift=-7mm] (null)
-    {Null-force query\\$A_T^{\mathrm{null}}(\epsilon)$};
+  \node[query] (full) at (7.35,2.05) {Observed-force query\\$A_T^{\mathrm{full}}(\epsilon)$};
+  \node[query] (null) at (7.35,0.58) {Null-force query\\$A_T^{\mathrm{null}}(\epsilon)$};
   \draw[flow,draw=cTeacher] (teach.east) -- (full.west);
   \draw[flow,draw=cTeacher] (teach.east) -- (null.west);
-  \node[note,below=0.5mm of null,text width=30mm] {learned $z_{\varnothing F}$, shared prefix\\and shared noise $\epsilon$};
+  \node[note,text width=31mm] at (7.35,-0.18)
+    {learned $z_{\varnothing F}$; shared prefix and noise $\epsilon$};
 
-  \node[target,draw=cNom,fill=cNom!10,right=10mm of full] (nom)
+  \node[target,draw=cNom,fill=cNom!10] (nom) at (11.05,2.05)
     {Slow reference\\$A^{\mathrm{ref}}\!\leftarrow\!A_T^{\mathrm{null}}$};
-  \node[target,draw=cRes,fill=cRes!9,right=10mm of null] (res)
+  \node[target,draw=cRes,fill=cRes!9] (res) at (11.05,0.58)
     {Counterfactual residual target\\$\Delta A_T^{\mathrm{cf}}=A_T^{\mathrm{full}}\!-\!A_T^{\mathrm{null}}$};
   \draw[flow,draw=cNom] (null.east) -- ++(4mm,0) |- (nom.west);
   \draw[flow,draw=cRes] (full.east) -- ++(3mm,0) |- ([yshift=2mm]res.west);
   \draw[flow,draw=cRes] (null.east) -- ++(5mm,0) |- ([yshift=-2mm]res.west);
 
-  \node[slowbox,right=9mm of nom] (slow)
-    {Cached chunk + intent\\interpolated, age known};
-  \node[student,draw=cFast,fill=cFast!10,right=9mm of res] (fast)
+  % Bottom: asynchronous deployment.
+  \node[slowbox] (slow) at (4.25,-2.05)
+    {Cached reference + intent\\slow update};
+  \node[student,draw=cFast,fill=cFast!10] (fast) at (8.55,-2.05)
     {Fast Residual Student\\one pass\\$\Delta\hat{A}_{1:K}$};
-  \draw[flow,draw=cNom] (nom.east) -- (slow.west);
-  \draw[flow,draw=cRes] (res.east) -- (fast.west);
-
-  \node[circle,draw=cInk,fill=white,line width=0.9pt,minimum size=7mm,
-        font=\sffamily\small\bfseries,right=9mm of $(slow.east)!0.5!(fast.east)$] (sum) {$+$};
-  \draw[flow,draw=cSlow] (slow.east) -- ++(4mm,0) |- (sum.north);
-  \draw[flow,draw=cFast] (fast.east) -- ++(4mm,0) |- (sum.south);
-  \node[data,right=6mm of sum,text width=23mm,draw=cInk,fill=cInk!5] (cmd)
+  \node[circle,draw=cInk,fill=white,line width=0.9pt,minimum size=8mm,
+        font=\sffamily\small\bfseries] (sum) at (11.55,-2.05) {$+$};
+  \node[data,text width=27mm,draw=cInk,fill=cInk!5] (cmd) at (14.25,-2.05)
     {Robot command\\$A^{\mathrm{cmd}}=A^{\mathrm{ref}}+\Delta\hat{A}$};
+
+  \draw[flow,draw=cNom] (nom.south) -- ++(0,-5mm) -| (slow.north);
+  \draw[flow,draw=cRes] (res.south) -- ++(0,-5mm) -| (fast.north);
+  \draw[flow,draw=cSlow] (slow.east) -- (sum.west);
+  \draw[flow,draw=cFast] (fast.east) -- (sum.west);
   \draw[flow] (sum.east) -- (cmd.west);
 
-  \node[note,above=1mm of slow] {$5$--$15$ Hz};
-
-  % The punchline: what the reactive path predicts, before and after.
-  \node[bad,below=7mm of fast] (before)
-    {prior fast branch: cached prefix,\\full action generation};
-  \node[good,below=2mm of before] (after)
-    {ours: counterfactual residual,\\one student pass};
-  \draw[dashed,line width=0.6pt,draw=cInk!50] (fast.south) -- (before.north);
+  \node[bad] (before) at (6.35,-4.0)
+    {full-action fast branch:\\iterative generation};
+  \node[good] (after) at (10.0,-4.0)
+    {ForceDelta-VLA:\\one residual pass};
+  \draw[dashed,line width=0.6pt,draw=cInk!50,-{Latex[length=1.8mm]}]
+    (before.east) -- (after.west);
 
   \begin{scope}[on background layer]
     \node[rounded corners=4pt,draw=cTeacher!35,fill=cTeacher!2,inner sep=3mm,
-          fit=(teach)(full)(null),label={[font=\sffamily\tiny\bfseries,text=cTeacher]above:ONE FROZEN TEACHER, TWO FORCE CONDITIONS}] {};
+          fit=(vls)(force)(teach)(full)(null)(nom)(res),
+          label={[font=\sffamily\tiny\bfseries,text=cTeacher]above:PAIRED TEACHER QUERIES CONSTRUCT THE CORRECTION TARGET}] {};
     \node[rounded corners=4pt,draw=cInk!25,fill=gray!2,inner sep=3mm,
-          fit=(slow)(fast)(sum)(cmd),label={[font=\sffamily\tiny\bfseries,text=cInk]above:ONLY THE RESIDUAL IS UPDATED REACTIVELY}] {};
+          fit=(slow)(fast)(sum)(cmd)] {};
   \end{scope}
 \end{tikzpicture}
 \end{document}
