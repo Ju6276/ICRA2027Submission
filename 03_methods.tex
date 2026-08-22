@@ -150,4 +150,20 @@ The decaying weights emphasize corrections that are executed earlier in the pred
 \subsection{Asynchronous Deployment}
 \label{sec:execution}
 
-During deployment, the null-mode teacher periodically updates the reference action chunk and intent tokens. Between these updates, the residual policy reads the latest force history and robot state, predicts a short correction chunk in a single deterministic forward pass, and composes it with the interpolated reference according to Eq.~\eqref{eq:action_comp}. Thus, semantic action generation remains in the slow branch, whereas force-dependent pose corrections can be updated without rerunning the flow-matching action generator.
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/fig03_async_deployment.pdf}
+    \caption{Asynchronous deployment. The reference and residual workers execute independently. A completed VLA query atomically replaces the timestamped cache; residual updates continue against the latest complete cache while the next VLA query is running.}
+    \label{fig:async_deployment}
+\end{figure}
+
+Deployment uses two independent workers, as illustrated in Fig.~\ref{fig:async_deployment}. At request time $t_k$, the reference worker snapshots $(V_k,L,S_k)$ and invokes the frozen teacher in its null-force mode. When inference completes at $\bar t_k$, it atomically publishes a versioned packet containing $A_{T,k}^{\mathrm{null}}$, $Z_k^{\mathrm{intent}}$, and the action timestamps. Publishing the packet as one unit prevents the residual worker from combining a reference chunk with intent tokens from different teacher queries.
+
+The reference samples are timestamped relative to the request time at the action rate $f_A$:
+\begin{equation}
+    \tau_{k,j}=t_k+(j-1)/f_A,\qquad j=1,\ldots,H.
+    \label{eq:reference_timestamps}
+\end{equation}
+Upon publication, samples with $\tau_{k,j}<\bar t_k$ are expired. At a control instant $t$, $A^{\mathrm{ref}}(t)$ is interpolated from the valid samples that bracket $t$; the previously published packet remains active until a newer complete packet becomes available. This alignment prevents inference latency from restarting execution at the beginning of a stale chunk.
+
+The residual worker follows its own schedule and never waits for the reference worker. At each update, it takes a consistent snapshot of the latest packet, reads the most recent force window $\mathcal F_t$ and robot state $S_t$, and predicts $\Delta\hat A_{t,1:K}$ in one deterministic pass. The first correction is composed with the time-aligned reference according to Eq.~\eqref{eq:action_comp}; the reference supplies the gripper command. Consequently, semantic action generation is updated only when a teacher query completes, whereas force-conditioned pose corrections continue to update while the next flow-matching query is in progress.
