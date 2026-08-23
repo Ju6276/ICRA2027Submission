@@ -8,7 +8,7 @@
 \subsection{Problem Formulation}
 \label{sec:problem}
 
-We consider an offline dataset $\mathcal D$ of teleoperated manipulation trajectories. Each trajectory contains visual observations $V_t$, a language instruction $L$, robot state $S_t$, timestamped Cartesian-wrench history $\mathcal F_t$, and demonstrated action $A_t^*$. The wrench signal is estimated from each robot's internal joint-torque sensing. A force-conditioned VLA teacher $T_\theta$ maps these observations to an $H$-step action chunk.
+We consider an offline dataset $\mathcal D$ of teleoperated manipulation trajectories. Each trajectory contains visual observations $V_t$, a language instruction $L$, robot state $S_t$, timestamped force/torque history $\mathcal F_t$, and demonstrated action $A_t^*$. Here $\mathcal F_t$ is the six-axis estimate of external forces and torques acting at the end effector. A force-conditioned VLA teacher $T_\theta$ maps these observations to an $H$-step action chunk.
 
 Our objective is to deploy the policy as two asynchronous components: a reference generator that captures task-level motion and a compact residual policy $\pi_\psi$ that updates pose corrections from recent force feedback. Let $\mathcal P(\cdot)$ extract the end-effector pose component of an action, concatenated across arms for bimanual tasks. If $k$ indexes the latest completed reference query, issued at $t_k$ from state $S_k$, the command at control time $t>t_k$ is
 \begin{align}

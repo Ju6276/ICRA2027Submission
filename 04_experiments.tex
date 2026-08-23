@@ -4,10 +4,10 @@ Our experiments address task performance, contact quality, system responsiveness
 \label{sec:exp_protocol}
 
 \subsubsection{Hardware platforms.}
-We evaluate on a seven-degree-of-freedom Franka Emika Panda and a bimanual platform from X Square Robot. The single-arm setup uses one wrist-mounted and one external-view Intel RealSense D405 camera; the bimanual setup uses one wrist-mounted camera per arm and a shared external-view camera. Force feedback is obtained from the six-axis Cartesian wrench estimates provided by the robots, with one wrench stream per arm and no additional wrist-mounted force/torque sensors.
+We evaluate on a seven-degree-of-freedom Franka Emika Panda and a bimanual platform from X Square Robot. The single-arm setup uses one wrist-mounted and one external-view Intel RealSense D405 camera; the bimanual setup uses one wrist-mounted camera per arm and a shared external-view camera. Both platforms provide estimates of the external forces and torques acting at each end effector. We record the resulting six-axis wrench for each arm without additional wrist-mounted force/torque sensors.
 
 \subsubsection{Tasks and data collection.}
-We evaluate the eight tasks in Table~\ref{tab:tasks}. Each task emphasizes a distinct contact regime rather than language or object generalization. We collect $200$ teleoperated demonstrations per single-arm task and $300$ per bimanual task. Multi-view images, robot states, and commanded actions are synchronized at $30$~Hz; timestamped robot-estimated external-wrench signals are recorded at $100$~Hz.
+We evaluate the eight tasks in Table~\ref{tab:tasks}. Each task emphasizes a distinct contact regime rather than language or object generalization. We collect $200$ teleoperated demonstrations per single-arm task and $300$ per bimanual task. Multi-view images, robot states, and commanded actions are synchronized at $30$~Hz; the timestamped six-axis force/torque estimates are recorded at $100$~Hz.
 
 \begin{table*}[t]
     \centering
