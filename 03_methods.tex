@@ -36,7 +36,7 @@ where $Z_k^{\mathrm{intent}}$ is the cached task context of query $k$ and $\xi_{
     g^{\mathrm{cmd}}(t)=g^{\mathrm{ref}}(t).
     \label{eq:action_comp}
 \end{equation}
-The two corrections answer two different ways in which the reference has fallen behind. It was computed from the observation at $t_k$ and does not reflect the contact measured since, which is the part $\Delta\hat A^{\mathrm{force}}$ supplies. Its pose channels are also displacements from $S_k$ rather than from the current $S_t$, and $\Delta\hat A^{\mathrm{stale}}$ resolves that difference of base state. The gripper is left to the reference, being a task-level decision rather than a contact-driven quantity.
+The two corrections answer two ways in which the reference has fallen behind: $\Delta\hat A^{\mathrm{force}}$ supplies the contact measured since $t_k$, and $\Delta\hat A^{\mathrm{stale}}$ resolves the displacement of the base state from $S_k$ to $S_t$. The gripper is left to the reference, being a task-level decision rather than a contact-driven quantity.
 
 The demonstrations supervise only $A_t^*$ and label neither correction. The learning problem is to construct both targets from $\mathcal{D}$ and the trained teacher, and to fit $\pi_\psi$ without task rewards or corrective demonstrations. ForceDelta-VLA does so in three stages, summarized in Fig.~\ref{fig:network_structure}: we train a temporal force-conditioned teacher, freeze it and learn a null-force mode, then freeze both modes and distill paired targets into $\pi_\psi$. Only the last stage trains a student; the reference comes from the frozen teacher throughout.
 
@@ -148,7 +148,7 @@ An attention block $\Phi$ treats these as an unordered set and reads out at a le
 \end{align}
 both in $\mathbb{R}^{K\times9}$. The target of Eq.~\eqref{eq:staleness_target} is a difference between two force-free quantities, and dropping the force token from the second pass leaves the staleness output independent of the measured force by construction. The pass is recomputed rather than read from the first one, since the conditions attend to each other and the remaining tokens have already taken up the force. The two passes share every parameter except $W_{\mathrm{force}}$ and $W_{\mathrm{stale}}$, both initialized to zero, so an untrained policy leaves the reference unchanged.
 
-Each pass emits $K$ steps rather than one, all conditioned on force and state up to $t$, in the same way that the teacher forms its whole chunk from a single observation. Step $j$ is timestamped one control period after step $j-1$, and the step whose timestamp matches the current time is the one applied.
+Each pass emits $K$ steps rather than one, all conditioned on force and state up to $t$, in the same way that the teacher forms its whole chunk from a single observation. Step $j$ is timestamped one control period after step $j-1$.
 
 \subsubsection{Training under the Deployment Schedule}
 \label{sec:async_training}
@@ -180,21 +180,13 @@ so that steps executed earlier in the chunk carry more weight.
     \label{fig:async_deployment}
 \end{figure}
 
-Deployment runs two independent workers, as illustrated in Fig.~\ref{fig:async_deployment}. At request time $t_k$ the reference worker snapshots $(V_k,L,S_k)$ and invokes the frozen teacher in its null-force mode. On completion at $\bar t_k$ it publishes a versioned packet holding $A_{T,k}^{\mathrm{null}}$, $Z_k^{\mathrm{intent}}$, the action timestamps, and the base state $S_k$. The packet is published as a unit, so a reference chunk and the intent tokens read alongside it always originate from the same query. It carries $S_k$ because both Eq.~\eqref{eq:staleness_target} and the final conversion to an absolute pose are expressed about that state.
+Deployment runs two independent workers, as illustrated in Fig.~\ref{fig:async_deployment}. At request time $t_k$ the reference worker snapshots $(V_k,L,S_k)$ and invokes the frozen teacher in its null-force mode. On completion at $\bar t_k$ it publishes as a unit a versioned packet holding $A_{T,k}^{\mathrm{null}}$, $Z_k^{\mathrm{intent}}$, the action timestamps, and the base state $S_k$, so a reference chunk and the intent tokens read alongside it always originate from the same query. The packet carries $S_k$, about which Eq.~\eqref{eq:staleness_target} and the conversion to an absolute pose are expressed.
 
 Reference samples are timestamped relative to the request time at the action rate $f_A$,
 \begin{equation}
     \tau_{k,j}=t_k+(j-1)/f_A,\qquad j=1,\ldots,H,
     \label{eq:reference_timestamps}
 \end{equation}
-and those with $\tau_{k,j}<\bar t_k$ are expired on publication. At a control instant $t$, $A^{\mathrm{ref}}(t)$ is interpolated from the valid samples bracketing $t$, and the previous packet stays active until a newer complete one arrives, so execution continues at the sample matching the current time. The same timestamps define $\xi_{t,k}$.
+and those with $\tau_{k,j}<\bar t_k$ are expired on publication. At a control instant $t$, $A^{\mathrm{ref}}(t)$ is interpolated from the valid samples bracketing $t$, and the previous packet stays active until a newer complete one arrives. The same timestamps define $\xi_{t,k}$.
 
-The residual worker follows its own schedule and never waits. At each update it snapshots the latest packet, reads $\mathcal{F}_t$ and $S_t$, and evaluates Eqs.~\eqref{eq:force_output} and~\eqref{eq:staleness_output} in one deterministic pass. Writing $j(t)$ for the emitted step whose timestamp matches $t$, the executed form of Eq.~\eqref{eq:action_comp} bounds the two corrections separately,
-\begin{equation}
-    (A^{\mathrm{cmd}}(t))^p
-    =(A^{\mathrm{ref}}(t))^p
-     +\mathrm{clip}\!\left(\Delta\hat A^{\mathrm{force}}_{t,j(t)},\kappa_F\right)
-     +\mathrm{clip}\!\left(\Delta\hat A^{\mathrm{stale}}_{t,j(t)},\kappa_S\right),
-    \label{eq:deploy_composition}
-\end{equation}
-after which the command is unnormalized and added to $S_k$ to obtain an absolute pose. The two bounds govern different quantities: $\kappa_F$ limits the departure from the planned motion attributed to measured contact, and $\kappa_S$ limits how far the cached plan is advanced toward the present.
+The residual worker follows its own schedule and never waits. At each update it snapshots the latest packet, reads $\mathcal{F}_t$ and $S_t$, and evaluates Eqs.~\eqref{eq:force_output} and~\eqref{eq:staleness_output} in one deterministic pass. Writing $j(t)$ for the emitted step whose timestamp matches $t$, the command follows Eq.~\eqref{eq:action_comp} with $\Delta\hat A^{\mathrm{force}}_{t,j(t)}$ and $\Delta\hat A^{\mathrm{stale}}_{t,j(t)}$ clipped separately at $\kappa_F$ and $\kappa_S$, and is then unnormalized and added to $S_k$ to obtain an absolute pose. The two bounds govern different quantities: $\kappa_F$ limits the departure from the planned motion attributed to measured contact, and $\kappa_S$ limits how far the cached plan is advanced toward the present.
