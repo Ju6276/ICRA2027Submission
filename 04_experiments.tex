@@ -1,13 +1,13 @@
-Our experiments address task performance, contact quality, and component contributions. Specifically, we ask whether ForceDelta-VLA improves success over force-free, force-aware, and fast--slow policies; whether the distilled residual improves physical interaction rather than producing more aggressive motion; and which components of the proposed distillation and asynchronous execution account for the improvement.
+Our experiments address task performance, contact quality, system responsiveness, and component contributions. Specifically, we ask whether ForceDelta-VLA improves success over force-free, force-aware, and fast--slow policies; whether the gain remains relative to the exact temporal force-conditioned teacher from which it is distilled; whether the residual improves physical interaction rather than producing more aggressive motion; how performance changes with reference delay and residual constraints; and which components of the proposed distillation account for the improvement.
 
 \subsection{Experimental Setup}
 \label{sec:exp_protocol}
 
 \subsubsection{Hardware platforms.}
-The single-arm platform consists of a seven-degree-of-freedom Franka Emika Panda manipulator observed by two Intel RealSense D405 cameras. \assumed{A six-axis ATI Mini45 sensor is mounted between the wrist and gripper. The bimanual platform comprises two seven-degree-of-freedom Franka Emika Panda manipulators, one wrist force/torque sensor per arm, and two RealSense D405 cameras.} Values and hardware details shown in red are provisional and will be replaced by the final experimental record.
+We evaluate on a seven-degree-of-freedom Franka Emika Panda and a bimanual platform from X Square Robot. The single-arm setup uses one wrist-mounted and one external-view Intel RealSense D405 camera; the bimanual setup uses one wrist-mounted camera per arm and a shared external-view camera. Force feedback is obtained from the six-axis Cartesian wrench estimates provided by the robots, with one wrench stream per arm and no additional wrist-mounted force/torque sensors.
 
 \subsubsection{Tasks and data collection.}
-We evaluate the eight tasks in Table~\ref{tab:tasks}. Each task emphasizes a distinct contact regime rather than language or object generalization. We collect $200$ teleoperated demonstrations per single-arm task and $300$ per bimanual task. Multi-view images, robot states, and commanded actions are synchronized at $30$~Hz; timestamped six-axis force/torque measurements are retained at $100$~Hz.
+We evaluate the eight tasks in Table~\ref{tab:tasks}. Each task emphasizes a distinct contact regime rather than language or object generalization. We collect $200$ teleoperated demonstrations per single-arm task and $300$ per bimanual task. Multi-view images, robot states, and commanded actions are synchronized at $30$~Hz; timestamped robot-estimated external-wrench signals are recorded at $100$~Hz.
 
 \begin{table*}[t]
     \centering
@@ -35,9 +35,9 @@ We evaluate the eight tasks in Table~\ref{tab:tasks}. Each task emphasizes a dis
 \subsection{Baselines and Metrics}
 \label{sec:exp_baselines}
 
-We compare with four representative policies: the force-free $\pi_{0.5}$ VLA~\cite{black2025pi05}; ForceVLA~\cite{yu2025forcevla}, which fuses instantaneous force through a force-aware mixture of experts; TA-VLA~\cite{zhang2025tavla}, which injects temporal torque features into a pretrained VLA; and ImplicitRDP~\cite{chen2025implicitrdp}, a visual--force diffusion policy with structural fast--slow processing.
+We compare with five representative policies. The external baselines are the force-free $\pi_{0.5}$ VLA~\cite{black2025pi05}; ForceVLA~\cite{yu2025forcevla}, which fuses instantaneous force through a force-aware mixture of experts; TA-VLA~\cite{zhang2025tavla}, which injects temporal torque features into a pretrained VLA; and ImplicitRDP~\cite{chen2025implicitrdp}, a publicly reproducible fast--slow visual--force diffusion policy. ImplicitRDP serves as a fast--slow visual--force baseline rather than an asynchronous VLA baseline. Our architecture-matched baseline, \emph{Temporal ForceVLA}, directly rolls out the Stage-1 temporal force-conditioned teacher. It uses the same causal force encoder and teacher weights as ForceDelta-VLA, but neither learns a null mode nor distills a residual policy. This comparison isolates the contribution of residual decomposition from that of temporal force conditioning.
 
-For each method and task, we evaluate two independently trained seeds with ten trials per seed. The primary metric is success rate, reported per task and averaged separately over the four single-arm and four bimanual tasks. We report peak contact force over all trials and completion time over successful trials as mean $\pm$ standard deviation. Lower values indicate less severe contact and faster successful execution, respectively.
+For each method and task, we evaluate two independently trained seeds with ten trials per seed. The primary metric is success rate, reported per task and averaged separately over the four single-arm and four bimanual tasks. We accompany pooled success rates with Wilson $95\%$ confidence intervals and provide the two seed-wise success counts in the supplementary material. Contact quality is measured over all trials by peak contact force and force impulse, defined as the time integral of force magnitude until success or termination. Completion time is reported over successful trials. Continuous metrics are reported as mean $\pm$ standard deviation; lower values indicate less severe contact, lower accumulated interaction load, and faster successful execution, respectively.
 
 \subsection{Implementation Details}
 \label{sec:exp_implementation}
@@ -48,17 +48,19 @@ Each arm is controlled by a pose displacement comprising 3D translation and a co
 
 After freezing the teacher, \assumed{we optimize the null token and rank-$32$ null-specific adapter for $10{,}000$ steps at a learning rate of $10^{-4}$. The visual--language prefix is pooled into $M{=}16$ tokens. The residual policy contains a causal force encoder and one pre-norm attention block with separate force and staleness output projections. It predicts $K{=}5$ corrections and is trained for $30{,}000$ steps with AdamW, a global batch size of $128$, a learning rate of $3\times10^{-4}$, and $\beta{=}0.5$.} During student training, the cached-reference age is sampled by replaying the asynchronous schedule described in Sec.~\ref{sec:method}.
 
+At deployment, translation and rotation corrections are clipped separately at every residual update. \assumed{The final bounds are $X$~mm and $X^{\circ}$ per predicted step.} For bimanual policies, clipping is applied independently to each arm before the corrections are composed with the reference.
+
 \subsection{Main Results}
 \label{sec:exp_main}
 
 \subsubsection{Task success.}
-Table~\ref{tab:main_results} reports the real-robot success rates. \assumed{ForceDelta-VLA achieves an overall mean of $87.5\%$, compared with $75.0\%$ for the strongest baseline, ImplicitRDP. The gain is consistent across platforms: $11.25$ points on the single-arm tasks and $13.75$ points on the bimanual tasks. Improvements are largest on USB insertion, plug insertion, plug removal, and drawer opening, where newly observed contact or friction must modify an otherwise plausible reference motion.}
+Table~\ref{tab:main_results} reports the real-robot success rates. The comparison with Temporal ForceVLA isolates the effect of null-mode residual distillation from the benefit of replacing instantaneous force with causal force history. \assumed{Final text will report the strongest external baseline, the controlled teacher comparison, platform-level improvements, and Wilson intervals after completing all robot trials.}
 
 \begin{table*}[t]
     \centering
     \small
     \setlength{\tabcolsep}{4pt}
-    \caption{Success rate (\%) on eight real-robot tasks. Each entry aggregates two seeds and ten trials per seed. All red values are provisional.}
+    \caption{Success rate (\%) on eight real-robot tasks. Each entry aggregates two seeds and ten trials per seed; final results will include Wilson $95\%$ confidence intervals, with seed-wise counts reported in the supplementary material. Red entries are placeholders.}
     \label{tab:main_results}
     \begin{tabular}{lcccccccccc}
         \toprule
@@ -76,44 +78,136 @@ Table~\ref{tab:main_results} reports the real-robot success rates. \assumed{Forc
         & \shortstack{\textbf{Single-arm}\\\textbf{Avg.}}
         & \shortstack{\textbf{Bimanual}\\\textbf{Avg.}} \\
         \midrule
-        $\pi_{0.5}$~\cite{black2025pi05} & \assumed{75} & \assumed{55} & \assumed{35} & \assumed{50} & \assumed{30} & \assumed{40} & \assumed{55} & \assumed{35} & \assumed{53.75} & \assumed{40.00} \\
-        ForceVLA~\cite{yu2025forcevla} & \assumed{85} & \assumed{70} & \assumed{60} & \assumed{65} & \assumed{60} & \assumed{70} & \assumed{75} & \assumed{55} & \assumed{70.00} & \assumed{65.00} \\
-        TA-VLA~\cite{zhang2025tavla} & \assumed{80} & \assumed{75} & \assumed{65} & \assumed{65} & \assumed{65} & \assumed{65} & \assumed{80} & \assumed{60} & \assumed{71.25} & \assumed{67.50} \\
-        ImplicitRDP~\cite{chen2025implicitrdp} & \assumed{85} & \assumed{80} & \assumed{70} & \assumed{75} & \assumed{70} & \assumed{75} & \assumed{80} & \assumed{65} & \assumed{77.50} & \assumed{72.50} \\
-        \textbf{ForceDelta-VLA (ours)} & \assumed{\textbf{95}} & \assumed{\textbf{90}} & \assumed{\textbf{85}} & \assumed{\textbf{85}} & \assumed{\textbf{85}} & \assumed{\textbf{90}} & \assumed{\textbf{90}} & \assumed{\textbf{80}} & \assumed{\textbf{88.75}} & \assumed{\textbf{86.25}} \\
+        $\pi_{0.5}$~\cite{black2025pi05} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} \\
+        ForceVLA~\cite{yu2025forcevla} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} \\
+        TA-VLA~\cite{zhang2025tavla} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} \\
+        ImplicitRDP~\cite{chen2025implicitrdp} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} \\
+        Temporal ForceVLA (Teacher) & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} \\
+        \textbf{ForceDelta-VLA (ours)} & \assumed{$\mathbf{X}$} & \assumed{$\mathbf{X}$} & \assumed{$\mathbf{X}$} & \assumed{$\mathbf{X}$} & \assumed{$\mathbf{X}$} & \assumed{$\mathbf{X}$} & \assumed{$\mathbf{X}$} & \assumed{$\mathbf{X}$} & \assumed{$\mathbf{X}$} & \assumed{$\mathbf{X}$} \\
         \bottomrule
     \end{tabular}
 \end{table*}
 
 \subsubsection{Contact quality.}
-Table~\ref{tab:interaction} reports peak force over all trials and completion time over successful trials. \assumed{Compared with ImplicitRDP, ForceDelta-VLA reduces the platform-averaged peak force from $18.75$ to $15.25$~N ($18.7\%$) and completion time from $21.0$ to $18.0$~s ($14.3\%$). The simultaneous improvement in success, peak force, and duration indicates that the gain is not obtained by executing a slower or more forceful trajectory.}
+Table~\ref{tab:interaction} reports peak force and force impulse over all trials, and completion time over successful trials. \assumed{Final text will compare ForceDelta-VLA with both ImplicitRDP and Temporal ForceVLA, and will interpret success jointly with peak force, force impulse, and duration.}
 
-\begin{table}[t]
+\begin{table*}[t]
     \centering
-    \footnotesize
-    \setlength{\tabcolsep}{2.5pt}
-    \caption{Peak force over all trials and completion time over successful trials (mean $\pm$ std.). All red values are provisional; lower is better.}
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \caption{Contact quality over all trials and completion time over successful trials (mean $\pm$ std.). Red entries are placeholders; lower is better.}
     \label{tab:interaction}
-    \begin{tabular}{lcccc}
+    \begin{tabular}{lcccccc}
         \toprule
-        & \multicolumn{2}{c}{\textbf{Peak force} (N)} & \multicolumn{2}{c}{\textbf{Time} (s)} \\
-        \cmidrule(lr){2-3}\cmidrule(lr){4-5}
-        \textbf{Method} & \scriptsize Single & \scriptsize Biman. & \scriptsize Single & \scriptsize Biman. \\
+        & \multicolumn{2}{c}{\textbf{Peak force} (N)} & \multicolumn{2}{c}{\textbf{Force impulse} (N s)} & \multicolumn{2}{c}{\textbf{Time} (s)} \\
+        \cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+        \textbf{Method} & \scriptsize Single & \scriptsize Biman. & \scriptsize Single & \scriptsize Biman. & \scriptsize Single & \scriptsize Biman. \\
         \midrule
-        $\pi_{0.5}$ & \assumed{$22.8{\pm}5.4$} & \assumed{$31.5{\pm}7.2$} & \assumed{$23.4{\pm}5.1$} & \assumed{$31.2{\pm}6.8$} \\
-        ForceVLA & \assumed{$18.6{\pm}4.1$} & \assumed{$26.4{\pm}5.8$} & \assumed{$21.0{\pm}4.3$} & \assumed{$27.6{\pm}5.7$} \\
-        TA-VLA & \assumed{$17.9{\pm}3.9$} & \assumed{$25.1{\pm}5.5$} & \assumed{$20.2{\pm}4.0$} & \assumed{$26.8{\pm}5.2$} \\
-        ImplicitRDP & \assumed{$15.5{\pm}3.4$} & \assumed{$22.0{\pm}4.8$} & \assumed{$18.0{\pm}3.7$} & \assumed{$24.0{\pm}4.6$} \\
-        \textbf{Ours} & \assumed{$\mathbf{12.7{\pm}2.8}$} & \assumed{$\mathbf{17.8{\pm}3.9}$} & \assumed{$\mathbf{15.5{\pm}3.0}$} & \assumed{$\mathbf{20.5{\pm}3.8}$} \\
+        $\pi_{0.5}$ & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} \\
+        ForceVLA & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} \\
+        TA-VLA & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} \\
+        ImplicitRDP & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} \\
+        Temporal ForceVLA & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} \\
+        \textbf{ForceDelta-VLA} & \assumed{$\mathbf{X}$} & \assumed{$\mathbf{X}$} & \assumed{$\mathbf{X}$} & \assumed{$\mathbf{X}$} & \assumed{$\mathbf{X}$} & \assumed{$\mathbf{X}$} \\
         \bottomrule
     \end{tabular}
-\end{table}
+\end{table*}
 
 \subsubsection{Qualitative analysis.}
 \assumed{On USB and plug insertion, the null-mode reference brings the connector to the target, after which the residual suppresses lateral motion and introduces small reorientation commands following asymmetric contact. During whiteboard wiping, the residual maintains surface contact despite changes in board pose. For cabinet and drawer opening, repeated corrections along the constrained direction compensate for hinge or rail friction without changing the reference strategy. In free-space segments, the predicted force-conditioned correction remains close to zero.} These observations will be illustrated by synchronized rollout frames, force traces, references, and residuals in the final qualitative figure.
 
 \subsubsection{Failure analysis.}
-\assumed{ForceDelta-VLA fails in $20$ of $160$ trials. Eight failures originate from an incorrect reference, including missed pre-contact alignment; seven involve deviations beyond the range of the bounded pose residual; and five require a discrete recovery strategy, such as withdrawing and regrasping.} The first category is inherited from the teacher, whereas the latter categories expose the representational limit of an additive continuous correction.
+\assumed{Final failure counts will be divided into incorrect references, deviations beyond the bounded residual range, and failures requiring a discrete recovery strategy.} The first category is inherited from the teacher, whereas the latter categories expose the representational limit of an additive continuous correction.
+
+\subsection{Runtime and Responsiveness}
+\label{sec:exp_runtime}
+
+Table~\ref{tab:runtime} reports closed-loop measurements at batch size one on the deployment device. Inference latency is measured from model input availability to model output; force-to-command latency additionally includes acquisition of the newest force sample, residual composition, and command publication. Actual update rate is measured from published commands during robot execution rather than inferred from reciprocal forward time. We report mean, standard deviation, and 95th-percentile latency together with parameter count.
+
+\begin{table*}[t]
+    \centering
+    \small
+    \setlength{\tabcolsep}{5pt}
+    \caption{Runtime and responsiveness on the deployment hardware. All red entries must be replaced by closed-loop measurements.}
+    \label{tab:runtime}
+    \begin{tabular}{lccccc}
+        \toprule
+        \textbf{Method/path} & \textbf{Parameters} & \textbf{Inference latency (ms)} & \textbf{P95 (ms)} & \textbf{Force-to-command (ms)} & \textbf{Update rate (Hz)} \\
+        \midrule
+        ImplicitRDP & \assumed{$X$} & \assumed{$X\!\pm\!X$} & \assumed{$X$} & \assumed{$X\!\pm\!X$} & \assumed{$X$} \\
+        Temporal ForceVLA & \assumed{$X$} & \assumed{$X\!\pm\!X$} & \assumed{$X$} & \assumed{$X\!\pm\!X$} & \assumed{$X$} \\
+        ForceDelta reference & \assumed{$X$} & \assumed{$X\!\pm\!X$} & \assumed{$X$} & \assumed{--} & \assumed{$X$} \\
+        ForceDelta residual & \assumed{$X$} & \assumed{$X\!\pm\!X$} & \assumed{$X$} & \assumed{$X\!\pm\!X$} & \assumed{$X$} \\
+        \bottomrule
+    \end{tabular}
+\end{table*}
+
+\subsection{Sensitivity to Asynchronous Execution}
+\label{sec:exp_sensitivity}
+
+\subsubsection{Reference latency.}
+We inject reference delays of $0$, $50$, $100$, $200$, and $300$~ms on USB insertion, plug insertion, and drawer opening. These tasks require rapid correction during precision contact or friction-dominated motion. Table~\ref{tab:latency_sensitivity} compares Temporal ForceVLA, ImplicitRDP, and ForceDelta-VLA using success rate and peak contact force. Temporal ForceVLA receives the same delayed observations and regenerates complete actions; ForceDelta-VLA continues residual updates while the next reference is pending.
+
+\begin{table*}[t]
+    \centering
+    \footnotesize
+    \setlength{\tabcolsep}{3.5pt}
+    \caption{Sensitivity to injected reference latency, averaged over USB insertion, plug insertion, and drawer opening. Red entries are placeholders.}
+    \label{tab:latency_sensitivity}
+    \begin{tabular}{lcccccccccc}
+        \toprule
+        & \multicolumn{5}{c}{\textbf{Success rate} (\%)} & \multicolumn{5}{c}{\textbf{Peak force} (N)} \\
+        \cmidrule(lr){2-6}\cmidrule(lr){7-11}
+        \textbf{Method / delay (ms)} & 0 & 50 & 100 & 200 & 300 & 0 & 50 & 100 & 200 & 300 \\
+        \midrule
+        Temporal ForceVLA & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} \\
+        ImplicitRDP & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} \\
+        \textbf{ForceDelta-VLA} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} \\
+        \bottomrule
+    \end{tabular}
+\end{table*}
+
+\subsubsection{Residual bound.}
+We scale the default per-step translation and rotation bounds by $0.5\times$, $1\times$, and $2\times$ on USB insertion and drawer opening. Table~\ref{tab:bound_sensitivity} reports whether small bounds under-correct contact deviations and large bounds increase interaction force or instability.
+
+\begin{table}[t]
+    \centering
+    \small
+    \caption{Sensitivity to the residual bound on two representative tasks. Red entries are placeholders.}
+    \label{tab:bound_sensitivity}
+    \begin{tabular}{ccc}
+        \toprule
+        \textbf{Bound scale} & \textbf{Success (\%)} & \textbf{Peak force (N)} \\
+        \midrule
+        $0.5\times$ & \assumed{$X$} & \assumed{$X$} \\
+        $1\times$ & \assumed{$X$} & \assumed{$X$} \\
+        $2\times$ & \assumed{$X$} & \assumed{$X$} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Residual Diagnostics}
+\label{sec:exp_diagnostics}
+
+We test whether the distilled branch represents contact-dependent correction rather than a second complete-action policy. Trajectories are divided into free space, contact onset, and sustained contact using synchronized force thresholds and task phase labels. We report translation magnitude and rotation geodesic magnitude of $\Delta A_T^{\mathrm{force}}$ in each phase, together with the same quantities for the student prediction.
+
+We additionally measure how accurately the composed student reconstructs the current full-force teacher,
+\begin{align}
+    e_{\mathrm{rec}}(t)=d\big(&\mathcal P(A_{T,t}^{\mathrm{full}}), \nonumber\\[-2pt]
+      &\mathcal P(A^{\mathrm{ref}}(t))
+       +\Delta\hat A^{\mathrm{force}}(t)
+       +\Delta\hat A^{\mathrm{stale}}(t)\big),
+    \label{eq:reconstruction_error}
+\end{align}
+where translation error is reported in physical units and rotation error as an $SO(3)$ geodesic angle after projection. Errors are binned by cache age and compared with a student trained without the staleness target. This analysis directly tests whether staleness supervision maintains teacher reconstruction as the cached reference ages.
+
+\begin{figure*}[t]
+    \centering
+    \fbox{\parbox[c][0.12\textheight][c]{0.94\textwidth}{\centering
+    \assumed{Final diagnostic figure: (a) residual magnitude in free space, contact onset, and sustained contact; (b) reconstruction error versus cache age with and without the staleness target.}}}
+    \caption{Residual diagnostics. The final figure will test contact locality of the full--null correction and quantify the contribution of staleness supervision as the reference ages.}
+    \label{fig:residual_diagnostics}
+\end{figure*}
 
 \subsection{Ablation Studies}
 \label{sec:exp_ablation}
@@ -124,21 +218,21 @@ Table~\ref{tab:ablation} isolates four design choices. The demonstration-derived
     \centering
     \small
     \setlength{\tabcolsep}{3pt}
-    \caption{Mean task success rate (\%). All red values are provisional.}
+    \caption{Mean task success rate (\%). Red entries are placeholders.}
     \label{tab:ablation}
     \begin{tabularx}{\columnwidth}{>{\raggedright\arraybackslash}Xcc}
         \toprule
         \textbf{Variant} & \textbf{Single-arm} & \textbf{Bimanual} \\
         \midrule
-        \textbf{Full model} & \assumed{\textbf{88.75}} & \assumed{\textbf{86.25}} \\
-        Demonstration-derived target & \assumed{75.00} & \assumed{72.50} \\
-        Instantaneous force only & \assumed{82.50} & \assumed{78.75} \\
-        Zero-force condition & \assumed{77.50} & \assumed{72.50} \\
-        Null token without adapter & \assumed{82.50} & \assumed{78.75} \\
-        Without staleness target & \assumed{83.75} & \assumed{77.50} \\
-        Without schedule replay & \assumed{81.25} & \assumed{75.00} \\
+        \textbf{Full model} & \assumed{$\mathbf{X}$} & \assumed{$\mathbf{X}$} \\
+        Demonstration-derived target & \assumed{$X$} & \assumed{$X$} \\
+        Instantaneous force only & \assumed{$X$} & \assumed{$X$} \\
+        Zero-force condition & \assumed{$X$} & \assumed{$X$} \\
+        Null token without adapter & \assumed{$X$} & \assumed{$X$} \\
+        Without staleness target & \assumed{$X$} & \assumed{$X$} \\
+        Without schedule replay & \assumed{$X$} & \assumed{$X$} \\
         \bottomrule
     \end{tabularx}
 \end{table}
 
-\assumed{The largest degradation occurs when the paired teacher target is replaced by a demonstration-derived residual, supporting the need for explicit teacher differencing. Zero-force conditioning performs worse than the learned null mode, while the adapter improves over a null token alone. Native-rate force history contributes most on transient-contact tasks. Removing the staleness target or schedule replay has a larger effect on the bimanual platform, where reference queries more frequently overlap extended contact.}
+\assumed{Final text will identify the contribution of paired teacher targets, the learned null mode, native-rate force history, staleness supervision, and schedule replay from the completed ablations.}
