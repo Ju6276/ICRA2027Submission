@@ -18,15 +18,7 @@ where $p$ is translation, $r$ is a continuous 6D rotation representation~\cite{z
 
 Let $T_\theta$ denote a force-conditioned VLA trained on $\mathcal{D}$ to predict an $H$-step action chunk. One query of $T_\theta$ runs a flow-matching sampler over a visual--language backbone, and its latency exceeds the period at which contact has to be answered. We therefore split the policy into a reference $A^{\mathrm{ref}}$, refreshed whenever a query completes, and a residual policy $\pi_\psi$ evaluated every control period.
 
-Let $t_k$ be the request time of the most recent completed query and $S_k$ the state it was conditioned on. At a control instant $t>t_k$ the residual policy produces two pose corrections in a single pass,
-\begin{equation}
-    \left(\Delta\hat A^{\mathrm{force}}(t),\,
-          \Delta\hat A^{\mathrm{stale}}(t)\right)
-    =\pi_\psi\!\left(\mathcal{F}_t,S_t,A^{\mathrm{ref}}(t),
-      Z_k^{\mathrm{intent}},\xi_{t,k}\right),
-    \label{eq:residual_policy}
-\end{equation}
-where $Z_k^{\mathrm{intent}}$ is the cached task context of query $k$ and $\xi_{t,k}$ encodes the timing relation between $t$ and that query. The executed command is
+Let $t_k$ be the request time of the most recent completed query and $S_k$ the state it was conditioned on. At a control instant $t>t_k$ the residual policy produces two pose corrections $\Delta\hat A^{\mathrm{force}}(t)$ and $\Delta\hat A^{\mathrm{stale}}(t)$, and the executed command is
 \begin{equation}
     (A^{\mathrm{cmd}}(t))^p
     =(A^{\mathrm{ref}}(t))^p
@@ -122,7 +114,7 @@ Every completed query publishes its reference chunk along with a pooled form of 
     \in\mathbb{R}^{M\times d},
     \label{eq:intent_projection}
 \end{equation}
-and the residual policy reads these in place of the prefix itself. A causal TCN encodes the latest force window into a single token $Z_t^F$. Since both corrections depend on the interval that has passed since the active query, the policy is further conditioned on
+and the residual policy reads these in place of the prefix itself. A causal TCN of the same form as Eq.~\eqref{eq:teacher_tcn}, but trained with the policy rather than shared with the teacher, encodes the latest force window into a single token $u_t^F$. Since both corrections depend on the interval that has passed since the active query, the policy is further conditioned on
 \begin{equation}
     \xi_{t,k}=\left[\;\min\!\left(\tfrac{t-t_k}{c},1\right);\;\alpha_{t,k}\;\right],
     \label{eq:time_features}
@@ -132,7 +124,7 @@ whose first entry is the age of the cached context under a fixed scale $c$, and 
 Writing $P_Z,P_S,P_A,P_\xi$ for learned projections and adding a type embedding to each group, the conditioning set is
 \begin{equation}
     \mathcal{C}_t=\left\{P_Z(Z_k^{\mathrm{intent}}),\;
-      Z_t^F,\;P_S(S_t),\;P_A(A^{\mathrm{ref}}(t)),\;P_\xi(\xi_{t,k})\right\}.
+      u_t^F,\;P_S(S_t),\;P_A(A^{\mathrm{ref}}(t)),\;P_\xi(\xi_{t,k})\right\}.
     \label{eq:conditioning_set}
 \end{equation}
 An attention block $\Phi$ treats these as an unordered set and reads out at a learned query $q$. The two corrections come from two passes over the same block,
@@ -143,7 +135,7 @@ An attention block $\Phi$ treats these as an unordered set and reads out at a le
     \label{eq:force_output}\\
     \Delta\hat A^{\mathrm{stale}}_{t,1:K}
     &=W_{\mathrm{stale}}\,
-      \Phi\!\left((\mathcal{C}_t\setminus\{Z_t^F\})\cup\{q\}\right)[q],
+      \Phi\!\left((\mathcal{C}_t\setminus\{u_t^F\})\cup\{q\}\right)[q],
     \label{eq:staleness_output}
 \end{align}
 both in $\mathbb{R}^{K\times9}$. The target of Eq.~\eqref{eq:staleness_target} is a difference between two force-free quantities, and dropping the force token from the second pass leaves the staleness output independent of the measured force by construction. The pass is recomputed rather than read from the first one, since the conditions attend to each other and the remaining tokens have already taken up the force. The two passes share every parameter except $W_{\mathrm{force}}$ and $W_{\mathrm{stale}}$, both initialized to zero, so an untrained policy leaves the reference unchanged.
@@ -189,4 +181,4 @@ Reference samples are timestamped relative to the request time at the action rat
 \end{equation}
 and those with $\tau_{k,j}<\bar t_k$ are expired on publication. At a control instant $t$, $A^{\mathrm{ref}}(t)$ is interpolated from the valid samples bracketing $t$, and the previous packet stays active until a newer complete one arrives. The same timestamps define $\xi_{t,k}$.
 
-The residual worker follows its own schedule and never waits. At each update it snapshots the latest packet, reads $\mathcal{F}_t$ and $S_t$, and evaluates Eqs.~\eqref{eq:force_output} and~\eqref{eq:staleness_output} in one deterministic pass. Writing $j(t)$ for the emitted step whose timestamp matches $t$, the command follows Eq.~\eqref{eq:action_comp} with $\Delta\hat A^{\mathrm{force}}_{t,j(t)}$ and $\Delta\hat A^{\mathrm{stale}}_{t,j(t)}$ clipped separately at $\kappa_F$ and $\kappa_S$, and is then unnormalized and added to $S_k$ to obtain an absolute pose. The two bounds govern different quantities: $\kappa_F$ limits the departure from the planned motion attributed to measured contact, and $\kappa_S$ limits how far the cached plan is advanced toward the present.
+The residual worker follows its own schedule and never waits. At each update it snapshots the latest packet, reads $\mathcal{F}_t$ and $S_t$, and evaluates Eqs.~\eqref{eq:force_output} and~\eqref{eq:staleness_output}, which involve no sampling. Writing $j(t)$ for the emitted step whose timestamp matches $t$, the command follows Eq.~\eqref{eq:action_comp} with $\Delta\hat A^{\mathrm{force}}_{t,j(t)}$ and $\Delta\hat A^{\mathrm{stale}}_{t,j(t)}$ clipped separately at $\kappa_F$ and $\kappa_S$, and is then unnormalized and added to $S_k$ to obtain an absolute pose. The two bounds govern different quantities: $\kappa_F$ limits the departure from the planned motion attributed to measured contact, and $\kappa_S$ limits how far the cached plan is advanced toward the present.
