@@ -1,7 +1,7 @@
 \begin{figure*}[!t]
     \centering
     \includegraphics[width=0.98\textwidth]{figures/fig02_network_structure.pdf}
-    \caption{Overview of ForceDelta-VLA. A force-conditioned teacher is first trained and then frozen. A learned null-force mode produces the reference action. Matched full-force and null-force queries provide the force-conditioning target, while temporally separated queries provide the staleness target. A compact residual policy is distilled from both targets and runs asynchronously with the reference generator.}
+    \caption{Overview of ForceDelta-VLA. \emph{Top:} three-stage training freezes a force-aware teacher, learns its null-force operating mode, and distills paired force-conditioning and staleness targets into a residual policy. \emph{Bottom:} the independently executable residual pathway combines cached task context and recent force history with a slowly refreshed null-mode reference.}
     \label{fig:network_structure}
 \end{figure*}
 
@@ -10,7 +10,7 @@
 
 We consider an offline dataset $\mathcal D$ of teleoperated manipulation trajectories. Each trajectory contains visual observations $V_t$, a language instruction $L$, robot state $S_t$, timestamped force/torque history $\mathcal F_t$, and demonstrated action $A_t^*$. Here $\mathcal F_t$ is the six-axis estimate of external forces and torques acting at the end effector. A force-conditioned VLA teacher $T_\theta$ maps these observations to an $H$-step action chunk.
 
-Our objective is to deploy the policy as two asynchronous components: a reference generator that captures task-level motion and a compact residual policy $\pi_\psi$ that updates pose corrections from recent force feedback. Let $\mathcal P(\cdot)$ extract the end-effector pose component of an action, concatenated across arms for bimanual tasks. If $k$ indexes the latest completed reference query, issued at $t_k$ from state $S_k$, the command at control time $t>t_k$ is
+We seek both an identifiable force-responsive correction target and a deployment decomposition in which that correction can be updated independently of the reference generator. The decomposition comprises a reference generator that captures task-level motion and a residual policy $\pi_\psi$ that updates pose corrections from recent force feedback. Let $\mathcal P(\cdot)$ extract the end-effector pose component of an action, concatenated across arms for bimanual tasks. If $k$ indexes the latest completed reference query, issued at $t_k$ from state $S_k$, the command at control time $t>t_k$ is
 \begin{align}
     \mathcal P(A^{\mathrm{cmd}}(t))
     &=\mathcal P(A^{\mathrm{ref}}(t))
@@ -34,7 +34,9 @@ where $\operatorname{GS}$ orthogonalizes the two represented rotation columns. T
 \subsection{Method Overview}
 \label{sec:method_overview}
 
-ForceDelta-VLA is trained in three stages (Fig.~\ref{fig:network_structure}). First, we train a temporal force-conditioned VLA teacher. Second, with the teacher frozen, we learn a null-force operating mode whose prediction supplies the reference action. Third, we construct force-conditioning and staleness targets from frozen teacher predictions and distill them into the residual policy. At deployment, the reference generator and residual policy execute independently.
+ForceDelta-VLA is trained in three stages (Fig.~\ref{fig:network_structure}). First, we train a temporal force-conditioned VLA teacher. Second, with the teacher frozen, we learn a null-force operating mode whose prediction supplies the reference action. Third, we construct force-conditioning and staleness targets from frozen teacher predictions and distill them into the residual policy.
+
+Beyond target construction, deployment instantiates the decomposition as two independently scheduled pathways. The reference worker publishes timestamped null-mode action chunks and cached task context, while the residual worker combines that packet with the latest force history and robot state to update pose corrections without invoking full-action generation.
 
 \subsection{Force-Conditioned Teacher and Null Reference}
 \label{sec:teacher_and_null}
@@ -71,6 +73,7 @@ and is active only in the null mode. With $\theta$ fixed, $\phi$ is optimized us
       A_{t:t+H-1}^*;\tau,\epsilon\right)\right].
     \label{eq:null_training}
 \end{equation}
+Because only the null-mode parameters $\phi$ are optimized under the original imitation objective while the force-conditioned teacher remains frozen, the null mode defines a force-input-agnostic operating point of the teacher rather than an independently optimized task policy.
 The resulting reference prediction is
 \begin{equation}
     A_{T,t}^{\mathrm{null}}
@@ -145,7 +148,7 @@ An attention block $\Phi$ and learned query $q$ predict two $K$-step corrections
 \end{align}
 Both outputs lie in the pose-action space defined by $\mathcal P$. Masking the force token in the second pass prevents direct force dependence in the staleness output. The passes share $\Phi$ and use separate zero-initialized output projections.
 
-\subsubsection{Training under asynchronous schedules}
+\subsubsection{Staleness-aware schedule replay}
 \label{sec:async_training}
 
 We reproduce the deployment schedule offline. For each control instant $t$, the sampled slow-update period and query latency determine the latest completed query $k$. The student receives $Z_k^{\mathrm{intent}}$ and $A^{\mathrm{ref}}(t)$ from that query, together with $\mathcal F_t$, $S_t$, and $\xi_{t,k}$ from the current instant. Both targets are evaluated at $t$ from precomputed frozen-teacher outputs. Resampling the update period and latency exposes the student to a distribution of cache ages.
@@ -161,13 +164,13 @@ With normalized weights $w_j\propto\beta^{j-1}$ and pose-space loss $d$, the dis
     \label{eq:res_loss}
 \end{align}
 
-\subsection{Asynchronous Deployment}
+\subsection{Independent Residual Execution}
 \label{sec:execution}
 
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{figures/fig03_async_deployment.pdf}
-    \caption{Asynchronous deployment. The reference worker publishes timestamped action chunks and task context, while the residual worker continuously updates pose corrections from the latest force and state.}
+    \caption{Independent residual execution. The reference worker publishes timestamped null-mode actions and cached task context; the residual worker continues updating from current force and state while a new reference query is pending.}
     \label{fig:async_deployment}
 \end{figure}
 

@@ -30,7 +30,8 @@
 \begin{document}
 \begin{tikzpicture}[x=1cm,y=1cm]
   % ---------------- Training ----------------
-  \node[tag,anchor=west] at (0,6.15) {THREE-STAGE TRAINING};
+  \node[font=\sffamily\small\bfseries,text=cTeacher] (trainTitle) at (10,6.75)
+    {TRAINING: RESIDUAL SUPERVISION DISTILLATION};
   \node[rate,fill=cTeacher!12] at (5.9,6.15) {STAGE 1: TRAIN FORCE TEACHER};
   \node[rate,fill=cNom!12] at (10.3,6.15) {STAGE 2: LEARN NULL MODE};
   \node[rate,fill=cFast!12] at (15.2,6.15) {STAGE 3: PAIRED TARGETS + RESIDUAL DISTILLATION};
@@ -74,14 +75,15 @@
 
   \begin{scope}[on background layer]
     \node[rounded corners=5pt,draw=cTeacher!40,fill=cTeacher!2,inner sep=2.5mm,
-          fit=(obs)(fhist)(tcnT)(teacher)(full)(null)(nomt)(rest)(fastT)(lres)] {};
+          fit=(trainTitle)(obs)(fhist)(tcnT)(teacher)(full)(null)(nomt)(rest)(fastT)(lres)] {};
   \end{scope}
 
   % ---------------- Deployment ----------------
-  \node[tag,anchor=west] at (0,1.55) {DEPLOYMENT: ASYNCHRONOUS EXECUTION, TEACHER RETAINED IN NULL MODE};
+  \node[font=\sffamily\small\bfseries,text=cSlow,anchor=west] at (0,1.55)
+    {DEPLOYMENT: INDEPENDENT RESIDUAL EXECUTION};
 
   \node[block] (obsD) at (1.3,0.35) {$V_k, L, S_k$};
-  \node[slow] (slowD) at (4.2,0.35) {Teacher, null mode\\slow branch};
+  \node[slow] (slowD) at (4.2,0.35) {Teacher, null mode\\reference worker};
   \node[block,draw=cSlow,fill=cSlow!5,text width=27mm] (cache) at (7.4,0.35)
     {Cached packet: chunk\\$A_T^{\mathrm{null}}$, intent $Z^{\mathrm{intent}}$,\\timestamps, base state $S_k$};
   \draw[flow,draw=cSlow] (obsD.east) -- (slowD.west);
@@ -93,7 +95,7 @@
   \node[block,draw=cFast,fill=cFast!8] (tcnD) at (4.2,-1.35)
     {Student force TCN\\$u_t^F$};
   \node[fast,text width=31mm] (expert) at (10.6,-0.75)
-    {Residual Policy\\shared attention block};
+    {Independently Executable\\Residual Policy};
   \node[block,draw=cFast,fill=cFast!5,text width=25mm] (delta) at (13.9,-0.75)
     {$K$-step corrections\\$\Delta\hat{A}^{\mathrm{force}}$, $\Delta\hat{A}^{\mathrm{stale}}$};
   \draw[flow,draw=cFast] (forceD.east) -- (tcnD.west);
@@ -114,7 +116,7 @@
   \draw[flow] (sum.east) -- (cmd.west);
 
   \begin{scope}[on background layer]
-    \node[rounded corners=5pt,draw=cInk!35,fill=gray!2,inner sep=2.5mm,
+    \node[rounded corners=5pt,draw=cSlow!45,fill=cSlow!2,inner sep=2.5mm,
           fit=(obsD)(slowD)(cache)(forceD)(tcnD)(expert)(delta)(sum)(cmd)] {};
   \end{scope}
 \end{tikzpicture}

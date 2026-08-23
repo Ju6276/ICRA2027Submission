@@ -43,26 +43,27 @@
   \node[tag,fill=cFast!14,text=cFast] at (1.65,-1.82) {RAPIDLY VARYING};
 
   % Conventional force-aware VLA.
-  \node[title] at (8.3,3.05) {FULL-ACTION REGENERATION};
+  \node[title] at (8.3,3.05) {ENTANGLED FULL-ACTION PREDICTION};
   \node[box] (forceOld) at (5.15,1.55) {New force\\measurement};
   \node[box,draw=cBad,fill=gray!8,text width=35mm] (genOld) at (8.3,1.55)
-    {Generative action expert\\iterative full-chunk inference};
+    {Force-conditioned expert\\one generative prediction};
   \node[box,draw=cBad,fill=gray!8] (actOld) at (11.55,1.55)
-    {Complete action chunk\\semantic motion + correction};
+    {Complete action chunk\\nominal motion + adjustment};
   \draw[flow] (forceOld.east) -- (genOld.west);
   \draw[flow] (genOld.east) -- (actOld.west);
-  \node[note,text width=67mm] at (8.35,0.72)
-    {Every physical update recomputes motion already represented by the policy.};
+  \node[tag,fill=gray!16,text=cBad] at (8.35,0.72)
+    {NO EXPLICIT CORRECTION TARGET};
 
   % ForceDelta-VLA factorization.
-  \node[title,text=cGood] at (8.3,-0.05) {FORCEDELTA-VLA: UPDATE ONLY THE CORRECTION};
+  \node[title,text=cGood] at (8.3,-0.05) {FORCEDELTA-VLA: DISTILL THE CORRECTION};
   \node[slow] (ref) at (5.15,-1.15)
     {Null-mode reference\\$A^{\mathrm{ref}}$};
-  \node[tag,fill=cSlow!12,text=cSlow] at (5.15,-2.02) {REUSED BETWEEN SLOW UPDATES};
+  \node[note] at (5.15,-2.02) {cached reference};
 
   \node[fast] (res) at (8.75,-1.15)
     {Force-conditioned residual\\$\Delta\hat A$ in one pass};
-  \node[tag,fill=cFast!14,text=cFast] at (8.75,-2.02) {UPDATED ASYNCHRONOUSLY};
+  \node[tag,fill=cFast!14,text=cFast] at (8.75,-2.02)
+    {$\Delta A_T^{\mathrm{force}}=\mathcal P(A_T^{\mathrm{full}})-\mathcal P(A_T^{\mathrm{null}})$};
 
   \node[circle,draw=cInk,fill=white,line width=0.9pt,minimum size=8mm,
         font=\sffamily\small\bfseries] (sum) at (11.55,-1.15) {$+$};

@@ -40,7 +40,7 @@
   \node[note,fill=white,inner sep=1pt] at (4.45,2.05) {publish $C_k$};
 
   % Active-cache lane: old packet before publication, new packet after it.
-  \node[lane,text=cCache] at (1.65,1.55) {ACTIVE CACHE};
+  \node[lane,text=cCache] at (1.65,1.55) {CACHED REF. + CONTEXT};
   \node[oldcache,anchor=west,text width=2.0cm] (cold) at (2.15,1.55)
     {$C_{k-1}$\\active previous packet};
   \node[newcache,anchor=west,text width=2.9cm] (cnew) at (4.60,1.55)
@@ -52,6 +52,8 @@
 
   % Residual lane: continuous updates on either side of the cache switch.
   \node[lane,text=cFast] at (1.65,0.48) {RESIDUAL UPDATES};
+  \node[note,anchor=west,text=cFast] at (1.90,0.82)
+    {current $\mathcal F_t,S_t$};
   \draw[axis,draw=cFast!65] (1.85,0.48) -- (8.25,0.48);
   \foreach \x in {2.15,2.85,3.55,4.20,4.80,5.50,6.20,6.90,7.60} {
     \node[tick] at (\x,0.48) {$\Delta$};
@@ -63,7 +65,13 @@
   \node[note,fill=white,inner sep=1pt] at (3.20,0.98) {read $C_{k-1}$};
   \node[note,fill=white,inner sep=1pt] at (5.65,0.98) {read $C_k$};
 
-  \node[note,anchor=north] at (5.05,-0.02)
+  \draw[draw=cFast,line width=0.65pt] (5.55,-0.03) -- (7.60,-0.03);
+  \draw[draw=cFast,line width=0.65pt] (5.55,-0.03) -- (5.55,0.08);
+  \draw[draw=cFast,line width=0.65pt] (7.60,-0.03) -- (7.60,0.08);
+  \node[note,text=cFast] at (6.58,-0.23)
+    {residual continues while query $k{+}1$ is pending};
+
+  \node[note,anchor=north] at (5.05,-0.50)
     {each update reads the latest $\mathcal F_t$ and $S_t$, predicts
      $\Delta\hat A_t^{\mathrm{force}}$ and $\Delta\hat A_t^{\mathrm{stale}}$, and composes the command};
 \end{tikzpicture}
