@@ -1,55 +1,70 @@
 \documentclass[tikz,border=3pt]{standalone}
 \usepackage{amsmath}
-\usetikzlibrary{arrows.meta,positioning,calc,fit}
+\usetikzlibrary{arrows.meta,positioning,calc}
 
 \definecolor{cSlow}{HTML}{2878B5}
 \definecolor{cFast}{HTML}{E67E22}
 \definecolor{cCache}{HTML}{2E8B57}
+\definecolor{cOld}{HTML}{78909C}
 \definecolor{cInk}{HTML}{263238}
 
 \tikzset{
-  flow/.style={-{Latex[length=1.8mm]},line width=0.7pt,draw=cInk},
-  slowbox/.style={rounded corners=2pt,draw=cSlow,fill=cSlow!9,line width=0.85pt,
-                  align=center,font=\sffamily\scriptsize,minimum height=7mm},
-  fastbox/.style={rounded corners=2pt,draw=cFast,fill=cFast!10,line width=0.85pt,
-                  align=center,font=\sffamily\scriptsize,minimum height=7mm},
-  cachebox/.style={rounded corners=2pt,draw=cCache,fill=cCache!9,line width=0.85pt,
-                   align=center,font=\sffamily\scriptsize,minimum height=8mm},
-  label/.style={font=\sffamily\scriptsize\bfseries,text=cInk},
+  axis/.style={-{Latex[length=1.7mm]},line width=0.65pt},
+  query/.style={rounded corners=2pt,draw=cSlow,fill=cSlow!9,line width=0.85pt,
+                align=center,font=\sffamily\scriptsize,minimum height=7mm},
+  oldcache/.style={rounded corners=2pt,draw=cOld,fill=cOld!9,line width=0.8pt,
+                   align=center,font=\sffamily\scriptsize,minimum height=7mm},
+  newcache/.style={rounded corners=2pt,draw=cCache,fill=cCache!9,line width=0.9pt,
+                   align=center,font=\sffamily\scriptsize,minimum height=7mm},
+  tick/.style={rounded corners=1.5pt,draw=cFast,fill=cFast!10,line width=0.75pt,
+               minimum width=5.5mm,minimum height=6.5mm,inner sep=1pt,
+               font=\sffamily\scriptsize},
+  lane/.style={font=\sffamily\scriptsize\bfseries,anchor=east},
   note/.style={font=\sffamily\tiny,align=center,text=cInk!75}
 }
 
 \begin{document}
 \begin{tikzpicture}[x=1cm,y=1cm]
-  \node[label,anchor=east,text=cSlow] at (1.65,2.65) {REFERENCE WORKER};
-  \draw[line width=0.7pt,draw=cSlow!60,-{Latex[length=1.6mm]}] (1.85,2.65) -- (8.15,2.65);
-  \node[slowbox,anchor=west,minimum width=2.25cm] (infer1) at (2.15,2.65)
-    {null-mode VLA inference};
-  \node[slowbox,anchor=west,minimum width=2.05cm] (infer2) at (5.65,2.65)
-    {next VLA inference};
-  \draw[line width=1.2pt,draw=cSlow] (2.15,2.43) -- (2.15,2.87);
-  \draw[line width=1.2pt,draw=cSlow] (4.40,2.43) -- (4.40,2.87);
-  \draw[line width=1.2pt,draw=cSlow] (5.65,2.43) -- (5.65,2.87);
-  \node[note,above=1mm of infer1.west,anchor=south west] {snapshot $t_k$};
-  \node[note,above=1mm of infer1.east,anchor=south east] {publish $\bar t_k$};
+  % Reference-query lane.
+  \node[lane,text=cSlow] at (1.65,2.65) {REFERENCE QUERY};
+  \draw[axis,draw=cSlow!65] (1.85,2.65) -- (8.25,2.65);
+  \node[query,anchor=west,minimum width=2.2cm] (qk) at (2.15,2.65)
+    {null-mode VLA query $k$};
+  \node[query,anchor=west,minimum width=2.05cm] (qnext) at (5.55,2.65)
+    {query $k{+}1$};
+  \node[note,anchor=south] at (2.15,3.06) {request $t_k$};
+  \node[note,anchor=south] at (4.35,3.06) {complete $\bar t_k$};
 
-  \node[cachebox,text width=4.15cm] (cache) at (5.05,1.65)
-    {atomic cache: timestamped $A^{\mathrm{ref}}_{1:H}$,\\intent tokens, version ID};
-  \draw[flow,draw=cCache] (4.40,2.42) -- (cache.north);
-  \node[note,anchor=west] at (7.25,1.65)
-    {discard expired prefix;\\interpolate the valid reference};
+  % Publication boundary shared by all lanes.
+  \draw[dashed,draw=cInk!45,line width=0.65pt] (4.45,3.15) -- (4.45,0.16);
+  \node[note,fill=white,inner sep=1pt] at (4.45,2.05) {publish $C_k$};
 
-  \node[label,anchor=east,text=cFast] at (1.65,0.55) {RESIDUAL WORKER};
-  \draw[line width=0.7pt,draw=cFast!60,-{Latex[length=1.6mm]}] (1.85,0.55) -- (8.15,0.55);
-  \foreach \x in {2.15,2.85,3.55,4.25,4.95,5.65,6.35,7.05,7.75} {
-    \node[fastbox,minimum width=5.5mm,inner sep=1pt] at (\x,0.55) {$\Delta$};
+  % Active-cache lane: old packet before publication, new packet after it.
+  \node[lane,text=cCache] at (1.65,1.55) {ACTIVE CACHE};
+  \node[oldcache,anchor=west,text width=2.0cm] (cold) at (2.15,1.55)
+    {$C_{k-1}$\\active previous packet};
+  \node[newcache,anchor=west,text width=2.9cm] (cnew) at (4.60,1.55)
+    {$C_k$: new complete packet\\$A^{\mathrm{ref}}_{k,1:H},Z_k^{\mathrm{intent}},S_k$};
+  \draw[-{Latex[length=1.6mm]},draw=cCache,line width=0.8pt]
+    (qk.south east) -- (4.60,1.90);
+  \node[note,anchor=west] at (7.62,1.55)
+    {expired prefix removed;\\valid samples interpolated};
+
+  % Residual lane: continuous updates on either side of the cache switch.
+  \node[lane,text=cFast] at (1.65,0.48) {RESIDUAL UPDATES};
+  \draw[axis,draw=cFast!65] (1.85,0.48) -- (8.25,0.48);
+  \foreach \x in {2.15,2.85,3.55,4.20,4.80,5.50,6.20,6.90,7.60} {
+    \node[tick] at (\x,0.48) {$\Delta$};
   }
-  \draw[flow,draw=cCache] (cache.south) -- (4.95,0.92);
-  \node[note,anchor=north] at (5.05,0.02)
-    {each update reads the latest cache, $\mathcal F_t$, and $S_t$;\\predicts $\Delta\hat A_t$; and sends $A^{\mathrm{ref}}(t)+\Delta\hat A_t$};
+  \draw[-{Latex[length=1.5mm]},draw=cOld,line width=0.7pt]
+    (cold.south) -- (3.20,0.84);
+  \draw[-{Latex[length=1.5mm]},draw=cCache,line width=0.75pt]
+    (cnew.south) -- (5.65,0.84);
+  \node[note,fill=white,inner sep=1pt] at (3.20,0.98) {read $C_{k-1}$};
+  \node[note,fill=white,inner sep=1pt] at (5.65,0.98) {read $C_k$};
 
-  \begin{scope}
-    \draw[dashed,draw=cInk!40] (4.40,3.02) -- (4.40,0.18);
-  \end{scope}
+  \node[note,anchor=north] at (5.05,-0.02)
+    {each update reads the latest $\mathcal F_t$ and $S_t$, predicts
+     $\Delta\hat A_t^{\mathrm{force}}$ and $\Delta\hat A_t^{\mathrm{stale}}$, and composes the command};
 \end{tikzpicture}
 \end{document}

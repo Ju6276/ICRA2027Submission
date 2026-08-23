@@ -13,6 +13,9 @@
 \usepackage{microtype}
 \usepackage[hidelinks,breaklinks=true,bookmarks=false]{hyperref}
 
+% Values marked with \assumed must be replaced with final experimental results.
+\newcommand{\assumed}[1]{\textcolor{red}{#1}}
+
 % comments
 % \newcommand{\lzhang}[1]{\textcolor{magenta}{#1}}
 \newcommand{\lzhang}[1]{\textcolor{black}{#1}}
@@ -72,7 +75,7 @@ ForceDelta-VLA: Distilling Force-Conditioned Action\\Corrections for Contact-Ric
       \centering
       \includegraphics[width=0.98\linewidth,height=0.28\textheight,keepaspectratio]{figures/fig01_teaser.pdf}
       % \vspace{-0.2in}
-      \captionof{figure}{ForceDelta-VLA separates slowly varying semantic motion from rapidly varying physical correction. Conventional force-aware VLAs regenerate a complete action chunk when force changes; ForceDelta-VLA reuses a semantic reference and asynchronously updates only a compact force-conditioned pose residual.
+      \captionof{figure}{ForceDelta-VLA separates slowly varying reference motion from rapidly varying physical correction. Conventional force-aware VLAs regenerate a complete action chunk when force changes; ForceDelta-VLA reuses a null-mode reference and asynchronously updates only a compact force-conditioned pose residual.
       }
       \label{fig:teaser}
       \vspace{-0.1in}
@@ -84,7 +87,7 @@ ForceDelta-VLA: Distilling Force-Conditioned Action\\Corrections for Contact-Ric
 \pagestyle{empty}
 \setcounter{figure}{1}
 \begin{abstract}
-Contact-rich manipulation requires physical corrections on a shorter timescale than semantic task planning. Existing force-conditioned Vision-Language-Action (VLA) policies, however, couple force feedback with complete action generation, preventing the physical correction from being updated independently of generative inference. We present ForceDelta-VLA, a slow--fast framework that extracts an explicit force-responsive correction from a pretrained force-aware VLA and distills it into a compact residual policy. For the same visual--language context and robot state, a frozen teacher predicts actions under the measured force history and a learned null-force reference mode. Their difference, evaluated under matched stochastic conditions, provides a force-induced deviation of the teacher as the correction target, without task rewards or additional corrective demonstrations. At deployment, the VLA updates reference actions at the semantic planning rate, while the residual policy asynchronously incorporates the latest force measurements to correct the commanded pose. Across eight single-arm and bimanual contact-rich tasks, ForceDelta-VLA improves mean task success by $X$ percentage points, reduces peak contact force by $X\%$, and shortens task completion time by $X\%$ relative to the strongest baseline.
+Contact-rich manipulation requires physical corrections on a shorter timescale than semantic task planning. Existing force-conditioned Vision-Language-Action (VLA) policies couple force feedback with complete action generation, preventing such corrections from being updated independently of generative inference. We present ForceDelta-VLA, a framework that distills a pretrained force-aware VLA into an asynchronously executable residual policy. Paired predictions under full-force and learned null-force modes provide explicit supervision for force-conditioned correction without task rewards or additional corrective demonstrations. A complementary target teaches the residual policy to compensate for a reference that becomes stale during asynchronous inference. At deployment, the VLA produces timestamped reference actions, while a compact policy uses recent force history and cached task context to update pose corrections. Across eight single-arm and bimanual contact-rich tasks, ForceDelta-VLA improves mean success rate by \assumed{12.5 percentage points}, reduces peak contact force by \assumed{18.7\%}, and shortens completion time by \assumed{14.3\%} relative to the strongest baseline.
 \end{abstract}
 
 \section{Introduction}
@@ -102,7 +105,7 @@ Contact-rich manipulation requires physical corrections on a shorter timescale t
 \label{sec:experiment}
 \input{04_experiments}
 
-\section{Conclusion}
+\section{Conclusion and Future Work}
 \label{sec:conclusion}
 \input{05_conclusion}
 
