@@ -1,7 +1,7 @@
 \begin{figure*}[!t]
     \centering
     \includegraphics[width=0.98\textwidth]{figures/fig02_network_structure.pdf}
-    \caption{ForceDelta-VLA. A temporal force-conditioned teacher is evaluated with the measured force history and with a learned null-force mode. The two evaluations share the visual--language prefix and the initial flow noise. Their pose difference supervises a compact residual policy, while the null-mode prediction provides the reference action. During deployment, the reference and task context are updated by the slow teacher, whereas the residual policy uses the latest force history and robot state to produce pose corrections.}
+    \caption{ForceDelta-VLA. A temporal force-conditioned teacher is evaluated with the measured force history and with a learned null-force mode. The two evaluations share the visual--language prefix and the initial flow noise. Their pose difference supervises the residual policy, while the null-mode prediction provides the reference action. During deployment, the reference and task context are updated by the slow teacher, whereas the residual policy uses the latest force history and robot state to produce pose corrections.}
     \label{fig:network_structure}
 \end{figure*}
 
@@ -16,7 +16,7 @@ We are given a dataset $\mathcal{D}$ of teleoperated contact-rich manipulation t
 \end{equation}
 where $p$ is translation, $r$ is a continuous 6D rotation representation~\cite{zhou2019continuity}, and $g$ is the gripper command. We write $A^p=[p;r]\in\mathbb{R}^{9}$ for the pose component. Pose channels are displacements from the robot state that conditioned the prediction, so a chunk is interpretable only together with that base state. Actions and states are normalized by their per-channel training statistics, and $\Lambda=\mathrm{diag}(\sigma_S/\sigma_A)$ expresses a state displacement in action units.
 
-Let $T_\theta$ denote a force-conditioned VLA trained on $\mathcal{D}$ to predict an $H$-step action chunk. Evaluating $T_\theta$ at the rate contact requires is not possible, since a flow-matching query over a visual--language backbone costs tens of milliseconds. We therefore split the policy into a reference $A^{\mathrm{ref}}$ that is refreshed only when a teacher query completes, and a compact residual policy $\pi_\psi$ that runs at the control rate.
+Let $T_\theta$ denote a force-conditioned VLA trained on $\mathcal{D}$ to predict an $H$-step action chunk. One query of $T_\theta$ runs a flow-matching sampler over a visual--language backbone, and its latency exceeds the period at which contact has to be answered. We therefore split the policy into a reference $A^{\mathrm{ref}}$, refreshed whenever a query completes, and a residual policy $\pi_\psi$ evaluated every control period.
 
 Let $t_k$ be the request time of the most recent completed query and $S_k$ the state it was conditioned on. At a control instant $t>t_k$ the residual policy produces two pose corrections in a single pass,
 \begin{equation}
@@ -36,7 +36,7 @@ where $Z_k^{\mathrm{intent}}$ is the cached task context of query $k$ and $\xi_{
     g^{\mathrm{cmd}}(t)=g^{\mathrm{ref}}(t).
     \label{eq:action_comp}
 \end{equation}
-Two corrections appear because the reference is out of date in two unrelated senses. It was computed from an observation at $t_k$, without the contact measured since, and $\Delta\hat A^{\mathrm{force}}$ accounts for that; its pose channels are also displacements from $S_k$ rather than from the current $S_t$, which is what $\Delta\hat A^{\mathrm{stale}}$ resolves. The gripper is left to the reference, being a task-level decision rather than a contact-driven quantity.
+The two corrections answer two different ways in which the reference has fallen behind. It was computed from the observation at $t_k$ and does not reflect the contact measured since, which is the part $\Delta\hat A^{\mathrm{force}}$ supplies. Its pose channels are also displacements from $S_k$ rather than from the current $S_t$, and $\Delta\hat A^{\mathrm{stale}}$ resolves that difference of base state. The gripper is left to the reference, being a task-level decision rather than a contact-driven quantity.
 
 The demonstrations supervise only $A_t^*$ and label neither correction. The learning problem is to construct both targets from $\mathcal{D}$ and the trained teacher, and to fit $\pi_\psi$ without task rewards or corrective demonstrations. ForceDelta-VLA does so in three stages, summarized in Fig.~\ref{fig:network_structure}: we train a temporal force-conditioned teacher, freeze it and learn a null-force mode, then freeze both modes and distill paired targets into $\pi_\psi$. Only the last stage trains a student; the reference comes from the frozen teacher throughout.
 
@@ -60,9 +60,9 @@ where $\epsilon$ is the initial noise of the flow-matching action generator. Aft
 \subsection{Learning the Null-Force Reference}
 \label{sec:null_decomp}
 
-The residual target should describe how the force-conditioned teacher changes its prediction relative to a valid reference policy. Simply setting force to zero is unsuitable: zero is a physically meaningful measurement and does not denote an unavailable force condition. We instead learn a null-force mode and compare it with the factual-force mode under matched sampling conditions.
+The residual target should describe how the force-conditioned teacher changes its prediction relative to a valid reference policy. Setting the force input to zero does not serve that purpose, since zero is a physically meaningful measurement rather than a marker for an absent force history. We instead learn a null-force mode and compare it with the factual-force mode under matched sampling conditions.
 
-The null mode comprises a learned token $z_{\varnothing F}$ and a lightweight null-specific adapter, trained jointly in the same stage. The token represents the absence of an instance-specific force history, while the adapter restores action prediction under that condition. With $\phi=\{z_{\varnothing F},W_{\mathrm{in}},W_{\mathrm{out}}\}$, the rank-$\rho$ adapter modifies only the pose channels of the action expert,
+The null mode consists of a learned token $z_{\varnothing F}$ and a null-specific adapter, trained jointly in the same stage. The token stands for the absence of an instance-specific force history, and the adapter restores action prediction under that condition. With $\phi=\{z_{\varnothing F},W_{\mathrm{in}},W_{\mathrm{out}}\}$, the rank-$\rho$ adapter modifies only the pose channels of the action expert,
 \begin{equation}
     v^p\leftarrow v^p+W_{\mathrm{out}}\,
     \sigma(W_{\mathrm{in}}h),
@@ -77,16 +77,19 @@ where $h$ is the action-expert hidden state. Holding $\theta$ fixed, $\phi$ is o
       A_{t:t+H-1}^{*};\tau,\epsilon\right)\right],
     \label{eq:null_training}
 \end{equation}
-giving the null-mode prediction
+which yields the null-mode prediction
 \begin{equation}
     A_{T,t}^{\mathrm{null}}
     =T_{\theta,\phi}^{\mathrm{null}}
       (V_t,L,S_t,z_{\varnothing F};\epsilon).
     \label{eq:teacher_null}
 \end{equation}
-The adapter is enabled only in the null mode; the factual-force mode retains the trained teacher parameters and computation. This prediction is the slowly updated reference at deployment.
+The adapter is enabled only in the null mode, while the factual-force mode retains the trained teacher parameters and computation. This prediction is the slowly updated reference at deployment.
 
-\subsection{Counterfactual Residual Targets}
+\subsection{Counterfactual Residual Distillation}
+\label{sec:distillation}
+
+\subsubsection{Residual and Staleness Targets}
 \label{sec:teacher_differencing}
 
 Because the teacher uses flow matching, independently sampled predictions differ for reasons unrelated to the conditioning mode. For each training sample we therefore reuse the visual--language prefix across the two modes and initialize both with the same noise $\epsilon\sim\mathcal{N}(0,I)$. The two predictions are then displacements from a common base state $S_t$, and their difference isolates the conditioning mode,
@@ -99,40 +102,40 @@ Because the teacher uses flow matching, independently sampled predictions differ
 \end{equation}
 We call this a counterfactual residual because it compares two operating modes of one teacher under matched observations and sampling noise. It is a model-level conditional difference rather than a causal attribution of contact: the adapted null mode differs parametrically from the factual mode, and vision and state may themselves encode contact.
 
-The second target concerns the reference the deployed system actually holds at $t$, which comes from query $k$ and is anchored at $S_k$. Bringing it onto the base state of Eq.~\eqref{eq:teacher_null} gives
+The second target concerns the reference that the deployed system holds at $t$, which comes from query $k$ and is anchored at $S_k$. Bringing it onto the base state of Eq.~\eqref{eq:teacher_null} gives
 \begin{equation}
     \Delta A_{T,t}^{\mathrm{stale}}
     =\left(A_{T,t}^{\mathrm{null}}\right)^p
       -\left(A^{\mathrm{ref}}(t)\right)^p
-      +\Lambda\left(S_t-S_k\right)^p .
+      +\Lambda\left(S_t-S_k\right)^p ,
     \label{eq:staleness_target}
 \end{equation}
-Without the last term the expression would subtract two displacements measured from different origins. The first two terms are the drift of the teacher's own nominal prediction over the interval, and the third is the motion the arm completed while the query was in flight. Summing Eqs.~\eqref{eq:force_target} and~\eqref{eq:staleness_target} recovers the gap between the held reference and the factual-force teacher at $t$, which is the correction Eq.~\eqref{eq:action_comp} requires.
+where the last term is required because the two displacements are otherwise measured from different origins. The leading pair is the drift of the teacher's own nominal prediction over the interval, and the last term is the motion the arm completed while the query was in flight. Summing Eqs.~\eqref{eq:force_target} and~\eqref{eq:staleness_target} returns the gap between the held reference and the factual-force teacher at $t$, which is the correction Eq.~\eqref{eq:action_comp} calls for.
 
-\subsection{Fast Residual Policy}
+\subsubsection{Fast Residual Policy}
 \label{sec:residual_policy}
 
-Each completed query publishes the reference chunk together with a compact task representation. Given the visual--language prefix $E_k\in\mathbb{R}^{L\times d}$ and its mask $m_k$, we pool contiguous token groups into $M$ intent tokens,
+Every completed query publishes its reference chunk along with a pooled form of its task context. Given the visual--language prefix $E_k\in\mathbb{R}^{L\times d}$ and its mask $m_k$, contiguous token groups are pooled into $M$ intent tokens,
 \begin{equation}
     Z_k^{\mathrm{intent}}
     =\mathrm{Pool}_M(E_k,m_k)
     \in\mathbb{R}^{M\times d},
     \label{eq:intent_projection}
 \end{equation}
-which lets the residual policy reuse the teacher's task context without a second visual--language backbone. A causal TCN encodes the latest force window into a single token $Z_t^F$. Because both corrections depend on how much time has elapsed since the active query, the policy is also conditioned on
+and the residual policy reads these in place of the prefix itself. A causal TCN encodes the latest force window into a single token $Z_t^F$. Since both corrections depend on the interval that has passed since the active query, the policy is further conditioned on
 \begin{equation}
     \xi_{t,k}=\left[\;\min\!\left(\tfrac{t-t_k}{c},1\right);\;\alpha_{t,k}\;\right],
     \label{eq:time_features}
 \end{equation}
-where $c$ is a fixed age scale and $\alpha_{t,k}$ is the position of $t$ between the two reference samples that bracket it. The first entry reports the age of the cached context, the second the phase within a reference interval.
+whose first entry is the age of the cached context under a fixed scale $c$, and whose second is the position of $t$ between the two reference samples that bracket it.
 
-The conditioning set is
+Writing $P_Z,P_S,P_A,P_\xi$ for learned projections and adding a type embedding to each group, the conditioning set is
 \begin{equation}
-    \mathcal{C}_t=\left\{\widetilde Z_k^{\mathrm{intent}},\;
-      Z_t^F,\;P_S(S_t),\;P_A(A^{\mathrm{ref}}(t)),\;P_\xi(\xi_{t,k})\right\},
+    \mathcal{C}_t=\left\{P_Z(Z_k^{\mathrm{intent}}),\;
+      Z_t^F,\;P_S(S_t),\;P_A(A^{\mathrm{ref}}(t)),\;P_\xi(\xi_{t,k})\right\}.
     \label{eq:conditioning_set}
 \end{equation}
-with learned projections $P_S,P_A,P_\xi$ and additive type embeddings. A compact attention block $\Phi$ reads out at a learned query $q$, and the two corrections are taken from two passes over the same block,
+An attention block $\Phi$ treats these as an unordered set and reads out at a learned query $q$. The two corrections come from two passes over the same block,
 \begin{align}
     \Delta\hat A^{\mathrm{force}}_{t,1:K}
     &=W_{\mathrm{force}}\,
@@ -143,16 +146,16 @@ with learned projections $P_S,P_A,P_\xi$ and additive type embeddings. A compact
       \Phi\!\left((\mathcal{C}_t\setminus\{Z_t^F\})\cup\{q\}\right)[q],
     \label{eq:staleness_output}
 \end{align}
-both in $\mathbb{R}^{K\times9}$. The target in Eq.~\eqref{eq:staleness_target} is a difference between force-free quantities, and withholding the force token makes the corresponding output independent of the measured force by construction. Because the conditions attend to one another, the second pass recomputes the block rather than reusing representations that have already absorbed force. The two passes share all parameters except $W_{\mathrm{force}}$ and $W_{\mathrm{stale}}$, both initialized to zero, so an untrained policy leaves the reference unchanged.
+both in $\mathbb{R}^{K\times9}$. The target of Eq.~\eqref{eq:staleness_target} is a difference between two force-free quantities, and dropping the force token from the second pass leaves the staleness output independent of the measured force by construction. The pass is recomputed rather than read from the first one, since the conditions attend to each other and the remaining tokens have already taken up the force. The two passes share every parameter except $W_{\mathrm{force}}$ and $W_{\mathrm{stale}}$, both initialized to zero, so an untrained policy leaves the reference unchanged.
 
-Each pass emits $K$ steps rather than one, all conditioned on force and state only up to $t$, in the same way that the teacher forms its whole chunk from a single observation. The additional steps cover the interval until the next residual update, so the worker need not complete within one control period and its rate need not be fixed in advance.
+Each pass emits $K$ steps rather than one, all conditioned on force and state up to $t$, in the same way that the teacher forms its whole chunk from a single observation. Step $j$ is timestamped one control period after step $j-1$, and the step whose timestamp matches the current time is the one applied.
 
-\subsection{Asynchronous Distillation}
+\subsubsection{Training under the Deployment Schedule}
 \label{sec:async_training}
 
-A sample drawn at one instant would pair task context, force, state and reference from the same time, whereas the deployed policy always combines a cached context with newer force and state. We therefore simulate the deployment schedule offline: for a chosen slow rate and query latency, we identify for every control instant $t$ the query $k$ that would then be the most recent completed one, and materialize its reference samples and timing features. The intent tokens in Eq.~\eqref{eq:conditioning_set} are taken from $k$, the remaining entries from $t$, and the targets of Eqs.~\eqref{eq:force_target} and~\eqref{eq:staleness_target} are evaluated at $t$. Since both teacher modes are frozen, the schedule is applied to precomputed teacher outputs and adds no backbone evaluations.
+At deployment the policy always reads a cached context together with newer force and state, so its training inputs are drawn from two instants rather than one. For a given slow rate and query latency, we replay the schedule of Sec.~\ref{sec:execution} offline over the recorded trajectories: every control instant $t$ is assigned the query $k$ that would then be the most recent completed one, together with the reference samples and timing features that query would have supplied. The intent tokens of Eq.~\eqref{eq:conditioning_set} are taken from $k$ and the remaining entries from $t$, while both targets are evaluated at $t$. Both teacher modes are frozen, so the replay operates on precomputed teacher outputs.
 
-A fixed schedule would expose the policy to a single operating point. We resample the slow rate and the query latency at intervals during training, so the context age varies across a range and Eq.~\eqref{eq:time_features} carries the information needed to tell those conditions apart.
+The slow rate and the query latency are themselves resampled at intervals during training, so the context age entering Eq.~\eqref{eq:time_features} covers a range of operating points rather than one.
 
 The policy is trained on the first $K$ steps of both targets. With a pose-space regression loss $d$, a weight $\lambda$ on the staleness term, and normalized step weights $w_j\propto\beta^{j-1}$ with $\beta<1$,
 \begin{equation}
@@ -165,7 +168,7 @@ The policy is trained on the first $K$ steps of both targets. With a pose-space 
       \Delta A^{\mathrm{stale}}_{T,t,j}\right)\right],
     \label{eq:res_loss}
 \end{equation}
-so that steps executed earlier in the chunk carry more weight. Each term is supervised on its own output rather than through their sum.
+so that steps executed earlier in the chunk carry more weight.
 
 \subsection{Asynchronous Deployment}
 \label{sec:execution}
@@ -177,16 +180,16 @@ so that steps executed earlier in the chunk carry more weight. Each term is supe
     \label{fig:async_deployment}
 \end{figure}
 
-Deployment runs two independent workers, as illustrated in Fig.~\ref{fig:async_deployment}. At request time $t_k$ the reference worker snapshots $(V_k,L,S_k)$ and invokes the frozen teacher in its null-force mode. On completion at $\bar t_k$ it atomically publishes a versioned packet holding $A_{T,k}^{\mathrm{null}}$, $Z_k^{\mathrm{intent}}$, the action timestamps, and the base state $S_k$. Publishing the packet as one unit keeps the residual worker from pairing a reference chunk with intent tokens from a different query, and carrying $S_k$ makes the base state of Eq.~\eqref{eq:staleness_target} available at run time rather than inferred.
+Deployment runs two independent workers, as illustrated in Fig.~\ref{fig:async_deployment}. At request time $t_k$ the reference worker snapshots $(V_k,L,S_k)$ and invokes the frozen teacher in its null-force mode. On completion at $\bar t_k$ it publishes a versioned packet holding $A_{T,k}^{\mathrm{null}}$, $Z_k^{\mathrm{intent}}$, the action timestamps, and the base state $S_k$. The packet is published as a unit, so a reference chunk and the intent tokens read alongside it always originate from the same query. It carries $S_k$ because both Eq.~\eqref{eq:staleness_target} and the final conversion to an absolute pose are expressed about that state.
 
 Reference samples are timestamped relative to the request time at the action rate $f_A$,
 \begin{equation}
     \tau_{k,j}=t_k+(j-1)/f_A,\qquad j=1,\ldots,H,
     \label{eq:reference_timestamps}
 \end{equation}
-and those with $\tau_{k,j}<\bar t_k$ are expired on publication. At a control instant $t$, $A^{\mathrm{ref}}(t)$ is interpolated from the valid samples bracketing $t$, and the previous packet stays active until a newer complete one arrives. Execution therefore resumes at the sample matching the current time instead of at the head of a chunk that was formed before the query returned, and the same timestamps define $\xi_{t,k}$.
+and those with $\tau_{k,j}<\bar t_k$ are expired on publication. At a control instant $t$, $A^{\mathrm{ref}}(t)$ is interpolated from the valid samples bracketing $t$, and the previous packet stays active until a newer complete one arrives, so execution continues at the sample matching the current time. The same timestamps define $\xi_{t,k}$.
 
-The residual worker follows its own schedule and never waits. At each update it snapshots the latest packet, reads $\mathcal{F}_t$ and $S_t$, and evaluates Eqs.~\eqref{eq:force_output} and~\eqref{eq:staleness_output} in one deterministic pass. Writing $j(t)$ for the emitted step whose timestamp matches $t$, the executed form of Eq.~\eqref{eq:action_comp} applies a separate bound to each correction,
+The residual worker follows its own schedule and never waits. At each update it snapshots the latest packet, reads $\mathcal{F}_t$ and $S_t$, and evaluates Eqs.~\eqref{eq:force_output} and~\eqref{eq:staleness_output} in one deterministic pass. Writing $j(t)$ for the emitted step whose timestamp matches $t$, the executed form of Eq.~\eqref{eq:action_comp} bounds the two corrections separately,
 \begin{equation}
     (A^{\mathrm{cmd}}(t))^p
     =(A^{\mathrm{ref}}(t))^p
@@ -194,4 +197,4 @@ The residual worker follows its own schedule and never waits. At each update it 
      +\mathrm{clip}\!\left(\Delta\hat A^{\mathrm{stale}}_{t,j(t)},\kappa_S\right),
     \label{eq:deploy_composition}
 \end{equation}
-after which the command is unnormalized and added to $S_k$ to obtain an absolute pose. The bounds differ because $\kappa_F$ limits how far measured contact may depart from the planned motion, whereas the staleness correction advances the cached plan to the present and is routinely the larger of the two.
+after which the command is unnormalized and added to $S_k$ to obtain an absolute pose. The two bounds govern different quantities: $\kappa_F$ limits the departure from the planned motion attributed to measured contact, and $\kappa_S$ limits how far the cached plan is advanced toward the present.
