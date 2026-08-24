@@ -13,6 +13,6 @@ We evaluate ForceDelta-VLA on four single-arm and four bimanual real-robot tasks
 The contributions of this work are:
 \begin{enumerate}
     \item We formulate force-responsive policy decomposition as a teacher-distillation problem and introduce \textbf{null-mode residual distillation}. A learned null-force operating mode and matched-noise teacher queries provide explicit correction targets without task rewards or additional corrective or on-policy demonstrations;
-    \item We extend the objective with \textbf{staleness-aware residual distillation}, which learns stale-reference compensation under replayed deployment schedules and keeps the independently distilled correction valid during asynchronous execution; and
+    \item We introduce \textbf{staleness-aware residual distillation} for asynchronous reference execution, learning stale-reference compensation under replayed deployment schedules to keep the distilled correction valid as the cached reference ages; and
     \item We develop an \textbf{independently executable residual pathway} that reuses cached task context and timestamped null-mode references while updating force-responsive pose corrections asynchronously from the generative VLA.
 \end{enumerate}

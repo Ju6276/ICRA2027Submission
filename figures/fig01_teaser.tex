@@ -61,14 +61,14 @@
   \node[note] at (5.15,-2.02) {cached reference};
 
   \node[fast] (res) at (8.75,-1.15)
-    {Force-conditioned residual\\$\Delta\hat A$ in one pass};
+    {Force-conditioned residual\\$\Delta\hat A^{\mathrm{force}}$ in one pass};
   \node[tag,fill=cFast!14,text=cFast] at (8.75,-2.02)
     {$\Delta A_T^{\mathrm{force}}=\mathcal P(A_T^{\mathrm{full}})-\mathcal P(A_T^{\mathrm{null}})$};
 
   \node[circle,draw=cInk,fill=white,line width=0.9pt,minimum size=8mm,
         font=\sffamily\small\bfseries] (sum) at (11.55,-1.15) {$+$};
   \node[box,draw=cGood,fill=cGood!8,text width=30mm] (cmd) at (14.15,-1.15)
-    {Composed command\\$(A^{\mathrm{cmd}})^p=(A^{\mathrm{ref}})^p+\Delta\hat A$};
+    {Force-corrected reference\\$(A^{\mathrm{ref}})^p+\Delta\hat A^{\mathrm{force}}$};
   \draw[flow,draw=cSlow] (ref.east) -- (sum.west);
   \draw[flow,draw=cFast] (res.east) -- (sum.west);
   \draw[flow,draw=cGood] (sum.east) -- (cmd.west);
