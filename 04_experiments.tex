@@ -4,10 +4,10 @@ We evaluate ForceDelta-VLA in terms of task performance, contact quality, respon
 \label{sec:exp_protocol}
 
 \subsubsection{Hardware platforms.}
-Experiments use a seven-degree-of-freedom Franka Emika Panda with wrist and external Intel RealSense D405 cameras, and an X Square Robot bimanual platform with one wrist camera per arm and a shared external camera. Following ForceVLA~\cite{yu2025forcevlaenhancingvlamodels}, each arm receives the robot-estimated external end-effector wrench $\mathbf w=[\mathbf f;\boldsymbol\tau]\in\mathbb R^6$ in its base frame; no additional wrist force/torque sensor is used.
+Experiments use a seven-degree-of-freedom Franka Emika Panda with one wrist-mounted and one external Intel RealSense D405 camera, and an X Square Robot bimanual platform with one wrist-mounted camera per arm and one shared external camera. Following ForceVLA~\cite{yu2025forcevlaenhancingvlamodels}, each arm receives the robot-estimated external end-effector wrench $\mathbf w=[\mathbf f;\boldsymbol\tau]\in\mathbb R^6$ in its base frame; no additional wrist force/torque sensor is used.
 
 \subsubsection{Tasks and data collection.}
-We evaluate four single-arm and four bimanual tasks (Table~\ref{tab:tasks}), collecting $200$ and $300$ teleoperated demonstrations per task, respectively. Multi-view images, robot states, and commanded actions are recorded at $30$~Hz, and timestamped wrench estimates at $100$~Hz.
+We evaluate four single-arm and four bimanual tasks (Table~\ref{tab:tasks}), collecting $200$ and $300$ demonstrations per task, respectively. Single-arm demonstrations are collected with a 3Dconnexion SpaceMouse, whereas bimanual demonstrations use leader--follower teleoperation on the X Square Robot platform. Multi-view images, robot states, and commanded actions are recorded at $30$~Hz, and timestamped wrench estimates at $100$~Hz.
 
 \begin{table*}[t]
     \centering
