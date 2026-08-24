@@ -1,88 +1,116 @@
 \documentclass[tikz,border=3pt]{standalone}
 \usepackage{amsmath,amssymb}
-\usetikzlibrary{arrows.meta,positioning,fit,calc,backgrounds}
+\usetikzlibrary{arrows.meta,positioning,calc}
 
-\definecolor{cSlow}{HTML}{2878B5}
-\definecolor{cFast}{HTML}{E67E22}
-\definecolor{cRes}{HTML}{C0392B}
+\definecolor{cBlue}{HTML}{2457A6}
+\definecolor{cGreen}{HTML}{2E7D32}
+\definecolor{cPurple}{HTML}{7048A8}
+\definecolor{cOrange}{HTML}{D96A16}
+\definecolor{cRed}{HTML}{C62828}
 \definecolor{cInk}{HTML}{263238}
-\definecolor{cBad}{HTML}{7F8C8D}
-\definecolor{cGood}{HTML}{2E8B57}
 
 \tikzset{
-  flow/.style={-{Latex[length=2.2mm]},line width=0.8pt,draw=cInk},
-  dashflow/.style={-{Latex[length=2.2mm]},line width=0.75pt,dashed,draw=cInk!60},
-  box/.style={rounded corners=3pt,draw=cInk!65,fill=white,line width=0.8pt,
-              align=center,minimum height=11mm,text width=29mm,font=\sffamily\scriptsize},
-  slow/.style={rounded corners=3pt,draw=cSlow,fill=cSlow!10,line width=1pt,
-               align=center,minimum height=13mm,text width=31mm,font=\sffamily\scriptsize\bfseries},
-  fast/.style={rounded corners=3pt,draw=cFast,fill=cFast!11,line width=1pt,
-               align=center,minimum height=13mm,text width=31mm,font=\sffamily\scriptsize\bfseries},
-  tag/.style={rounded corners=2pt,inner sep=2pt,font=\sffamily\tiny\bfseries},
-  title/.style={font=\sffamily\small\bfseries,text=cInk},
-  note/.style={font=\sffamily\tiny,align=center,text=cInk!75}
+  arrow/.style={-{Latex[length=1.8mm]},draw=cInk!72,line width=0.72pt},
+  bluearrow/.style={-{Latex[length=1.8mm]},draw=cBlue,line width=0.78pt},
+  greenarrow/.style={-{Latex[length=1.8mm]},draw=cGreen,line width=0.78pt},
+  box/.style={rounded corners=2.2pt,draw=cInk!45,fill=white,line width=0.65pt,
+              align=center,font=\sffamily\scriptsize,minimum height=8mm},
+  tinybox/.style={rounded corners=1.8pt,draw=cInk!40,fill=white,line width=0.6pt,
+                  align=center,font=\sffamily\tiny,minimum height=6.5mm},
+  title/.style={font=\sffamily\scriptsize\bfseries,text=cInk,align=center},
+  note/.style={font=\sffamily\tiny,text=cInk!78,align=center},
+  tag/.style={rounded corners=1.5pt,inner xsep=3pt,inner ysep=1.5pt,
+              font=\sffamily\tiny\bfseries,align=center}
 }
 
 \begin{document}
 \begin{tikzpicture}[x=1cm,y=1cm]
-  % Motivation: semantic intent is slow, physical interaction changes quickly.
-  \node[title] at (1.65,3.05) {CONTACT-RICH INTERACTION};
-  \node[box,draw=cSlow,fill=cSlow!7] (intent) at (1.65,1.85)
-    {Semantic intent\\``insert the connector''};
-  \node[tag,fill=cSlow!12,text=cSlow] at (1.65,0.98) {SLOWLY VARYING};
+  \filldraw[rounded corners=4pt,fill=gray!2,draw=cInk!24,line width=0.7pt]
+    (0,0) rectangle (4.65,5.25);
+  \filldraw[rounded corners=4pt,fill=cBlue!2,draw=cBlue!35,line width=0.7pt]
+    (4.82,0) rectangle (11.65,5.25);
+  \filldraw[rounded corners=4pt,fill=cGreen!2,draw=cGreen!38,line width=0.7pt]
+    (11.82,0) rectangle (18.15,5.25);
 
-  \node[box,draw=cFast,fill=cFast!7] (contact) at (1.65,-0.25)
-    {Physical interaction\\contact, slip, constraint};
-  \begin{scope}[shift={(0.55,-1.25)}]
-    \draw[line width=0.55pt,draw=cInk!45] (0,0) -- (2.2,0);
-    \draw[line width=1.1pt,draw=cRes]
-      (0,0.05) -- (0.35,0.04) -- (0.62,0.10) -- (0.82,0.85) --
-      (1.02,0.28) -- (1.28,0.55) -- (1.55,0.18) -- (1.85,0.12) -- (2.2,0.10);
-    \node[note] at (1.1,-0.25) {force/torque transient};
-  \end{scope}
-  \node[tag,fill=cFast!14,text=cFast] at (1.65,-1.82) {RAPIDLY VARYING};
+  % Panel 1: the supervision gap.
+  \node[title] at (2.325,4.92) {ENTANGLED FULL-ACTION PREDICTION};
+  \node[box,text width=11mm] (obs) at (0.78,3.78)
+    {Vision\\state\\force};
+  \node[box,draw=cOrange,fill=cOrange!7,text width=18mm] (oldvla) at (2.28,3.78)
+    {Force-aware\\generative policy};
+  \node[box,draw=cOrange,fill=cOrange!7,text width=13mm] (chunk) at (3.83,3.78)
+    {Full action\\chunk $A_T$};
+  \draw[arrow] (obs.east) -- (oldvla.west);
+  \draw[arrow] (oldvla.east) -- (chunk.west);
 
-  % Conventional force-aware VLA.
-  \node[title] at (8.3,3.05) {ENTANGLED FULL-ACTION PREDICTION};
-  \node[box] (forceOld) at (5.15,1.55) {New force\\measurement};
-  \node[box,draw=cBad,fill=gray!8,text width=35mm] (genOld) at (8.3,1.55)
-    {Force-conditioned expert\\one generative prediction};
-  \node[box,draw=cBad,fill=gray!8] (actOld) at (11.55,1.55)
-    {Complete action chunk\\nominal motion + adjustment};
-  \draw[flow] (forceOld.east) -- (genOld.west);
-  \draw[flow] (genOld.east) -- (actOld.west);
-  \node[tag,fill=gray!16,text=cBad] at (8.35,0.72)
-    {NO EXPLICIT CORRECTION TARGET};
+  \node[tinybox,draw=cBlue,fill=cBlue!5,text width=17mm] (nom) at (1.28,2.30)
+    {Nominal\\task motion};
+  \node[font=\sffamily\normalsize\bfseries,text=cInk] at (2.30,2.30) {$+$};
+  \node[tinybox,draw=cOrange,fill=cOrange!6,text width=17mm] (adj) at (3.33,2.30)
+    {Contact-dependent\\adjustment};
+  \draw[arrow] (chunk.south) |- ($(nom.north)!0.5!(adj.north)$);
+  \node[note] at (2.325,1.54) {Both roles are encoded in one prediction};
+  \node[tag,fill=cRed!10,draw=cRed!55,text=cRed,text width=37mm] at (2.325,0.57)
+    {NO EXPLICIT CORRECTION SUPERVISION};
 
-  % ForceDelta-VLA factorization.
-  \node[title,text=cGood] at (8.3,-0.05) {FORCEDELTA-VLA: DISTILL THE CORRECTION};
-  \node[slow] (ref) at (5.15,-1.15)
-    {Null-mode reference\\$A^{\mathrm{ref}}$};
-  \node[note] at (5.15,-2.02) {cached reference};
+  % Panel 2: paired modes of one teacher.
+  \node[title,text=cBlue] at (8.235,4.92)
+    {MATCHED QUERIES OF ONE FORCE-AWARE TEACHER};
+  \node[tag,fill=cBlue!9,text=cBlue] at (8.235,4.48)
+    {$\theta$ frozen; null-mode parameters $\phi$ learned};
 
-  \node[fast] (res) at (8.75,-1.15)
-    {Force-conditioned residual\\$\Delta\hat A^{\mathrm{force}}$ in one pass};
-  \node[tag,fill=cFast!14,text=cFast] at (8.75,-2.02)
-    {$\Delta A_T^{\mathrm{force}}=\mathcal P(A_T^{\mathrm{full}})-\mathcal P(A_T^{\mathrm{null}})$};
+  \node[box,draw=cBlue,fill=cBlue!7,text width=17mm] (fullq) at (5.73,3.45)
+    {Full-force query\\$T_\theta(z_t^F;\epsilon)$};
+  \node[box,draw=cBlue,fill=white,text width=14mm] (fullout) at (7.78,3.45)
+    {$A_{T,t}^{\mathrm{full}}$};
+  \draw[bluearrow] (fullq.east) -- (fullout.west);
 
-  \node[circle,draw=cInk,fill=white,line width=0.9pt,minimum size=8mm,
-        font=\sffamily\small\bfseries] (sum) at (11.55,-1.15) {$+$};
-  \node[box,draw=cGood,fill=cGood!8,text width=30mm] (cmd) at (14.15,-1.15)
-    {Force-corrected reference\\$(A^{\mathrm{ref}})^p+\Delta\hat A^{\mathrm{force}}$};
-  \draw[flow,draw=cSlow] (ref.east) -- (sum.west);
-  \draw[flow,draw=cFast] (res.east) -- (sum.west);
-  \draw[flow,draw=cGood] (sum.east) -- (cmd.west);
+  \node[box,draw=cGreen,fill=cGreen!7,text width=17mm] (nullq) at (5.73,1.95)
+    {Learned null query\\$T_{\theta,\phi}^{\mathrm{null}}(z_{\varnothing F};\epsilon)$};
+  \node[box,draw=cGreen,fill=white,text width=14mm] (nullout) at (7.78,1.95)
+    {$A_{T,t}^{\mathrm{null}}$};
+  \draw[greenarrow] (nullq.east) -- (nullout.west);
 
-  \draw[dashflow,draw=cFast] (contact.east) -- ++(0.55,0) |- (res.west);
-  \draw[dashflow,draw=cSlow] (intent.east) -- ++(0.55,0) |- (ref.west);
+  \node[circle,draw=cPurple,fill=white,line width=0.75pt,minimum size=6.5mm,
+        font=\sffamily\small\bfseries] (minus) at (9.08,2.70) {$-$};
+  \draw[bluearrow] (fullout.east) -| (minus.north);
+  \draw[greenarrow] (nullout.east) -| (minus.south);
 
-  \begin{scope}[on background layer]
-    \node[rounded corners=5pt,draw=cInk!22,fill=gray!1,inner sep=3mm,
-          fit=(intent)(contact)] {};
-    \node[rounded corners=5pt,draw=cBad!35,fill=gray!2,inner sep=3mm,
-          fit=(forceOld)(genOld)(actOld)] {};
-    \node[rounded corners=5pt,draw=cGood!45,fill=cGood!2,inner sep=3mm,
-          fit=(ref)(res)(sum)(cmd)] {};
-  \end{scope}
+  \node[box,draw=cPurple,fill=cPurple!6,text width=19mm] (target) at (10.45,2.70)
+    {Teacher-derived\\force correction\\$\Delta A_{T,t}^{\mathrm{force}}$};
+  \draw[arrow,draw=cPurple] (minus.east) -- (target.west);
+  \node[note,text width=56mm] at (8.235,0.93)
+    {Same $(V_t,L,S_t)$ and flow noise $\epsilon$\\[-1pt]
+     $\Delta A_{T,t}^{\mathrm{force}}=
+     \mathcal P(A_{T,t}^{\mathrm{full}})-
+     \mathcal P(A_{T,t}^{\mathrm{null}})$};
+  \node[tag,fill=cPurple!9,text=cPurple] at (8.235,0.36)
+    {EXPLICIT POSE-CORRECTION TARGET};
+
+  % Panel 3: the core factorization enabled by the explicit target.
+  \node[title,text=cGreen] at (14.985,4.92)
+    {DISTILL THE CORRECTION};
+
+  \node[box,draw=cPurple,fill=cPurple!6,text width=23mm] (supervision) at (13.35,3.50)
+    {Teacher-derived target\\$\Delta A_{T,t}^{\mathrm{force}}$};
+  \node[tag,fill=cPurple!9,text=cPurple] at (13.35,2.78)
+    {EXPLICIT SUPERVISION};
+
+  \node[box,draw=cGreen,fill=cGreen!7,text width=22mm] (residual) at (16.55,3.50)
+    {Force-responsive\\residual branch\\$\Delta\hat A^{\mathrm{force}}$};
+  \draw[greenarrow] (supervision.east) -- node[above,note] {distill} (residual.west);
+
+  \node[tinybox,draw=cBlue,fill=cBlue!6,text width=22mm] (ref) at (13.35,1.55)
+    {Cached null-mode\\reference $A^{\mathrm{ref}}$};
+  \node[circle,draw=cInk,fill=white,line width=0.7pt,minimum size=6.5mm,
+        font=\sffamily\small\bfseries] (sum) at (15.15,1.55) {$+$};
+  \node[tinybox,draw=cOrange,fill=cOrange!6,text width=22mm] (factorized) at (16.75,1.55)
+    {Factorized\\pose action};
+  \draw[bluearrow] (ref.east) -- (sum.west);
+  \draw[greenarrow] (residual.south) |- (sum.north);
+  \draw[arrow,draw=cOrange] (sum.east) -- (factorized.west);
+
+  \node[note,text width=53mm] at (14.985,0.48)
+    {The generative reference is retained;\\only the correction is distilled and exposed.};
 \end{tikzpicture}
 \end{document}
