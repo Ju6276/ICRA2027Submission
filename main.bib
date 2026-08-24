@@ -1,442 +1,195 @@
 % related work
-% CLiport
-@misc{shridhar2021cliportpathwaysroboticmanipulation,
-      title={CLIPort: What and Where Pathways for Robotic Manipulation}, 
-      author={Mohit Shridhar and Lucas Manuelli and Dieter Fox},
-      year={2021},
-      eprint={2109.12098},
-      archivePrefix={arXiv},
-      primaryClass={cs.RO},
-      url={https://arxiv.org/abs/2109.12098}, 
-}
 
-% PointNet++
-@misc{qi2017pointnetdeephierarchicalfeature,
-      title={PointNet++: Deep Hierarchical Feature Learning on Point Sets in a Metric Space}, 
-      author={Charles R. Qi and Li Yi and Hao Su and Leonidas J. Guibas},
-      year={2017},
-      eprint={1706.02413},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV},
-      url={https://arxiv.org/abs/1706.02413}, 
-}
-
-% 3D Diffuser actor
-@article{3d_diffuser_actor,
-  author = {Ke, Tsung-Wei and Gkanatsios, Nikolaos and Fragkiadaki, Katerina},
-  title = {3D Diffuser Actor: Policy Diffusion with 3D Scene Representations},
-  journal = {Arxiv},
-  year = {2024}
-}
-% DIT
-@article{dasari2024ditpi,
-    title={The Ingredients for Robotic Diffusion Transformers},
-    author = {Sudeep Dasari and Oier Mees and Sebastian Zhao and Mohan Kumar Srirama and Sergey Levine},
-    journal = {arXiv preprint arXiv:2410.10088},
-    year={2024},
-}
-% GenDP
-@misc{wang2024gendp3dsemanticfields,
-      title={GenDP: 3D Semantic Fields for Category-Level Generalizable Diffusion Policy}, 
-      author={Yixuan Wang and Guang Yin and Binghao Huang and Tarik Kelestemur and Jiuguang Wang and Yunzhu Li},
-      year={2024},
-      eprint={2410.17488},
-      archivePrefix={arXiv},
-      primaryClass={cs.RO},
-      url={https://arxiv.org/abs/2410.17488}, 
-}
-
-% MoFlow
-@misc{fu2025moflowonestepflowmatching,
-      title={MoFlow: One-Step Flow Matching for Human Trajectory Forecasting via Implicit Maximum Likelihood Estimation based Distillation}, 
-      author={Yuxiang Fu and Qi Yan and Lele Wang and Ke Li and Renjie Liao},
-      year={2025},
-      eprint={2503.09950},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV},
-      url={https://arxiv.org/abs/2503.09950}, 
-}
-% SafeFlow
-@misc{dai2025safeflowsaferobotmotion,
-      title={SafeFlow: Safe Robot Motion Planning with Flow Matching via Control Barrier Functions}, 
-      author={Xiaobing Dai and Zewen Yang and Dian Yu and Fangzhou Liu and Hamid Sadeghian and Sami Haddadin and Sandra Hirche},
-      year={2025},
-      eprint={2504.08661},
-      archivePrefix={arXiv},
-      primaryClass={cs.RO},
-      url={https://arxiv.org/abs/2504.08661}, 
-}
-%M4DP
-@misc{dong2025m4diffusermultiviewdiffusionpolicy,
-      title={M4Diffuser: Multi-View Diffusion Policy with Manipulability-Aware Control for Robust Mobile Manipulation}, 
-      author={Ju Dong and Lei Zhang and Liding Zhang and Yao Ling and Yu Fu and Kaixin Bai and Zoltán-Csaba Márton and Zhenshan Bing and Zhaopeng Chen and Alois Christian Knoll and Jianwei Zhang},
-      year={2025},
-      eprint={2509.14980},
-      archivePrefix={arXiv},
-      primaryClass={cs.RO},
-      url={https://arxiv.org/abs/2509.14980}, 
-}
-
-% Falcon -multi-view
-@article{he2025falcon,
-  title={FALCON: Actively Decoupled Visuomotor Policies for Loco-Manipulation with Foundation-Model-Based Coordination},
-  author={He, Chengyang and Sun, Ge and Bai, Yue and Lu, Junkai and Zhao, Jiadong and Sartoretti, Guillaume},
-  journal={arXiv preprint arXiv:2512.04381},
-  year={2025}
-}
-% DP
-@inproceedings{chi2023diffusionpolicy,
-	title={Diffusion Policy: Visuomotor Policy Learning via Action Diffusion},
-	author={Chi, Cheng and Feng, Siyuan and Du, Yilun and Xu, Zhenjia and Cousineau, Eric and Burchfiel, Benjamin and Song, Shuran},
-	booktitle={Proceedings of Robotics: Science and Systems (RSS)},
-	year={2023}
-}
-
-%ACT
-@article{zhao2023learning,
-  title={Learning fine-grained bimanual manipulation with low-cost hardware},
-  author={Zhao, Tony Z and Kumar, Vikash and Levine, Sergey and Finn, Chelsea},
-  journal={arXiv preprint arXiv:2304.13705},
-  year={2023}
-}
-
-% AC-DiT
-@misc{chen2025acditadaptivecoordinationdiffusion,
-      title={AC-DiT: Adaptive Coordination Diffusion Transformer for Mobile Manipulation}, 
-      author={Sixiang Chen and Jiaming Liu and Siyuan Qian and Han Jiang and Lily Li and Renrui Zhang and Zhuoyang Liu and Chenyang Gu and Chengkai Hou and Pengwei Wang and Zhongyuan Wang and Shanghang Zhang},
-      year={2025},
-      eprint={2507.01961},
-      archivePrefix={arXiv},
-      primaryClass={cs.RO},
-      url={https://arxiv.org/abs/2507.01961}, 
-}
-%  Structured Point Cloud
-@misc{jia2025pointmappolicystructuredpointcloud,
-      title={PointMapPolicy: Structured Point Cloud Processing for Multi-Modal Imitation Learning}, 
-      author={Xiaogang Jia and Qian Wang and Anrui Wang and Han A. Wang and Balázs Gyenes and Emiliyan Gospodinov and Xinkai Jiang and Ge Li and Hongyi Zhou and Weiran Liao and Xi Huang and Maximilian Beck and Moritz Reuss and Rudolf Lioutikov and Gerhard Neumann},
-      year={2025},
-      eprint={2510.20406},
-      archivePrefix={arXiv},
-      primaryClass={cs.RO},
-      url={https://arxiv.org/abs/2510.20406}, 
-}
-
-% DP3 
-@inproceedings{Ze2024DP3,
-	title={3D Diffusion Policy: Generalizable Visuomotor Policy Learning via Simple 3D Representations},
-	author={Yanjie Ze and Gu Zhang and Kangning Zhang and Chenyuan Hu and Muhan Wang and Huazhe Xu},
-	booktitle={Proceedings of Robotics: Science and Systems (RSS)},
-	year={2024}
-}
-% IDP3 
-@article{ze2024humanoid_manipulation,
-  title   = {Generalizable Humanoid Manipulation with 3D Diffusion Policies},
-  author  = {Yanjie Ze and Zixuan Chen and Wenhao Wang and Tianyi Chen and Xialin He and Ying Yuan and Xue Bin Peng and Jiajun Wu},
-  year    = {2024},
-  journal = {arXiv preprint arXiv:2410.10803}
-}
-
-%solver
-@misc{lu2022dpmsolverfastodesolver,
-      title={DPM-Solver: A Fast ODE Solver for Diffusion Probabilistic Model Sampling in Around 10 Steps}, 
-      author={Cheng Lu and Yuhao Zhou and Fan Bao and Jianfei Chen and Chongxuan Li and Jun Zhu},
-      year={2022},
-      eprint={2206.00927},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG},
-      url={https://arxiv.org/abs/2206.00927}, 
-}
-
-@misc{zhao2024dcsolverimprovingpredictorcorrectordiffusion,
-      title={DC-Solver: Improving Predictor-Corrector Diffusion Sampler via Dynamic Compensation}, 
-      author={Wenliang Zhao and Haolin Wang and Jie Zhou and Jiwen Lu},
-      year={2024},
-      eprint={2409.03755},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV},
-      url={https://arxiv.org/abs/2409.03755}, 
-}
-
-% FM
-@misc{lipman2023flowmatchinggenerativemodeling,
-      title={Flow Matching for Generative Modeling}, 
-      author={Yaron Lipman and Ricky T. Q. Chen and Heli Ben-Hamu and Maximilian Nickel and Matt Le},
-      year={2023},
-      eprint={2210.02747},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG},
-      url={https://arxiv.org/abs/2210.02747}, 
-}
-
-% CFM
-@misc{yang2024consistencyflowmatchingdefining,
-      title={Consistency Flow Matching: Defining Straight Flows with Velocity Consistency}, 
-      author={Ling Yang and Zixiang Zhang and Zhilong Zhang and Xingchao Liu and Minkai Xu and Wentao Zhang and Chenlin Meng and Stefano Ermon and Bin Cui},
-      year={2024},
-      eprint={2407.02398},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV},
-      url={https://arxiv.org/abs/2407.02398}, 
-}
-% Consistency Distillation
-@inproceedings{prasad2024consistency,
-      title     = {Consistency Policy: Accelerated Visuomotor Policies via Consistency Distillation},
-      author    = {Prasad, Aaditya and Lin, Kevin and Wu, Jimmy and Zhou, Linqi and Bohg, Jeannette},
-      booktitle = {Robotics: Science and Systems},
-      year      = {2024},
-    }
-
-% PFM
-@article{chisari2024learning,
-  title={Learning Robotic Manipulation Policies from Point Clouds with Conditional Flow Matching},
-  shorttile={PointFlowMatch},
-  author={Chisari, Eugenio and Heppert, Nick and Argus, Max and Welschehold, Tim and Brox, Thomas and Valada, Abhinav},
-  journal={Conference on Robot Learning (CoRL)},
-  year={2024}
-}
-
-% FlowPolicy
-@article{zhang2024flowpolicy,
-      title={FlowPolicy: Enabling Fast and Robust 3D Flow-based Policy via Consistency Flow Matching for Robot Manipulation}, 
-      author={Qinglun Zhang and Zhen Liu and Haoqiang Fan and Guanghui Liu and Bing Zeng and Shuaicheng Liu},
-      year={2024},
-      eprint={2412.04987},
-      archivePrefix={arXiv},
-      primaryClass={cs.RO},
-}
-
-%One-Step Diffusion Policy
-@misc{wang2024onestepdiffusionpolicyfast,
-      title={One-Step Diffusion Policy: Fast Visuomotor Policies via Diffusion Distillation}, 
-      author={Zhendong Wang and Zhaoshuo Li and Ajay Mandlekar and Zhenjia Xu and Jiaojiao Fan and Yashraj Narang and Linxi Fan and Yuke Zhu and Yogesh Balaji and Mingyuan Zhou and Ming-Yu Liu and Yu Zeng},
-      year={2024},
-      eprint={2410.21257},
-      archivePrefix={arXiv},
-      primaryClass={cs.RO},
-      url={https://arxiv.org/abs/2410.21257}, 
-}
-
-% IMLE Policy
-
-@inproceedings{rana2025imle, 
-title     = {IMLE Policy: Fast and Sample Efficient Visuomotor Policy Learning via Implicit Maximum Likelihood Estimation}, 
-author    = {Rana, Krishan and Lee, Robert and Pershouse, David and Suenderhauf, Niko}, 
-booktitle = {Proceedings of Robotics: Science and Systems (RSS)}, 
-year      = {2025}
-}
-% IV 
-% RLbench
-@article{james2019rlbench,
-  title={RLBench: The Robot Learning Benchmark \& Learning Environment},
-  author={James, Stephen and Ma, Zicong and Rovick Arrojo, David and Davison, Andrew J.},
-  journal={IEEE Robotics and Automation Letters},
-  year={2020}
-}
-
-@article{gu2024bagail,
-  title={BAGAIL: Multi-modal imitation learning from imbalanced demonstrations},
-  author={Gu, Sijia and Zhu, Fei},
-  journal={Neural Networks},
-  volume={174},
-  pages={106251},
-  year={2024},
-  publisher={Elsevier}
-}
-
-@article{gx2025kl,
-  title={KL-Regularized Reinforcement Learning is Designed to Mode Collapse},
-  author={GX-Chen, Anthony and Prakash, Jatin and Guo, Jeff and Fergus, Rob and Ranganath, Rajesh},
-  journal={arXiv preprint arXiv:2510.20817},
-  year={2025}
-}
-
-@article{xu2025funcanon,
-  title={Funcanon: Learning pose-aware action primitives via functional object canonicalization for generalizable robotic manipulation},
-  author={Xu, Hongli and Zhang, Lei and Hu, Xiaoyue and Zhong, Boyang and Bai, Kaixin and M{\'a}rton, Zolt{\'a}n-Csaba and Bing, Zhenshan and Chen, Zhaopeng and Knoll, Alois Christian and Zhang, Jianwei},
-  journal={arXiv preprint arXiv:2509.19102},
-  year={2025}
-}
-
-@inproceedings{zhang2025contactdexnet,
-  title={Contactdexnet: Multi-fingered robotic hand grasping in cluttered environments through hand-object contact semantic mapping},
-  author={Zhang, Lei and Bai, Kaixin and Huang, Guowen and Bing, Zhenshan and Chen, Zhaopeng and Knoll, Alois and Zhang, Jianwei},
-  booktitle={2025 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)},
-  pages={8495--8502},
-  year={2025},
-  organization={IEEE}
-}
-
-@article{bai2026stereoanything,
-  title={Stereoanything: Advanced zero-shot stereo imaging for robotic grasp detection with transparent objects},
-  author={Bai, Kaixin and Zhang, Lei and Liu, Yiwen and Chen, Zhaopeng and Zhang, Jianwei},
-  journal={IEEE Transactions on Cybernetics},
-  year={2026},
-  publisher={IEEE}
-}
-
-@article{bai2024cleardepth,
-  title={ClearDepth: enhanced stereo perception of transparent objects for robotic manipulation},
-  author={Bai, Kaixin and Zeng, Huajian and Zhang, Lei and Liu, Yiwen and Xu, Hongli and Chen, Zhaopeng and Zhang, Jianwei},
-  journal={arXiv preprint arXiv:2409.08926},
-  year={2024}
-}
 % Force-aware VLA and physical-feedback policies
-@article{yu2025forcevla,
-  title={ForceVLA: Enhancing VLA Models with a Force-aware MoE for Contact-rich Manipulation},
-  author={Jiawen Yu and Hairuo Liu and Qiaojun Yu and Jieji Ren and Ce Hao and Haitong Ding and Guangyu Huang and Guofan Huang and Yan Song and Panpan Cai and Cewu Lu and Wenqiang Zhang},
-  journal={arXiv preprint arXiv:2505.22159},
-  year={2025},
-  eprint={2505.22159},
-  archivePrefix={arXiv},
-  primaryClass={cs.RO}
+@misc{yu2025forcevlaenhancingvlamodels,
+      title={ForceVLA: Enhancing VLA Models with a Force-aware MoE for Contact-rich Manipulation}, 
+      author={Jiawen Yu and Hairuo Liu and Qiaojun Yu and Jieji Ren and Ce Hao and Haitong Ding and Guangyu Huang and Guofan Huang and Yan Song and Panpan Cai and Cewu Lu and Wenqiang Zhang},
+      year={2025},
+      eprint={2505.22159},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2505.22159}, 
 }
 
-@article{li2026forcevla2,
-  title={ForceVLA2: Unleashing Hybrid Force-Position Control with Force Awareness for Contact-Rich Manipulation},
-  author={Yang Li and Zhaxizhuoma and Hongru Jiang and Junjie Xia and Hongquan Zhang and Jinda Du and Yunsong Zhou and Jia Zeng and Ce Hao and Jieji Ren and Qiaojun Yu and Cewu Lu and Yu Qiao and Jiangmiao Pang},
-  journal={arXiv preprint arXiv:2603.15169},
-  year={2026},
-  eprint={2603.15169},
-  archivePrefix={arXiv},
-  primaryClass={cs.RO}
+@misc{li2026forcevla2unleashinghybridforceposition,
+      title={ForceVLA2: Unleashing Hybrid Force-Position Control with Force Awareness for Contact-Rich Manipulation}, 
+      author={Yang Li and Zhaxizhuoma and Hongru Jiang and Junjie Xia and Hongquan Zhang and Jinda Du and Yunsong Zhou and Jia Zeng and Ce Hao and Jieji Ren and Qiaojun Yu and Cewu Lu and Yu Qiao and Jiangmiao Pang},
+      year={2026},
+      eprint={2603.15169},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2603.15169}, 
 }
 
-@misc{huang2026tafvla,
-  title={TaF-VLA: Tactile-Force Alignment in Vision-Language-Action Models for Force-aware Manipulation},
-  author={Yuzhe Huang and Pei Lin and Wanlin Li and Daohan Li and Jiajun Li and Jiaming Jiang and Chenxi Xiao and Ziyuan Jiao},
-  year={2026},
-  eprint={2601.20321},
-  archivePrefix={arXiv},
-  primaryClass={cs.RO}
+@misc{huang2026tafvlatactileforcealignmentvisionlanguageaction,
+      title={TaF-VLA: Tactile-Force Alignment in Vision-Language-Action Models for Force-aware Manipulation}, 
+      author={Yuzhe Huang and Pei Lin and Wanlin Li and Daohan Li and Jiajun Li and Jiaming Jiang and Chenxi Xiao and Ziyuan Jiao},
+      year={2026},
+      eprint={2601.20321},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2601.20321}, 
 }
 
-@misc{huang2025tactilevla,
-  title={Tactile-VLA: Unlocking Vision-Language-Action Model's Physical Knowledge for Tactile Generalization},
-  author={Jialei Huang and Shuo Wang and Fanqi Lin and Yihang Hu and Chuan Wen and Yang Gao},
-  year={2025},
-  eprint={2507.09160},
-  archivePrefix={arXiv},
-  primaryClass={cs.RO}
+@misc{huang2025tactilevlaunlockingvisionlanguageactionmodels,
+      title={Tactile-VLA: Unlocking Vision-Language-Action Model's Physical Knowledge for Tactile Generalization}, 
+      author={Jialei Huang and Shuo Wang and Fanqi Lin and Yihang Hu and Chuan Wen and Yang Gao},
+      year={2025},
+      eprint={2507.09160},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2507.09160}, 
 }
 
-@misc{bi2025vlatouch,
-  title={VLA-Touch: Enhancing Vision-Language-Action Models with Dual-Level Tactile Feedback},
-  author={Jianxin Bi and Kevin Yuchen Ma and Ce Hao and Mike Zheng Shou and Harold Soh},
-  year={2025},
-  eprint={2507.17294},
-  archivePrefix={arXiv},
-  primaryClass={cs.RO}
+@misc{bi2025vlatouchenhancingvisionlanguageactionmodels,
+      title={VLA-Touch: Enhancing Vision-Language-Action Models with Dual-Level Tactile Feedback}, 
+      author={Jianxin Bi and Kevin Yuchen Ma and Ce Hao and Mike Zheng Shou and Harold Soh},
+      year={2025},
+      eprint={2507.17294},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2507.17294}, 
 }
 
-@article{lee2025manipforce,
-  title={ManipForce: Force-Guided Policy Learning with Frequency-Aware Representation for Contact-Rich Manipulation},
-  author={Geonhyup Lee and Yeongjin Lee and Kangmin Kim and Seongju Lee and Sangjun Noh and Seunghyeok Back and Kyoobin Lee},
-  journal={arXiv preprint arXiv:2509.19047},
-  year={2025},
-  eprint={2509.19047},
-  archivePrefix={arXiv},
-  primaryClass={cs.RO}
+@misc{li2026fmvlaforcebasedmemoryvisionlanguageaction,
+      title={FM-VLA: Force-based Memory for Vision-Language-Action Models in Contact-Rich Manipulation}, 
+      author={Ruicheng Li and Qixiu Li and Ruichun Ma and Yu Deng and Lin Luo and Zhiying Du and Jianfeng Xiang and Huizhi Liang and Ruicheng Wang and Jiaolong Yang and Baining Guo},
+      year={2026},
+      eprint={2607.18231},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2607.18231}, 
 }
 
-@misc{xue2025rdp,
-  title={Reactive Diffusion Policy: Slow-Fast Visual-Tactile Policy Learning for Contact-Rich Manipulation},
-  author={Han Xue and Jieji Ren and Wendi Chen and Gu Zhang and Yuan Fang and Guoying Gu and Huazhe Xu and Cewu Lu},
-  year={2025},
-  eprint={2503.02881},
-  archivePrefix={arXiv},
-  primaryClass={cs.RO}
+@misc{lee2025manipforceforceguidedpolicylearning,
+      title={ManipForce: Force-Guided Policy Learning with Frequency-Aware Representation for Contact-Rich Manipulation}, 
+      author={Geonhyup Lee and Yeongjin Lee and Kangmin Kim and Seongju Lee and Sangjun Noh and Seunghyeok Back and Kyoobin Lee},
+      year={2025},
+      eprint={2509.19047},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2509.19047}, 
 }
 
-@article{chen2025implicitrdp,
-  title={ImplicitRDP: An End-to-End Visual-Force Diffusion Policy with Structural Slow-Fast Learning},
-  author={Chen, Wendi and Xue, Han and Wang, Yi and Zhou, Fangyuan and Lv, Jun and Jin, Yang and Tang, Shirun and Wen, Chuan and Lu, Cewu},
-  journal={arXiv preprint arXiv:2512.10946},
-  year={2025}
+@misc{xue2025reactivediffusionpolicyslowfast,
+      title={Reactive Diffusion Policy: Slow-Fast Visual-Tactile Policy Learning for Contact-Rich Manipulation}, 
+      author={Han Xue and Jieji Ren and Wendi Chen and Gu Zhang and Yuan Fang and Guoying Gu and Huazhe Xu and Cewu Lu},
+      year={2025},
+      eprint={2503.02881},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2503.02881}, 
 }
 
-@article{li2026favla,
-  title={FAVLA: A Force-Adaptive Fast-Slow VLA Model for Contact-Rich Robotic Manipulation},
-  author={Yao Li and Peiyuan Tang and Wuyang Zhang and Chengyang Zhu and Yifan Duan and Weikai Shi and Xiaodong Zhang and Zijiang Yang and Jianmin Ji and Yanyong Zhang},
-  journal={arXiv preprint arXiv:2602.23648},
-  year={2026},
-  eprint={2602.23648},
-  archivePrefix={arXiv},
-  primaryClass={cs.RO}
+@misc{chen2026implicitrdpendtoendvisualforcediffusion,
+      title={ImplicitRDP: An End-to-End Visual-Force Diffusion Policy with Structural Slow-Fast Learning}, 
+      author={Wendi Chen and Han Xue and Yi Wang and Fangyuan Zhou and Jun Lv and Yang Jin and Shirun Tang and Chuan Wen and Cewu Lu},
+      year={2026},
+      eprint={2512.10946},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2512.10946}, 
 }
 
-@article{vanjani2026damvla,
-  title={DAM-VLA: Decoupled Asynchronous Multimodal Vision Language Action Model},
-  author={Pankhuri Vanjani and Zhuoyue Li and Jakub Suliga and Moritz Reuss and Gianluca Geraci and Xinkai Jiang and Rudolf Lioutikov},
-  journal={arXiv preprint arXiv:2606.12105},
-  year={2026},
-  eprint={2606.12105},
-  archivePrefix={arXiv},
-  primaryClass={cs.RO}
+@misc{li2026favlaforceadaptivefastslowvla,
+      title={FAVLA: A Force-Adaptive Fast-Slow VLA model for Contact-Rich Robotic Manipulation}, 
+      author={Yao Li and Peiyuan Tang and Wuyang Zhang and Chengyang Zhu and Yifan Duan and Weikai Shi and Xiaodong Zhang and Zijiang Yang and Jianmin Ji and Yanyong Zhang},
+      year={2026},
+      eprint={2602.23648},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2602.23648}, 
 }
 
-@misc{li2026atvla,
-  title={AT-VLA: Adaptive Tactile Injection for Enhanced Feedback Reaction in Vision-Language-Action Models},
-  author={Xiaoqi Li and Muhe Cai and Jiadong Xu and Juan Zhu and Hongwei Fan and Yan Shen and Guangrui Ren and Hao Dong},
-  year={2026},
-  eprint={2605.07308},
-  archivePrefix={arXiv},
-  primaryClass={cs.RO}
+@misc{vanjani2026damvladecoupledasynchronousmultimodal,
+      title={DAM-VLA: Decoupled Asynchronous Multimodal Vision Language Action model}, 
+      author={Pankhuri Vanjani and Zhuoyue Li and Jakub Suliga and Moritz Reuss and Gianluca Geraci and Xinkai Jiang and Rudolf Lioutikov},
+      year={2026},
+      eprint={2606.12105},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2606.12105}, 
 }
 
-@misc{niu2026trex,
-  title={T-Rex: Tactile-Reactive Dexterous Manipulation},
-  author={Dantong Niu and Zhuoyang Liu and Zekai Wang and Boning Shao and Zhao-Heng Yin and Anirudh Pai and Yuvan Sharma and Stefano Saravalle and Ruijie Zheng and Jing Wang and Ryan Punamiya and Mengda Xu and Yuqi Xie and Yunfan Jiang and Letian Fu and Konstantinos Kallidromitis and Matteo Gioia and Junyi Zhang and Jiaxin Ge and Haiwen Feng and Fabio Galasso and Wei Zhan and David M. Chan and Yutong Bai and Roei Herzig and Jiahui Lei and Fei-Fei Li and Ken Goldberg and Jitendra Malik and Pieter Abbeel and Yuke Zhu and Danfei Xu and Jim Fan and Trevor Darrell},
-  year={2026},
-  eprint={2606.17055},
-  archivePrefix={arXiv},
-  primaryClass={cs.RO}
+@misc{li2026atvlaadaptivetactileinjection,
+      title={AT-VLA: Adaptive Tactile Injection for Enhanced Feedback Reaction in Vision-Language-Action Models}, 
+      author={Xiaoqi Li and Muhe Cai and Jiadong Xu and Juan Zhu and Hongwei Fan and Yan Shen and Guangrui Ren and Hao Dong},
+      year={2026},
+      eprint={2605.07308},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2605.07308}, 
 }
 
-@misc{wang2026phaforce,
-  title={PhaForce: Phase-Scheduled Visual-Force Policy Learning with Slow Planning and Fast Correction for Contact-Rich Manipulation},
-  author={Mingxin Wang and Zhirun Yue and Renhao Lu and Yizhe Li and Zihan Wang and Guoping Pan and Kangkang Dong and Jun Cheng and Yi Cheng and Houde Liu},
-  year={2026},
-  eprint={2603.08342},
-  archivePrefix={arXiv},
-  primaryClass={cs.RO}
+@misc{niu2026trextactilereactivedexterousmanipulation,
+      title={T-Rex: Tactile-Reactive Dexterous Manipulation}, 
+      author={Dantong Niu and Zhuoyang Liu and Zekai Wang and Boning Shao and Zhao-Heng Yin and Anirudh Pai and Yuvan Sharma and Stefano Saravalle and Ruijie Zheng and Jing Wang and Ryan Punamiya and Mengda Xu and Yuqi Xie and Yunfan Jiang and Letian Fu and Konstantinos Kallidromitis and Matteo Gioia and Junyi Zhang and Jiaxin Ge and Haiwen Feng and Fabio Galasso and Wei Zhan and David M. Chan and Yutong Bai and Roei Herzig and Jiahui Lei and Li Fei-Fei and Ken Goldberg and Jitendra Malik and Pieter Abbeel and Yuke Zhu and Danfei Xu and Linxi Fan and Trevor Darrell},
+      year={2026},
+      eprint={2606.17055},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2606.17055}, 
+}
+
+@misc{wang2026phaforcephasescheduledvisualforcepolicy,
+      title={PhaForce: Phase-Scheduled Visual-Force Policy Learning with Slow Planning and Fast Correction for Contact-Rich Manipulation}, 
+      author={Mingxin Wang and Zhirun Yue and Renhao Lu and Yizhe Li and Zihan Wang and Guoping Pan and Kangkang Dong and Jun Cheng and Yi Cheng and Houde Liu},
+      year={2026},
+      eprint={2603.08342},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2603.08342}, 
 }
 
 % Learned null/missing modality mechanisms and force distillation
-@article{ramazanova2024mmt,
-  title={Exploring Missing Modality in Multimodal Egocentric Datasets},
-  author={Merey Ramazanova and Alejandro Pardo and Humam Alwassel and Bernard Ghanem},
-  journal={arXiv preprint arXiv:2401.11470},
-  year={2024},
-  eprint={2401.11470},
-  archivePrefix={arXiv},
-  primaryClass={cs.CV}
+@misc{ramazanova2024exploringmissingmodalitymultimodal,
+      title={Exploring Missing Modality in Multimodal Egocentric Datasets}, 
+      author={Merey Ramazanova and Alejandro Pardo and Humam Alwassel and Bernard Ghanem},
+      year={2024},
+      eprint={2401.11470},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2401.11470}, 
 }
 
-@misc{nezakati2024mmp,
-  title={MMP: Towards Robust Multi-Modal Learning with Masked Modality Projection},
-  author={Niki Nezakati and Md Kaykobad Reza and Ameya Patil and Mashhour Solh and M. Salman Asif},
-  year={2024},
-  eprint={2410.03010},
-  archivePrefix={arXiv},
-  primaryClass={cs.CV}
+@misc{kowalski2026ve2vfvisionenabledvisionfreedistillation,
+      title={VE2VF: Vision-Enabled to Vision-Free Distillation via Real-world Reinforcement Learning for Robust Contact-Rich Manipulation}, 
+      author={Victor Kowalski and Chengxi Li and Dongheui Lee},
+      year={2026},
+      eprint={2605.29564},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2605.29564}, 
 }
 
-@misc{zhao2026fdvla,
-  title={FD-VLA: Force-Distilled Vision-Language-Action Model for Contact-Rich Manipulation},
-  author={Ruiteng Zhao and Wenshuo Wang and Yicheng Ma and Xiaocong Li and Francis E. H. Tay and Marcelo H. Ang and Haiyue Zhu},
-  year={2026},
-  eprint={2602.02142},
-  archivePrefix={arXiv},
-  primaryClass={cs.RO}
+@misc{nezakati2024mmprobustmultimodallearning,
+      title={MMP: Towards Robust Multi-Modal Learning with Masked Modality Projection}, 
+      author={Niki Nezakati and Md Kaykobad Reza and Ameya Patil and Mashhour Solh and M. Salman Asif},
+      year={2024},
+      eprint={2410.03010},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2410.03010}, 
 }
 
-@misc{zhang2026craft,
-  title={CRAFT: Adapting VLA Models to Contact-rich Manipulation via Force-aware Curriculum Fine-tuning},
-  author={Yike Zhang and Yaonan Wang and Xinxin Sun and Kaizhen Huang and Zhiyuan Xu and Junjie Ji and Zhengping Che and Jian Tang and Jingtao Sun},
-  year={2026},
-  eprint={2602.12532},
-  archivePrefix={arXiv},
-  primaryClass={cs.RO}
+@misc{zhao2026fdvlaforcedistilledvisionlanguageactionmodel,
+      title={FD-VLA: Force-Distilled Vision-Language-Action Model for Contact-Rich Manipulation}, 
+      author={Ruiteng Zhao and Wenshuo Wang and Yicheng Ma and Xiaocong Li and Francis E. H. Tay and Marcelo H. Ang Jr. and Haiyue Zhu},
+      year={2026},
+      eprint={2602.02142},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2602.02142}, 
+}
+
+@misc{zhang2026craftadaptingvlamodels,
+      title={CRAFT: Adapting VLA Models to Contact-rich Manipulation via Force-aware Curriculum Fine-tuning}, 
+      author={Yike Zhang and Yaonan Wang and Xinxin Sun and Kaizhen Huang and Zhiyuan Xu and Junjie Ji and Zhengping Che and Jian Tang and Jingtao Sun},
+      year={2026},
+      eprint={2602.12532},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2602.12532}, 
 }
 
 % ---------------------------------------------------------------------------
@@ -445,128 +198,142 @@ year      = {2025}
 % before submission.
 % ---------------------------------------------------------------------------
 
-@article{lv2026lift,
-  title={Never Too Late for Force: Accelerating VLA Post-Training with Reactive Force Injection},
-  author={Yi Wang and Wendi Chen and Zimo Wen and Han Xue and Xueqi Li and Wenye Yu and Zhijie Chen and Hao Yang and Jun Lv and Chuan Wen and Cewu Lu},
-  journal={arXiv preprint arXiv:2607.14236},
-  year={2026},
-  eprint={2607.14236},
-  archivePrefix={arXiv},
-  primaryClass={cs.RO}
+@misc{wang2026lateforceacceleratingvla,
+      title={Never Too Late for Force: Accelerating VLA Post-Training with Reactive Force Injection}, 
+      author={Yi Wang and Wendi Chen and Zimo Wen and Han Xue and Xueqi Li and Wenye Yu and Zhijie Chen and Hao Yang and Jun Lv and Chuan Wen and Cewu Lu},
+      year={2026},
+      eprint={2607.14236},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2607.14236}, 
 }
 
-% VERIFY author list.
-@misc{idr2026causal,
-  title={A Causality-aware Infer-diagnose-refine Framework for Test-time Modality Adaptation in VLA Models},
-  author={{Anonymous}},
-  year={2026},
-  eprint={2607.25516},
-  archivePrefix={arXiv},
-  primaryClass={cs.RO}
+@misc{zhang2026causalityawareinferdiagnoserefineframeworktesttime,
+      title={A Causality-aware Infer-diagnose-refine Framework for Test-time Modality Adaptation in VLA Models}, 
+      author={Haoyu Zhang and Yuwei Wu and Jin Chen and Gao Zhi and Zhenxin Diao and Mingyang Gao and Kun Wu and Yongchun Liu and Fan Li},
+      year={2026},
+      eprint={2607.25516},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2607.25516}, 
 }
 
-% VERIFY author list.
-@misc{cofactvla2026,
-  title={CofactVLA: Deconfounding Vision-Language-Action Models via Counterfactual Intervention},
-  author={{Anonymous}},
-  year={2026},
-  eprint={2608.04396},
-  archivePrefix={arXiv},
-  primaryClass={cs.RO}
+@misc{zhang2026cofactvladeconfoundingvisionlanguageactionmodels,
+      title={CofactVLA: Deconfounding Vision-Language-Action Models via Counterfactual Intervention}, 
+      author={Yan Zhang and Yinan Wu and Haoran Duan and Jungong Han},
+      year={2026},
+      eprint={2608.04396},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2608.04396}, 
 }
 
-% VERIFY author list.
-@misc{cma2026modality,
-  title={Which Modality Decides? Counterfactual Modality Attribution for Multimodal LLMs},
-  author={{Anonymous}},
-  year={2026},
-  eprint={2608.00076},
-  archivePrefix={arXiv},
-  primaryClass={cs.LG}
+@misc{hasic2026modalitydecidescounterfactualmodality,
+      title={Which Modality Decides? Counterfactual Modality Attribution for Multimodal LLMs}, 
+      author={Vahidin Hasic and Chao Wang and Luis C. Garcia-Peraza-Herrera and David Watson and Senka Krivic},
+      year={2026},
+      eprint={2608.00076},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2608.00076}, 
 }
 
-% VERIFY author list.
-@misc{embodiedinterp2026,
-  title={Embodied Interpretability: Linking Causal Understanding to Generalization in Vision-Language-Action Models},
-  author={{Anonymous}},
-  year={2026},
-  eprint={2605.00321},
-  archivePrefix={arXiv},
-  primaryClass={cs.RO}
+@misc{zhang2026embodiedinterpretabilitylinkingcausal,
+      title={Embodied Interpretability: Linking Causal Understanding to Generalization in Vision-Language-Action Models}, 
+      author={Hanxin Zhang and Mingshuo Xu and Abdulqader Dhafer and Shigang Yue and Hongbiao Dong and Zhou Daniel Hao},
+      year={2026},
+      eprint={2605.00321},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2605.00321}, 
 }
 
-@article{ho2022cfg,
-  title={Classifier-Free Diffusion Guidance},
-  author={Jonathan Ho and Tim Salimans},
-  journal={arXiv preprint arXiv:2207.12598},
-  year={2022},
-  eprint={2207.12598},
-  archivePrefix={arXiv},
-  primaryClass={cs.LG}
+@misc{ho2022classifierfreediffusionguidance,
+      title={Classifier-Free Diffusion Guidance}, 
+      author={Jonathan Ho and Tim Salimans},
+      year={2022},
+      eprint={2207.12598},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2207.12598}, 
 }
 
-@inproceedings{meng2023guidancedistill,
-  title={On Distillation of Guided Diffusion Models},
-  author={Meng, Chenlin and Rombach, Robin and Gao, Ruiqi and Kingma, Diederik and Ermon, Stefano and Ho, Jonathan and Salimans, Tim},
-  booktitle={IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
-  year={2023}
+@misc{meng2023distillationguideddiffusionmodels,
+      title={On Distillation of Guided Diffusion Models}, 
+      author={Chenlin Meng and Robin Rombach and Ruiqi Gao and Diederik P. Kingma and Stefano Ermon and Jonathan Ho and Tim Salimans},
+      year={2023},
+      eprint={2210.03142},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2210.03142}, 
 }
 
-% VERIFY author list.
-@misc{fisvla2025,
-  title={Fast-in-Slow: A Dual-System Foundation Model Unifying Fast Manipulation within Slow Reasoning},
-  author={{Anonymous}},
-  year={2025},
-  eprint={2506.01953},
-  archivePrefix={arXiv},
-  primaryClass={cs.RO}
+@misc{chen2025fastinslowdualsystemfoundationmodel,
+      title={Fast-in-Slow: A Dual-System Foundation Model Unifying Fast Manipulation within Slow Reasoning}, 
+      author={Hao Chen and Jiaming Liu and Chenyang Gu and Zhuoyang Liu and Renrui Zhang and Xiaoqi Li and Xiao He and Yandong Guo and Chi-Wing Fu and Shanghang Zhang and Pheng-Ann Heng},
+      year={2025},
+      eprint={2506.01953},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2506.01953}, 
 }
 
-@article{xu2025crdagger,
-  title={Compliant Residual DAgger: Improving Real-World Contact-Rich Manipulation with Human Corrections},
-  author={Xiaomeng Xu and Yifan Hou and Chendong Xin and Zeyi Liu and Shuran Song},
-  journal={arXiv preprint arXiv:2506.16685},
-  year={2025},
-  eprint={2506.16685},
-  archivePrefix={arXiv},
-  primaryClass={cs.RO}
+@misc{xu2025compliantresidualdaggerimproving,
+      title={Compliant Residual DAgger: Improving Real-World Contact-Rich Manipulation with Human Corrections}, 
+      author={Xiaomeng Xu and Yifan Hou and Chendong Xin and Zeyi Liu and Shuran Song},
+      year={2025},
+      eprint={2506.16685},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2506.16685}, 
 }
 
-@inproceedings{ankile2025resip,
-  title={From Imitation to Refinement---Residual RL for Precise Assembly},
-  author={Ankile, Lars and Simeonov, Anthony and Shenfeld, Idan and Torne, Marcel and Agrawal, Pulkit},
-  booktitle={IEEE International Conference on Robotics and Automation (ICRA)},
-  year={2025}
+@misc{ankile2024imitationrefinementresidual,
+      title={From Imitation to Refinement -- Residual RL for Precise Assembly}, 
+      author={Lars Ankile and Anthony Simeonov and Idan Shenfeld and Marcel Torne and Pulkit Agrawal},
+      year={2024},
+      eprint={2407.16677},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2407.16677}, 
 }
 
-@inproceedings{black2025pi05,
-  title={$\pi_{0.5}$: a Vision-Language-Action Model with Open-World Generalization},
-  author={Black, Kevin and Brown, Noah and Darpinian, James and Dhabalia, Karan and Driess, Danny and Esmail, Adnan and Equi, Michael Robert and Finn, Chelsea and Fusai, Niccolo and Galliker, Manuel Y. and Ghosh, Dibya and Groom, Lachy and Hausman, Karol and Ichter, Brian and Jakubczak, Szymon and Jones, Tim and Ke, Liyiming and LeBlanc, Devin and Levine, Sergey and Li-Bell, Adrian and Mothukuri, Mohith and Nair, Suraj and Pertsch, Karl and Ren, Allen Z. and Shi, Lucy Xiaoyang and Smith, Laura and Springenberg, Jost Tobias and Stachowicz, Kyle and Tanner, James and Vuong, Quan and Walke, Homer and Walling, Anna and Wang, Haohuan and Yu, Lili and Zhilinsky, Ury},
-  booktitle={Proceedings of the 9th Conference on Robot Learning (CoRL)},
-  volume={305},
-  pages={17--40},
-  year={2025}
+@misc{black2026pi0visionlanguageactionflowmodel,
+      title={$\pi_0$: A Vision-Language-Action Flow Model for General Robot Control}, 
+      author={Kevin Black and Noah Brown and Danny Driess and Adnan Esmail and Michael Equi and Chelsea Finn and Niccolo Fusai and Lachy Groom and Karol Hausman and Brian Ichter and Szymon Jakubczak and Tim Jones and Liyiming Ke and Sergey Levine and Adrian Li-Bell and Mohith Mothukuri and Suraj Nair and Karl Pertsch and Lucy Xiaoyang Shi and James Tanner and Quan Vuong and Anna Walling and Haohuan Wang and Ury Zhilinsky},
+      year={2026},
+      eprint={2410.24164},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2410.24164}, 
 }
 
-@article{zhang2025tavla,
-  title={Elucidating the Design Space of Torque-aware Vision-Language-Action Models},
-  author={Zhang, Zongzheng and Xu, Haobo and Yang, Zhuo and Yue, Chenghao and Lin, Zehao and Gao, Huan-ang and Wang, Ziwei and Zhao, Hao},
-  journal={arXiv preprint arXiv:2509.07962},
-  year={2025}
+@misc{intelligence2025pi05visionlanguageactionmodelopenworld,
+      title={$\pi_{0.5}$: a Vision-Language-Action Model with Open-World Generalization}, 
+      author={Physical Intelligence and Kevin Black and Noah Brown and James Darpinian and Karan Dhabalia and Danny Driess and Adnan Esmail and Michael Equi and Chelsea Finn and Niccolo Fusai and Manuel Y. Galliker and Dibya Ghosh and Lachy Groom and Karol Hausman and Brian Ichter and Szymon Jakubczak and Tim Jones and Liyiming Ke and Devin LeBlanc and Sergey Levine and Adrian Li-Bell and Mohith Mothukuri and Suraj Nair and Karl Pertsch and Allen Z. Ren and Lucy Xiaoyang Shi and Laura Smith and Jost Tobias Springenberg and Kyle Stachowicz and James Tanner and Quan Vuong and Homer Walke and Anna Walling and Haohuan Wang and Lili Yu and Ury Zhilinsky},
+      year={2025},
+      eprint={2504.16054},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2504.16054}, 
 }
 
-@misc{black2024pi0,
-  title={$\pi_0$: A Vision-Language-Action Flow Model for General Robot Control},
-  author={Kevin Black and Noah Brown and Danny Driess and Adnan Esmail and Michael Equi and Chelsea Finn and Niccolo Fusai and Lachy Groom and Karol Hausman and Brian Ichter and Szymon Jakubczak and Tim Jones and Liyiming Ke and Sergey Levine and Adrian Li-Bell and Mohith Mothukuri and Suraj Nair and Karl Pertsch and Lucy Xiaoyang Shi and James Tanner and Quan Vuong and Anna Walling and Haohuan Wang and Ury Zhilinsky},
-  year={2024},
-  eprint={2410.24164},
-  archivePrefix={arXiv},
-  primaryClass={cs.LG}
+@misc{zhang2025tavlaelucidatingdesignspace,
+      title={TA-VLA: Elucidating the Design Space of Torque-aware Vision-Language-Action Models}, 
+      author={Zongzheng Zhang and Haobo Xu and Zhuo Yang and Chenghao Yue and Zehao Lin and Huan-ang Gao and Ziwei Wang and Hao Zhao},
+      year={2025},
+      eprint={2509.07962},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2509.07962}, 
 }
 
-@inproceedings{zhou2019continuity,
-  title={On the Continuity of Rotation Representations in Neural Networks},
-  author={Zhou, Yi and Barnes, Connelly and Lu, Jingwan and Yang, Jimei and Li, Hao},
-  booktitle={IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
-  year={2019}
+@misc{zhou2020continuityrotationrepresentationsneural,
+      title={On the Continuity of Rotation Representations in Neural Networks}, 
+      author={Yi Zhou and Connelly Barnes and Jingwan Lu and Jimei Yang and Hao Li},
+      year={2020},
+      eprint={1812.07035},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/1812.07035}, 
 }

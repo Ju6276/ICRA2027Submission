@@ -4,7 +4,7 @@ We evaluate ForceDelta-VLA in terms of task performance, contact quality, respon
 \label{sec:exp_protocol}
 
 \subsubsection{Hardware platforms.}
-Experiments use a seven-degree-of-freedom Franka Emika Panda with wrist and external Intel RealSense D405 cameras, and an X Square Robot bimanual platform with one wrist camera per arm and a shared external camera. Following ForceVLA~\cite{yu2025forcevla}, each arm receives the robot-estimated external end-effector wrench $\mathbf w=[\mathbf f;\boldsymbol\tau]\in\mathbb R^6$ in its base frame; no additional wrist force/torque sensor is used.
+Experiments use a seven-degree-of-freedom Franka Emika Panda with wrist and external Intel RealSense D405 cameras, and an X Square Robot bimanual platform with one wrist camera per arm and a shared external camera. Following ForceVLA~\cite{yu2025forcevlaenhancingvlamodels}, each arm receives the robot-estimated external end-effector wrench $\mathbf w=[\mathbf f;\boldsymbol\tau]\in\mathbb R^6$ in its base frame; no additional wrist force/torque sensor is used.
 
 \subsubsection{Tasks and data collection.}
 We evaluate four single-arm and four bimanual tasks (Table~\ref{tab:tasks}), collecting $200$ and $300$ teleoperated demonstrations per task, respectively. Multi-view images, robot states, and commanded actions are recorded at $30$~Hz, and timestamped wrench estimates at $100$~Hz.
@@ -35,7 +35,7 @@ We evaluate four single-arm and four bimanual tasks (Table~\ref{tab:tasks}), col
 \subsection{Baselines and Metrics}
 \label{sec:exp_baselines}
 
-We compare against four external baselines: $\pi_{0.5}$~\cite{black2025pi05}, ForceVLA~\cite{yu2025forcevla}, TA-VLA~\cite{zhang2025tavla}, and ImplicitRDP~\cite{chen2025implicitrdp}. We additionally include an architecture-matched Temporal ForceVLA baseline that directly executes the Stage-1 teacher with the same temporal force encoder and weights, but without null-mode residual distillation, isolating the contribution of residual decomposition. For each method and task, we evaluate two independently trained seeds with ten trials per seed and report success rate, peak contact force, and completion time.
+We compare against four external baselines: $\pi_{0.5}$~\cite{intelligence2025pi05visionlanguageactionmodelopenworld}, ForceVLA~\cite{yu2025forcevlaenhancingvlamodels}, TA-VLA~\cite{zhang2025tavlaelucidatingdesignspace}, and ImplicitRDP~\cite{chen2026implicitrdpendtoendvisualforcediffusion}. We additionally include an architecture-matched Temporal ForceVLA baseline that directly executes the Stage-1 teacher with the same temporal force encoder and weights, but without null-mode residual distillation, isolating the contribution of residual decomposition. For each method and task, we evaluate two independently trained seeds with ten trials per seed and report success rate, peak contact force, and completion time.
 
 \subsection{Implementation Details}
 \label{sec:exp_implementation}
@@ -44,7 +44,7 @@ Training uses two NVIDIA A100 GPUs, while all real-robot inference and runtime m
 
 After freezing the teacher, \assumed{we train the rank-$32$ null-mode adapter for $10{,}000$ steps at $10^{-4}$. The visual--language prefix is pooled into $M{=}16$ intent tokens, and the residual policy uses a causal force encoder with one pre-norm attention block and separate force and staleness heads to predict $K{=}5$ corrections. It is trained for $30{,}000$ steps at $3\times10^{-4}$ under replayed asynchronous schedules.}
 
-Actions contain 3D translation, a continuous 6D rotation representation~\cite{zhou2019continuity}, and a scalar gripper command per arm. At deployment, the force-conditioned and staleness corrections are independently bounded in the normalized pose-action space before being composed with the reference action.
+Actions contain 3D translation, a continuous 6D rotation representation~\cite{zhou2020continuityrotationrepresentationsneural}, and a scalar gripper command per arm. At deployment, the force-conditioned and staleness corrections are independently bounded in the normalized pose-action space before being composed with the reference action.
 
 \subsection{Task Performance and Contact Quality}
 \label{sec:exp_main}
@@ -74,10 +74,10 @@ Table~\ref{tab:main_results} reports the real-robot success rates. The compariso
         & \shortstack{\textbf{Single-arm}\\\textbf{Avg.}}
         & \shortstack{\textbf{Bimanual}\\\textbf{Avg.}} \\
         \midrule
-        $\pi_{0.5}$~\cite{black2025pi05} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} \\
-        ForceVLA~\cite{yu2025forcevla} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} \\
-        TA-VLA~\cite{zhang2025tavla} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} \\
-        ImplicitRDP~\cite{chen2025implicitrdp} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} \\
+        $\pi_{0.5}$~\cite{intelligence2025pi05visionlanguageactionmodelopenworld} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} \\
+        ForceVLA~\cite{yu2025forcevlaenhancingvlamodels} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} \\
+        TA-VLA~\cite{zhang2025tavlaelucidatingdesignspace} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} \\
+        ImplicitRDP~\cite{chen2026implicitrdpendtoendvisualforcediffusion} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} \\
         Temporal ForceVLA (Teacher) & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} \\
         \textbf{ForceDelta-VLA (ours)} & \assumed{$\mathbf{X}$} & \assumed{$\mathbf{X}$} & \assumed{$\mathbf{X}$} & \assumed{$\mathbf{X}$} & \assumed{$\mathbf{X}$} & \assumed{$\mathbf{X}$} & \assumed{$\mathbf{X}$} & \assumed{$\mathbf{X}$} & \assumed{$\mathbf{X}$} & \assumed{$\mathbf{X}$} \\
         \bottomrule
