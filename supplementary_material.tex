@@ -2,6 +2,7 @@
 \usepackage{times}
 \usepackage{xcolor}
 \usepackage{microtype}
+\usepackage{amsmath,amssymb}
 
 % Values marked with \assumed must be verified against the final training logs.
 \newcommand{\assumed}[1]{\textcolor{red}{#1}}
@@ -12,12 +13,77 @@
 \begin{document}
 \maketitle
 
-\section{Implementation Details}
+\section{Training and Architecture Details}
 
 The temporal force-conditioned teacher is fully fine-tuned on eight NVIDIA A100 GPUs. All real-robot inference and runtime measurements use a single 48~GB NVIDIA RTX 4090D GPU. \assumed{The teacher is trained for $50{,}000$ steps with AdamW at a peak learning rate of $2\times10^{-5}$. It predicts $H{=}50$ actions at $30$~Hz from the latest $100$~ms of the $100$~Hz wrench stream, and flow-matching inference uses $N_{\mathrm{flow}}{=}10$ steps.}
 
-After freezing the teacher, \assumed{we train the rank-$32$ null-mode adapter for $10{,}000$ steps at a learning rate of $10^{-4}$. The visual--language prefix is pooled into $M{=}16$ intent tokens. The residual policy comprises a causal force encoder and one pre-norm attention block with separate force and staleness heads. It predicts $K{=}5$ corrections and is trained for $30{,}000$ steps at a learning rate of $3\times10^{-4}$ under replayed asynchronous schedules.}
+After freezing the teacher, \assumed{we train the rank-$32$ null-mode adapter for $10{,}000$ steps at a learning rate of $10^{-4}$. The visual--language prefix is pooled into $M{=}16$ intent tokens. The residual policy comprises a causal force encoder and one pre-norm attention block with separate force and staleness heads. It predicts $K{=}5$ corrections and is trained for $30{,}000$ steps at a learning rate of $3\times10^{-4}$ under replayed asynchronous schedules. The final implementation record will specify the intent-token pooling rule and the embedding used to mask the force token for the staleness head.}
 
-The action representation and rotational residual composition are defined in Sec.~III-A of the main paper. At deployment, force-conditioned and staleness corrections are bounded independently in the normalized pose-action space before composition with the reference action.
+The action representation and rotational residual composition are defined in Sec.~III-A of the main paper. At deployment, force-conditioned and staleness corrections are bounded independently in the normalized pose-action space before composition with the reference action. \assumed{The final implementation record will specify the normalization statistics and per-head correction bounds.}
+
+\subsection{Null-Mode Optimization}
+
+The learned null token and null-specific adapter are active only for null-mode queries. With the force-conditioned teacher parameters $\theta$ fixed, the null-mode parameters $\phi$ are optimized using the teacher's original flow-matching objective,
+\begin{equation}
+    \mathcal L_{\mathrm{null}}
+    =\mathbb E_{\mathcal D,\eta,\epsilon}
+      \!\left[\ell_{\mathrm{FM}}\!\left(
+      T_{\theta,\phi}^{\mathrm{null}},
+      A_{t:t+H-1}^*;\eta,\epsilon\right)\right],
+    \label{eq:supp_null_training}
+\end{equation}
+where $\eta$ is flow time and $\epsilon$ is the initial flow noise. Full-force and null-force predictions used to construct a residual target share the same $\epsilon$.
+
+\subsection{Residual-Loss Weighting}
+
+For a $K$-step residual chunk, the normalized temporal weights are
+\begin{equation}
+    w_j=\frac{\beta^{j-1}}{\sum_{m=1}^{K}\beta^{m-1}},
+    \qquad 0<\beta\leq1.
+    \label{eq:supp_temporal_weights}
+\end{equation}
+Thus, $\beta<1$ emphasizes near-term corrections, $\beta=1$ weights all steps equally, and $\sum_jw_j=1$ keeps the loss scale stable as $K$ changes. The loss is a mean-squared error in normalized pose-action coordinates.
+
+\section{Asynchronous Packet Execution}
+
+\subsection{Reference Packets}
+
+A reference query $k$, issued at $t_k$ from state $S_k$, publishes the immutable packet $(A_{T,k,1:H}^{\mathrm{null}},Z_k^{\mathrm{intent}},S_k,t_k,\bar t_k)$ when inference completes at $\bar t_k$. Its samples carry intended execution times
+\begin{equation}
+    t_{k,n}^{\mathrm{ref}}=t_k+(n-1)/f_A,
+    \qquad n=1,\ldots,H.
+    \label{eq:supp_reference_timestamps}
+\end{equation}
+Samples whose intended times precede $\bar t_k$ are skipped for direct execution; the cached chunk itself is not truncated. For $t\geq\bar t_k$, the reference pose $A_k^{\mathrm{ref}}(t)$ is obtained by timestamp-based interpolation over the original timestamped chunk.
+
+\subsection{Residual Packets}
+
+A residual inference packet $q$, initiated at $t_q^F$, reads the latest reference packet $k_q$ together with $(\mathcal F_{t_q^F},S_{t_q^F})$. It completes at $\bar t_q^F$ with force-conditioned and staleness correction chunks. Their samples are timestamped as
+\begin{equation}
+    t^F_{q,j}=t_q^F+(j-1)/f_A,
+    \qquad j=1,\ldots,K.
+    \label{eq:supp_residual_timestamps}
+\end{equation}
+Step $j$ is held over $[t^F_{q,j},t^F_{q,j}+1/f_A)$; correction samples are not interpolated. At control time $t$, the executor selects the most recently initiated packet that has completed and remains valid, together with its active step:
+\begin{equation}
+\begin{aligned}
+    q^*(t)&=\arg\max_{q:\,\bar t_q^F\leq t<t_q^F+K/f_A}t_q^F,\\
+    j(t;q^*)&=1+\left\lfloor(t-t_{q^*}^F)f_A\right\rfloor.
+\end{aligned}
+    \label{eq:supp_active_residual_step}
+\end{equation}
+Any prefix that expires during inference is therefore skipped, while the remaining valid steps execute sequentially until a newer packet completes. Within the selected interval, the runtime quantities in Eq.~(1) of the main paper are
+\begin{equation}
+\begin{aligned}
+    k&=k_{q^*},\\
+    A_k^{\mathrm{ref}}(t)
+      &\equiv A_{k_{q^*}}^{\mathrm{ref}}
+        (t^F_{q^*,j(t;q^*)}),\\
+    \Delta\hat A^{(\cdot)}(t)
+      &=\Delta\hat A^{(\cdot)}_{q^*,j(t;q^*)}.
+\end{aligned}
+    \label{eq:supp_active_residual}
+\end{equation}
+The two corrections are bounded independently and composed in normalized delta-action coordinates. The composed command remains referenced to $S_{k_{q^*}}$ and is converted to an absolute robot command using the mapping $\mathcal R$ defined in the main paper. A packet that completes after $t_q^F+K/f_A$ is rejected. If no valid residual packet remains, the executor invokes the platform's safe hold or abort policy. \assumed{The final implementation record will specify gripper sampling and behavior beyond the last valid reference timestamp.}
 
 \end{document}
