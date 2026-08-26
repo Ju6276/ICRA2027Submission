@@ -37,23 +37,23 @@
 
   % Publication boundary shared by all lanes.
   \draw[dashed,draw=cInk!45,line width=0.65pt] (4.45,3.15) -- (4.45,0.16);
-  \node[note,fill=white,inner sep=1pt] at (4.45,2.05) {publish $C_k$};
+  \node[note,fill=white,inner sep=1pt] at (4.45,2.05) {publish packet $k$};
 
   % Active-cache lane: old packet before publication, new packet after it.
   \node[lane,text=cCache] at (1.65,1.55) {CACHED REF. + CONTEXT};
   \node[oldcache,anchor=west,text width=2.0cm] (cold) at (2.15,1.55)
-    {$C_{k-1}$\\active previous packet};
+    {packet $k{-}1$\\active previous packet};
   \node[newcache,anchor=west,text width=2.9cm] (cnew) at (4.60,1.55)
-    {$C_k$: new complete packet\\$A^{\mathrm{ref}}_{k,1:H},Z_k^{\mathrm{intent}},S_k$};
+    {packet $k$: newly complete\\$A_{T,k,1:H}^{\mathrm{null}},Z_k^{\mathrm{intent}},S_k$};
   \draw[-{Latex[length=1.6mm]},draw=cCache,line width=0.8pt]
     (qk.south east) -- (4.60,1.90);
   \node[note,anchor=west] at (7.62,1.55)
     {expired prefix skipped\\for execution};
 
-  % Residual lane: continuous updates on either side of the cache switch.
-  \node[lane,text=cFast] at (1.65,0.48) {RESIDUAL UPDATES};
+  % Fast command lane: discrete chunk steps on either side of the cache switch.
+  \node[lane,text=cFast] at (1.65,0.48) {FAST COMMAND STEPS};
   \node[note,anchor=west,text=cFast] at (1.90,0.82)
-    {current $\mathcal F_t,S_t$};
+    {Fast observation $\mathcal F_{t_q^F},S_{t_q^F}$};
   \draw[axis,draw=cFast!65] (1.85,0.48) -- (8.25,0.48);
   \foreach \x in {2.15,2.85,3.55,4.20,4.80,5.50,6.20,6.90,7.60} {
     \node[tick] at (\x,0.48) {$\Delta$};
@@ -62,8 +62,8 @@
     (cold.south) -- (3.20,0.84);
   \draw[-{Latex[length=1.5mm]},draw=cCache,line width=0.75pt]
     (cnew.south) -- (5.65,0.84);
-  \node[note,fill=white,inner sep=1pt] at (3.20,0.98) {read $C_{k-1}$};
-  \node[note,fill=white,inner sep=1pt] at (5.65,0.98) {read $C_k$};
+  \node[note,fill=white,inner sep=1pt] at (3.20,0.98) {read packet $k{-}1$};
+  \node[note,fill=white,inner sep=1pt] at (5.65,0.98) {read packet $k$};
 
   \draw[draw=cFast,line width=0.65pt] (5.55,-0.03) -- (7.60,-0.03);
   \draw[draw=cFast,line width=0.65pt] (5.55,-0.03) -- (5.55,0.08);
@@ -72,7 +72,7 @@
     {residual continues while query $k{+}1$ is pending};
 
   \node[note,anchor=north] at (5.05,-0.50)
-    {each update reads the latest $\mathcal F_t$ and $S_t$, predicts
-     $\Delta\hat A_t^{\mathrm{force}}$ and $\Delta\hat A_t^{\mathrm{stale}}$, and composes the command};
+    {each completed Fast inference publishes a timestamped $K$-step correction chunk;\\
+     expired steps are skipped and valid steps execute sequentially without interpolation};
 \end{tikzpicture}
 \end{document}

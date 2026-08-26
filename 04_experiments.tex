@@ -82,7 +82,7 @@ Table~\ref{tab:interaction} reports peak force over all trials and completion ti
     \centering
     \small
     \setlength{\tabcolsep}{4pt}
-    \caption{Peak force is computed over all trials; completion time uses successful trials only (mean $\pm$ std.). Red entries are placeholders.}
+    \caption{Peak force is $\max_t\|\mathbf f(t)\|_2$ over all trials; completion time uses successful trials only (mean $\pm$ std.). Red entries are placeholders.}
     \label{tab:interaction}
     \begin{tabular}{lcccc}
         \toprule
@@ -107,19 +107,19 @@ Table~\ref{tab:interaction} reports peak force over all trials and completion ti
 \label{sec:exp_runtime}
 
 \noindent\textbf{Inference latency and update rate.}
-We measure batch-one inference latency and closed-loop command update rate on the deployment hardware (Table~\ref{tab:runtime}).
+We measure batch-one inference latency and the realized policy-packet publication rate on the deployment hardware (Table~\ref{tab:runtime}). The latter excludes the intra-chunk command frequency $f_A$, which is fixed by the control interface.
 
 \begin{table}[t]
     \centering
     \small
     \setlength{\tabcolsep}{4pt}
-    \caption{Inference latency and command update rate on the deployment hardware. Red entries are placeholders.}
+    \caption{Inference latency and realized policy-packet update rate on the deployment hardware. Red entries are placeholders.}
     \label{tab:runtime}
     \begin{tabular}{lcc}
         \toprule
-        \textbf{Method/path} & \textbf{Latency (ms)} $\downarrow$ & \textbf{Rate (Hz)} $\uparrow$ \\
+        \textbf{Method/path} & \textbf{Latency (ms)} $\downarrow$ & \textbf{Packet rate (Hz)} $\uparrow$ \\
         \midrule
-        ImplicitRDP & \assumed{$X$} & \assumed{$X$} \\
+        ImplicitRDP reactive path & \assumed{$X$} & \assumed{$X$} \\
         Temporal ForceVLA & \assumed{$X$} & \assumed{$X$} \\
         ForceDelta reference & \assumed{$X$} & \assumed{$X$} \\
         ForceDelta residual & \assumed{$X$} & \assumed{$X$} \\
@@ -152,10 +152,10 @@ We evaluate sensitivity to reference delay on USB insertion, plug insertion, and
 \label{sec:exp_diagnostics}
 
 \noindent\textbf{Contact locality.}
-To characterize the learned correction, we partition trajectories into free space, contact onset, and sustained contact using synchronized force thresholds and task-phase labels. For both the teacher target and student prediction, we report the translational residual norm and the rotational change induced relative to the corresponding null-mode reference. The latter is computed as an $SO(3)$ geodesic angle after projecting the reference and force-corrected 6D representations to valid rotations.
+To characterize the force-conditioned correction, we partition trajectories into free space, contact onset, and sustained contact using synchronized force thresholds and task-phase labels. For the teacher target $\Delta A_T^{\mathrm{force}}$ and student output $\Delta\hat A^{\mathrm{force}}$, we report the translational norm and the rotational change induced relative to the corresponding null-mode reference. The latter is computed as an $SO(3)$ geodesic angle after projecting the reference and force-corrected 6D representations to valid rotations.
 
 \noindent\textbf{Reconstruction under reference staleness.}
-We evaluate how closely the composed student prediction follows the current full-force teacher as the cached reference ages. Translation error is reported in physical units and rotation error as an $SO(3)$ geodesic angle after projection. Both are binned by cache age and compared with a student trained without the staleness target.
+We evaluate how closely the reference composed with both student outputs follows the current full-force teacher as the cached reference ages. Translation error is reported in physical units and rotation error as an $SO(3)$ geodesic angle after projection. Both are binned by cache age and compared with a student trained without the staleness target.
 
 \begin{figure*}[t]
     \centering

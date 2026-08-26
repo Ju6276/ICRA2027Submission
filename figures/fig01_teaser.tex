@@ -62,13 +62,13 @@
   \node[box,draw=cBlue,fill=cBlue!7,text width=17mm] (fullq) at (5.73,3.45)
     {Full-force query\\$T_\theta(z_t^F;\epsilon)$};
   \node[box,draw=cBlue,fill=white,text width=14mm] (fullout) at (7.78,3.45)
-    {$A_{T,t}^{\mathrm{full}}$};
+    {$A_{T,t,1:H}^{\mathrm{full}}$};
   \draw[bluearrow] (fullq.east) -- (fullout.west);
 
   \node[box,draw=cGreen,fill=cGreen!7,text width=17mm] (nullq) at (5.73,1.95)
     {Learned null query\\$T_{\theta,\phi}^{\mathrm{null}}(z_{\varnothing F};\epsilon)$};
   \node[box,draw=cGreen,fill=white,text width=14mm] (nullout) at (7.78,1.95)
-    {$A_{T,t}^{\mathrm{null}}$};
+    {$A_{T,t,1:H}^{\mathrm{null}}$};
   \draw[greenarrow] (nullq.east) -- (nullout.west);
 
   \node[circle,draw=cPurple,fill=white,line width=0.75pt,minimum size=6.5mm,
@@ -77,13 +77,13 @@
   \draw[greenarrow] (nullout.east) -| (minus.south);
 
   \node[box,draw=cPurple,fill=cPurple!6,text width=19mm] (target) at (10.45,2.70)
-    {Teacher-derived\\force correction\\$\Delta A_{T,t}^{\mathrm{force}}$};
+    {Teacher-derived\\force correction\\$\Delta A_{T,t,1:K}^{\mathrm{force}}$};
   \draw[arrow,draw=cPurple] (minus.east) -- (target.west);
   \node[note,text width=56mm] at (8.235,0.93)
     {Same $(V_t,L,S_t)$ and flow noise $\epsilon$\\[-1pt]
-     $\Delta A_{T,t}^{\mathrm{force}}=
-     \mathcal P(A_{T,t}^{\mathrm{full}})-
-     \mathcal P(A_{T,t}^{\mathrm{null}})$};
+     $\Delta A_{T,t,1:K}^{\mathrm{force}}=
+     \mathcal P(A_{T,t,1:K}^{\mathrm{full}})-
+     \mathcal P(A_{T,t,1:K}^{\mathrm{null}})$};
   \node[tag,fill=cPurple!9,text=cPurple] at (8.235,0.36)
     {EXPLICIT POSE-CORRECTION TARGET};
 
@@ -92,16 +92,16 @@
     {DISTILL THE CORRECTION};
 
   \node[box,draw=cPurple,fill=cPurple!6,text width=23mm] (supervision) at (13.35,3.50)
-    {Teacher-derived target\\$\Delta A_{T,t}^{\mathrm{force}}$};
+    {Teacher-derived target\\$\Delta A_{T,t,1:K}^{\mathrm{force}}$};
   \node[tag,fill=cPurple!9,text=cPurple] at (13.35,2.78)
     {EXPLICIT SUPERVISION};
 
   \node[box,draw=cGreen,fill=cGreen!7,text width=22mm] (residual) at (16.55,3.50)
-    {Force-responsive\\residual branch\\$\Delta\hat A^{\mathrm{force}}$};
+    {Force-responsive\\residual branch\\$\Delta\hat A_{t,1:K}^{\mathrm{force}}$};
   \draw[greenarrow] (supervision.east) -- node[above,note] {distill} (residual.west);
 
   \node[tinybox,draw=cBlue,fill=cBlue!6,text width=22mm] (ref) at (13.35,1.55)
-    {Cached null-mode\\reference $A^{\mathrm{ref}}$};
+    {Cached null-mode\\reference $A_k^{\mathrm{ref}}$};
   \node[circle,draw=cInk,fill=white,line width=0.7pt,minimum size=6.5mm,
         font=\sffamily\small\bfseries] (sum) at (15.15,1.55) {$+$};
   \node[tinybox,draw=cOrange,fill=cOrange!6,text width=22mm] (factorized) at (16.75,1.55)

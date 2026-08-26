@@ -12,26 +12,21 @@ We consider an offline dataset $\mathcal D$ of teleoperated manipulation traject
 \begin{equation*}
     \mathcal F_t=\{(s,\mathbf w(s))\mid t-T_F\leq s\leq t\},
 \end{equation*}
-where $\mathbf w(s)=[\mathbf f(s);\boldsymbol\tau(s)]\in\mathbb R^6$ represents the external wrench acting at the end effector. Pose actions and wrench measurements are expressed in the corresponding robot-base frame. A force-conditioned VLA teacher $T_\theta$ maps $(V_t,L,S_t,\mathcal F_t)$ to an $H$-step action chunk.
+where $T_F$ is the history duration and $\mathbf w(s)=[\mathbf f(s);\boldsymbol\tau(s)]\in\mathbb R^6$ represents the external wrench acting at the end effector. Pose actions and wrench measurements are expressed in the corresponding robot-base frame; bimanual samples concatenate the corresponding per-arm quantities. A force-conditioned VLA teacher $T_\theta$ maps $(V_t,L,S_t,\mathcal F_t)$ to an $H$-step action chunk, whose actions are represented relative to the query state $S_t$.
 
-We seek an explicit teacher-defined force-responsive correction target and a deployment decomposition in which that correction can be updated independently of the reference generator. The decomposition comprises a cached reference and a residual policy $\pi_\psi$ that updates pose corrections from recent force feedback. Let $\mathcal P(\cdot)$ extract the pose component of an action. For an active reference query $k$, issued at $t_k$ from state $S_k$, the normalized delta-action command at control time $t>t_k$ remains referenced to $S_k$ and is
+We seek an explicit teacher-defined force-responsive correction target and a deployment decomposition in which that correction can be updated independently of the reference generator. The decomposition comprises a cached reference and a residual policy that updates pose corrections from recent force feedback. Let $\mathcal P(\cdot)$ extract the pose component of an action. For an active reference query $k$, issued at $t_k$ from state $S_k$, let $A_k^{\mathrm{ref}}(t)$ denote the time-aligned sample of its null-mode action chunk. The normalized delta-action command at control time $t>t_k$ remains referenced to $S_k$ and is
 \begin{equation}
     \mathcal P(A^{\mathrm{cmd}}(t))
-    =\mathcal P(A^{\mathrm{ref}}(t))
+    =\mathcal P(A_k^{\mathrm{ref}}(t))
       +\Delta\hat A^{\mathrm{force}}(t)
       +\Delta\hat A^{\mathrm{stale}}(t).
     \label{eq:action_comp}
 \end{equation}
-The residual modifies only pose; the gripper command is inherited from the reference, $g^{\mathrm{cmd}}(t)=g^{\mathrm{ref}}(t)$. The force term models the teacher's force-conditioning deviation, while the staleness term compensates for cached-reference mismatch. Because demonstrations do not label either component, both require constructed supervision.
+The residual modifies only pose; the gripper command is inherited from the reference, $g^{\mathrm{cmd}}(t)=g_k^{\mathrm{ref}}(t)$. The force term models the teacher's force-conditioning deviation, while the staleness term compensates for cached-reference mismatch. Because demonstrations do not label either component, both require constructed supervision.
 
 Equation~\eqref{eq:action_comp} uses representation-space addition. The pose component $\mathcal P(A)=[p;r]$ contains translation $p\in\mathbb R^3$ and the continuous 6D rotation representation $r\in\mathbb R^6$~\cite{zhou2020continuityrotationrepresentationsneural}. Translation is added directly; rotational corrections are added in the teacher's 6D action coordinates and mapped to a valid rotation matrix by Gram--Schmidt orthogonalization.
 
-\subsection{Method Overview}
-\label{sec:method_overview}
-
 Training proceeds in three stages (Fig.~\ref{fig:network_structure}): (1) train a temporal force-conditioned VLA teacher; (2) freeze the teacher and learn a null-force operating mode that supplies the reference action; and (3) freeze both modes, construct force-conditioning and staleness targets, and distill them into the residual policy.
-
-Deployment executes the reference and residual pathways independently.
 
 \subsection{Force-Conditioned Teacher and Null Reference}
 \label{sec:teacher_and_null}
@@ -45,7 +40,7 @@ We build $T_\theta$ on ForceVLA~\cite{yu2025forcevlaenhancingvlamodels} and repl
 \end{equation}
 The remaining action generator is unchanged. The teacher is trained on $\mathcal D$ to predict
 \begin{equation}
-    A_{T,t}^{\mathrm{full}}
+    A_{T,t,1:H}^{\mathrm{full}}
     =T_\theta(V_t,L,S_t,z_t^F;\epsilon),
     \label{eq:full_teacher}
 \end{equation}
@@ -59,19 +54,20 @@ Zero force is a valid physical measurement and therefore does not represent the 
     \sigma(W_{\mathrm{in}}h),
     \label{eq:nominal_adapter}
 \end{equation}
-and is active only in the null mode. With $\theta$ fixed, $\phi$ is optimized using the original flow-matching objective,
+where $h$ is an action-expert hidden state, $v^p$ its pose-channel flow output, and $\sigma$ a pointwise nonlinearity. The adapter is active only in the null mode. With $\theta$ fixed, $\phi$ is optimized using the original flow-matching objective,
 \begin{equation}
     \mathcal L_{\mathrm{null}}
-    =\mathbb E_{\mathcal D,\tau,\epsilon}
+    =\mathbb E_{\mathcal D,\eta,\epsilon}
       \!\left[\ell_{\mathrm{FM}}\!\left(
       T_{\theta,\phi}^{\mathrm{null}},
-      A_{t:t+H-1}^*;\tau,\epsilon\right)\right].
+      A_{t:t+H-1}^*;\eta,\epsilon\right)\right].
     \label{eq:null_training}
 \end{equation}
+Here $\eta$ denotes flow time.
 Because only the null-mode parameters $\phi$ are optimized under the original imitation objective while the force-conditioned teacher remains frozen, the null mode defines a force-input-agnostic operating point of the teacher rather than an independently optimized task policy.
 The resulting reference prediction is
 \begin{equation}
-    A_{T,t}^{\mathrm{null}}
+    A_{T,t,1:H}^{\mathrm{null}}
     =T_{\theta,\phi}^{\mathrm{null}}
       (V_t,L,S_t,z_{\varnothing F};\epsilon).
     \label{eq:teacher_null}
@@ -83,35 +79,35 @@ The resulting reference prediction is
 \subsubsection{Paired correction targets}
 \label{sec:teacher_differencing}
 
-For the same $(V_t,L,S_t)$, the full-force and null-force queries reuse the visual--language prefix and the initial noise $\epsilon$. Their pose difference defines the teacher-level force-conditioning deviation,
+For the same $(V_t,L,S_t)$, the full-force and null-force queries reuse the visual--language prefix and the initial noise $\epsilon$. Let $t_j=t+(j-1)/f_A$ be the intended execution time of action step $j$, where $f_A$ is the action rate and $j=1,\ldots,K\leq H$. The teacher-defined force target is
 \begin{equation}
-    \Delta A_{T,t}^{\mathrm{force}}
-    =\mathcal P\!\left(A_{T,t}^{\mathrm{full}}\right)
-     -\mathcal P\!\left(A_{T,t}^{\mathrm{null}}\right).
+    \Delta A_{T,t,j}^{\mathrm{force}}
+    =\mathcal P\!\left(A_{T,t,j}^{\mathrm{full}}\right)
+     -\mathcal P\!\left(A_{T,t,j}^{\mathrm{null}}\right),
     \label{eq:force_target}
 \end{equation}
-This teacher-defined deviation supervises the force-residual head.
+which supervises the force-residual head. We use this model-defined conditional difference only as a distillation target, not as a causal attribution to force.
 
-At deployment, the active reference was generated by query $k$ from state $S_k$, whereas the current null-mode prediction is relative to $S_t$. Let $\Gamma(S_t,S_k)$ map the state displacement from $S_k$ to $S_t$ into the same normalized pose-action coordinates as $\mathcal P(A)$. A cached relative action is rebased to the current state as
-\begin{equation*}
-    \mathcal P(A^{\mathrm{ref}}_{k\rightarrow t})
-    =\mathcal P(A^{\mathrm{ref}}(t))-\Gamma(S_t,S_k).
-\end{equation*}
-Its discrepancy from the current null-mode prediction therefore defines the staleness target,
+At deployment, the active reference was generated by query $k$ from state $S_k$, whereas the current null-mode prediction is relative to $S_t$. The coordinate-rebasing term $\Gamma(S_t,S_k)$ is computed per arm from the end-effector poses contained in the two states and expressed in the same robot-base frame, 6D pose representation, and normalized action coordinates as $\mathcal P(A)$. Rebasing the cached reference from $S_k$ to $S_t$ subtracts $\Gamma(S_t,S_k)$; hence
 \begin{equation}
-    \Delta A_{T,k\rightarrow t}^{\mathrm{stale}}
-    =\mathcal P\!\left(A_{T,t}^{\mathrm{null}}\right)
-     -\mathcal P\!\left(A^{\mathrm{ref}}(t)\right)
-     +\Gamma(S_t,S_k).
+    \Delta A_{T,k\rightarrow t,j}^{\mathrm{stale}}
+    =\mathcal P\!\left(A_{T,t,j}^{\mathrm{null}}\right)
+      -\mathcal P\!\left(A_k^{\mathrm{ref}}(t_j)\right)
+      +\Gamma(S_t,S_k).
     \label{eq:staleness_target}
 \end{equation}
-The positive sign on $\Gamma$ follows from subtracting the rebased reference: $A^{\mathrm{null}}_{T,t}-A^{\mathrm{ref}}_{k\rightarrow t}=A^{\mathrm{null}}_{T,t}-A^{\mathrm{ref}}+\Gamma$. Let $\mathcal R(S,a)$ convert a relative action $a$ based at state $S$ into an absolute robot command. The residual policy is trained to approximate the resulting equivalence in absolute command space:
+Let $\mathcal R(S,a)$ convert a relative action $a$ based at state $S$ into an absolute robot command. The paired targets align the two coordinate bases stepwise:
 \begin{equation}
-    \mathcal R\!\left(S_k,\mathcal P(A^{\mathrm{cmd}}(t))\right)
-    \approx
-    \mathcal R\!\left(S_t,\mathcal P(A_{T,t}^{\mathrm{full}})\right).
+\begin{aligned}
+    &\mathcal R\!\left(S_k,\mathcal P(A_k^{\mathrm{ref}}(t_j))
+      +\Delta A_{T,t,j}^{\mathrm{force}}
+      +\Delta A_{T,k\rightarrow t,j}^{\mathrm{stale}}\right)\\[-2pt]
+    &\qquad\approx\mathcal R\!\left(S_t,
+      \mathcal P(A_{T,t,j}^{\mathrm{full}})\right).
+\end{aligned}
     \label{eq:absolute_command_equivalence}
 \end{equation}
+The relation is exact for translation; rotational alignment is evaluated after projecting the additively corrected 6D representation to $SO(3)$.
 
 \subsubsection{Residual policy}
 \label{sec:residual_policy}
@@ -126,19 +122,19 @@ where $c$ is an age scale and $\alpha_{t,k}$ is the position of $t$ between adja
 \begin{align}
     \mathcal C_t=[&P_Z(Z_k^{\mathrm{intent}});u_t^F;P_S(S_t);
     \nonumber\\[-2pt]
-    &P_A(A^{\mathrm{ref}}(t));P_\xi(\xi_{t,k})].
+    &P_A(A_k^{\mathrm{ref}}(t));P_\xi(\xi_{t,k})].
     \label{eq:conditioning_set}
 \end{align}
-Let $\mathcal C_t^{\mathrm{maskF}}=\operatorname{Mask}_F(\mathcal C_t)$ denote the same sequence with its force token masked.
+Here $P_Z,P_S,P_A$, and $P_\xi$ are learned projections to the shared token width. Let $\mathcal C_t^{\mathrm{maskF}}=\operatorname{Mask}_F(\mathcal C_t)$ denote the same sequence with its force token masked.
 
-An attention block $\Phi$ and learned query $q$ predict two $K$-step corrections,
+An attention block $\Phi$ and learned query $q_{\mathrm{res}}$ predict two $K$-step corrections,
 \begin{align}
     \Delta\hat A^{\mathrm{force}}_{t,1:K}
-    &=W_{\mathrm{force}}\Phi([\mathcal C_t;q])[q],
+    &=W_{\mathrm{force}}\Phi([\mathcal C_t;q_{\mathrm{res}}])[q_{\mathrm{res}}],
     \label{eq:force_output}\\
     \Delta\hat A^{\mathrm{stale}}_{t,1:K}
     &=W_{\mathrm{stale}}
-      \Phi([\mathcal C_t^{\mathrm{maskF}};q])[q].
+      \Phi([\mathcal C_t^{\mathrm{maskF}};q_{\mathrm{res}}])[q_{\mathrm{res}}].
     \label{eq:staleness_output}
 \end{align}
 The mask prevents direct force dependence in the staleness output. The passes share $\Phi$ and use separate zero-initialized output projections.
@@ -146,7 +142,7 @@ The mask prevents direct force dependence in the staleness output. The passes sh
 \subsubsection{Staleness-aware schedule replay}
 \label{sec:async_training}
 
-During offline residual-policy training, we replay asynchronous execution by sampling the inter-query period and query-completion latency. If $t_i$ and $\bar t_i$ denote the issue and completion times of query $i$, the active query at dataset time $t$ is $k(t)=\arg\max_{i:\bar t_i\leq t}t_i$. The selected query determines the cached intent and reference, temporal features, and $\Gamma(S_t,S_k)$ used by the staleness target. Resampling the schedule exposes the policy to different reference ages, interpolation phases, and completion latencies.
+During offline residual-policy training, we replay asynchronous execution by sampling the inter-query period and query-completion latency. If $t_i$ and $\bar t_i$ denote the issue and completion times of query $i$, we set $k\equiv k(t)=\arg\max_{i:\bar t_i\leq t}t_i$. The selected query determines the cached intent and reference, temporal features, and $\Gamma(S_t,S_k)$ used by the staleness target. Resampling the schedule exposes the policy to different reference ages, interpolation phases, and completion latencies.
 
 We use normalized temporal weights
 \begin{equation*}
@@ -164,6 +160,7 @@ where $\beta<1$ emphasizes near-term corrections and $\beta=1$ weights all predi
         \Delta A^{\mathrm{stale}}_{T,k\rightarrow t,j})\big].
     \label{eq:res_loss}
 \end{align}
+The coefficient $\lambda_{\mathrm{stale}}$ balances force-conditioning and staleness supervision.
 
 \subsection{Independent Residual Execution}
 \label{sec:execution}
@@ -171,14 +168,41 @@ where $\beta<1$ emphasizes near-term corrections and $\beta=1$ weights all predi
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{figures/fig03_async_deployment.pdf}
-    \caption{Independent residual execution. The reference worker publishes timestamped null-mode actions and cached task context; the residual worker continues updating from current force and state while a new reference query is pending.}
+    \caption{Independent residual execution. The reference worker publishes timestamped null-mode actions and cached task context. Each completed residual inference publishes a timestamped $K$-step correction chunk; expired steps are skipped and the remaining steps execute without interpolation while the next reference query is pending.}
     \label{fig:async_deployment}
 \end{figure}
 
-The reference and residual workers execute independently (Fig.~\ref{fig:async_deployment}). A query issued at $t_k$ publishes the immutable packet $(A_{T,k}^{\mathrm{null}},Z_k^{\mathrm{intent}},S_k,t_k,\bar t_k)$ when it completes at $\bar t_k$. Reference samples carry timestamps
+The reference and residual workers execute independently (Fig.~\ref{fig:async_deployment}). A query issued at $t_k$ publishes the immutable packet $(A_{T,k,1:H}^{\mathrm{null}},Z_k^{\mathrm{intent}},S_k,t_k,\bar t_k)$ when it completes at $\bar t_k$. Reference samples carry timestamps
 \begin{equation}
-    \tau_{k,j}=t_k+(j-1)/f_A,
-    \qquad j=1,\ldots,H.
+    t_{k,n}^{\mathrm{ref}}=t_k+(n-1)/f_A,
+    \qquad n=1,\ldots,H.
     \label{eq:reference_timestamps}
 \end{equation}
-Reference samples whose intended execution times precede $\bar t_k$ are skipped for execution. For $t\geq\bar t_k$, $A^{\mathrm{ref}}(t)$ is obtained by timestamp-based interpolation over the original timestamped chunk. Until a newer query completes, the residual worker uses the latest published packet together with the current $(\mathcal F_t,S_t)$ to evaluate Eqs.~\eqref{eq:force_output}--\eqref{eq:staleness_output}. At each update, the force and staleness corrections are bounded separately and composed with the cached reference in normalized delta-action coordinates. The resulting action remains referenced to $S_k$ and is converted into an absolute robot command by $\mathcal R$.
+Reference samples with $t_{k,n}^{\mathrm{ref}}<\bar t_k$ are skipped for execution. For $t\geq\bar t_k$, $A_k^{\mathrm{ref}}(t)$ is obtained by timestamp-based interpolation over the original chunk.
+
+A residual inference packet $q$, initiated at time $t_q^F$, reads the latest published reference packet $k_q$ and current $(\mathcal F_{t_q^F},S_{t_q^F})$. It completes at $\bar t_q^F$ with the two correction chunks in Eqs.~\eqref{eq:force_output}--\eqref{eq:staleness_output}. Their samples are assigned timestamps
+\begin{equation}
+    t^F_{q,j}=t_q^F+(j-1)/f_A,\qquad j=1,\ldots,K.
+    \label{eq:residual_timestamps}
+\end{equation}
+Step $j$ is held over $[t^F_{q,j},t^F_{q,j}+1/f_A)$; residual samples are not interpolated. At control time $t$, the executor selects the most recently initiated packet that has completed and has not expired, together with its active step,
+\begin{equation}
+\begin{aligned}
+    q^*(t)&=\arg\max_{q:\,\bar t_q^F\leq t<t_q^F+K/f_A}t_q^F,\\
+    j(t;q^*)&=1+\left\lfloor(t-t_{q^*}^F)f_A\right\rfloor.
+\end{aligned}
+    \label{eq:active_residual_step}
+\end{equation}
+Thus, any prefix that expires during inference is skipped, whereas the remaining steps are executed sequentially until a newer residual packet completes. Within the selected step's interval, the quantities in Eq.~\eqref{eq:action_comp} are
+\begin{equation}
+\begin{aligned}
+    k&=k_{q^*},\\
+    A_k^{\mathrm{ref}}(t)
+      &\equiv A_{k_{q^*}}^{\mathrm{ref}}
+        (t^F_{q^*,j(t;q^*)}),\\
+    \Delta\hat A^{(\cdot)}(t)
+      &=\Delta\hat A^{(\cdot)}_{q^*,j(t;q^*)}.
+\end{aligned}
+    \label{eq:active_residual}
+\end{equation}
+The two corrections are bounded separately and composed in normalized delta-action coordinates. The command remains referenced to $S_{k_{q^*}}$ and is converted into an absolute robot command by $\mathcal R$. A residual packet completing after $t_q^F+K/f_A$ is rejected; if no valid packet remains, execution enters the platform's safe hold or abort policy.
