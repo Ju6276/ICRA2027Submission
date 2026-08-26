@@ -18,8 +18,8 @@ For each task, we collect $200$ demonstrations. Multi-view images, robot states,
         \toprule
         \textbf{Platform} & \textbf{Task} & \textbf{Contact regime} & \textbf{Success criterion} \\
         \midrule
-        Single-arm & Button pressing & contact establishment and force threshold & \assumed{button fully actuated} \\
-        Single-arm & Object flipping & contact-driven reorientation against a surface & \assumed{object rotated by at least $150^{\circ}$ and left stable} \\
+        Single-arm & Button pressing & discrete contact actuation & \assumed{button fully actuated} \\
+        Single-arm & Object flipping & contact-guided reorientation against a surface & \assumed{object rotated by at least $150^{\circ}$ and left stable} \\
         Single-arm & USB insertion & precision insertion under geometric constraint & \assumed{connector seated to within $2$~mm of its terminal depth} \\
         Single-arm & Cabinet opening & frictional articulated motion & \assumed{door opened beyond $60^{\circ}$} \\
         \midrule
@@ -41,7 +41,7 @@ The temporal force-conditioned teacher is fully fine-tuned on eight NVIDIA A100 
 \label{sec:exp_main}
 
 \noindent\textbf{Task performance.}
-Table~\ref{tab:main_results} reports the real-robot success rates. The comparison with Temporal ForceVLA isolates the effect of null-mode residual distillation from the benefit of replacing instantaneous force with causal force history. \assumed{Final text will report the strongest external baseline, the controlled teacher comparison, and platform-level improvements after completing all robot trials.}
+Table~\ref{tab:main_results} reports the real-robot success rates. The comparison with Temporal ForceVLA isolates the residual decomposition from the benefit of temporal force conditioning. \assumed{Final text will report the strongest external baseline, the controlled teacher comparison, and platform-level improvements after completing all robot trials.}
 
 \begin{table*}[t]
     \centering
@@ -82,7 +82,7 @@ Table~\ref{tab:interaction} reports peak force over all trials and completion ti
     \centering
     \small
     \setlength{\tabcolsep}{4pt}
-    \caption{Peak force is $\max_t\|\mathbf f(t)\|_2$ over all trials; completion time uses successful trials only (mean $\pm$ std.). Red entries are placeholders.}
+    \caption{Peak force is $\max_t\|\mathbf f(t)\|_2$ and uses all trials; completion time uses successful trials. Values are mean $\pm$ std.; red entries are placeholders.}
     \label{tab:interaction}
     \begin{tabular}{lcccc}
         \toprule
@@ -101,7 +101,7 @@ Table~\ref{tab:interaction} reports peak force over all trials and completion ti
 \end{table*}
 
 \noindent\textbf{Qualitative and failure analysis.}
-\assumed{On USB and plug insertion, the null-mode reference brings the connector to the target, after which the residual suppresses lateral motion and introduces small reorientation commands following asymmetric contact. During whiteboard wiping, the residual maintains surface contact despite changes in board pose. For cabinet and drawer opening, repeated corrections along the constrained direction compensate for hinge or rail friction without changing the reference strategy. Final failure counts will be grouped into incorrect references, deviations beyond the bounded residual range, and cases requiring a discrete recovery strategy.} The rollout examples will be illustrated by synchronized frames, force traces, references, and residuals. Incorrect references are inherited from the teacher, whereas the other failure modes expose the representational limit of an additive continuous correction. Cross-task claims about contact locality are reserved for the quantitative diagnostics in Sec.~\ref{sec:exp_diagnostics}.
+\assumed{On USB and plug insertion, the null-mode reference brings the connector to the target, after which the residual suppresses lateral motion and introduces small reorientation commands following asymmetric contact. During whiteboard wiping, the residual maintains surface contact despite changes in board pose. For cabinet and drawer opening, repeated corrections along the constrained direction compensate for hinge or rail friction without changing the reference strategy. Rollout examples will combine synchronized frames, force traces, references, and residuals. Final failures will be grouped into incorrect teacher references, deviations beyond the bounded residual range, and cases requiring a discrete recovery strategy.} Cross-task claims about contact locality are evaluated separately in Sec.~\ref{sec:exp_diagnostics}.
 
 \subsection{Independent Residual Execution}
 \label{sec:exp_runtime}
@@ -128,13 +128,13 @@ We measure batch-one inference latency and the realized policy-packet publicatio
 \end{table}
 
 \noindent\textbf{Sensitivity to reference delay.}
-We evaluate sensitivity to reference delay on USB insertion, plug insertion, and drawer opening by injecting query-completion delays of $0$--$300$~ms. Both methods continue executing their latest completed action chunk while a new query is pending. Temporal ForceVLA retains the previous full-action chunk, whereas ForceDelta-VLA retains the null-mode reference and continues updating its residual from current force/torque feedback.
+We evaluate sensitivity to reference delay on USB insertion, plug insertion, and drawer opening by adding $0$--$300$~ms between inference completion and packet publication. During this delay, Temporal ForceVLA continues its previous full-action chunk. ForceDelta-VLA retains its previous null-mode reference while the residual worker continues publishing corrections from current force/torque feedback.
 
 \begin{table*}[t]
     \centering
     \footnotesize
     \setlength{\tabcolsep}{3.5pt}
-    \caption{Controlled sensitivity to injected query-completion latency, averaged over USB insertion, plug insertion, and drawer opening. Red entries are placeholders.}
+    \caption{Sensitivity to additional packet-publication delay, averaged over USB insertion, plug insertion, and drawer opening. Red entries are placeholders.}
     \label{tab:latency_sensitivity}
     \begin{tabular}{lcccccccccc}
         \toprule
@@ -148,6 +148,14 @@ We evaluate sensitivity to reference delay on USB insertion, plug insertion, and
     \end{tabular}
 \end{table*}
 
+\begin{figure*}[!t]
+    \centering
+    \fbox{\parbox[c][0.12\textheight][c]{0.94\textwidth}{\centering
+    \assumed{Final diagnostic figure: (a) residual magnitude in free space, contact onset, and sustained contact; (b) reconstruction error versus cache age with and without the staleness target.}}}
+    \caption{Residual diagnostics. (a) Full--null correction magnitude across contact phases. (b) Reconstruction error versus reference age, with and without staleness supervision.}
+    \label{fig:residual_diagnostics}
+\end{figure*}
+
 \subsection{Residual Decomposition Analysis}
 \label{sec:exp_diagnostics}
 
@@ -155,20 +163,12 @@ We evaluate sensitivity to reference delay on USB insertion, plug insertion, and
 To characterize the force-conditioned correction, we partition trajectories into free space, contact onset, and sustained contact using synchronized force thresholds and task-phase labels. For the teacher target $\Delta A_T^{\mathrm{force}}$ and student output $\Delta\hat A^{\mathrm{force}}$, we report the translational norm and the rotational change induced relative to the corresponding null-mode reference. The latter is computed as an $SO(3)$ geodesic angle after projecting the reference and force-corrected 6D representations to valid rotations.
 
 \noindent\textbf{Reconstruction under reference staleness.}
-We evaluate how closely the reference composed with both student outputs follows the current full-force teacher as the cached reference ages. Translation error is reported in physical units and rotation error as an $SO(3)$ geodesic angle after projection. Both are binned by cache age and compared with a student trained without the staleness target.
-
-\begin{figure*}[t]
-    \centering
-    \fbox{\parbox[c][0.12\textheight][c]{0.94\textwidth}{\centering
-    \assumed{Final diagnostic figure: (a) residual magnitude in free space, contact onset, and sustained contact; (b) reconstruction error versus cache age with and without the staleness target.}}}
-    \caption{Residual diagnostics. The final figure will test contact locality of the full--null correction and quantify the contribution of staleness supervision as the reference ages.}
-    \label{fig:residual_diagnostics}
-\end{figure*}
+We convert the composed student prediction and current full-force teacher prediction to absolute commands using their respective query states, then measure their discrepancy as the cached reference ages. Translation error is reported in physical units and rotation error as an $SO(3)$ geodesic angle after projection. Both are binned by cache age and compared with a student trained without the staleness target.
 
 \subsection{Ablation Studies}
 \label{sec:exp_ablation}
 
-Table~\ref{tab:ablation} isolates four design choices. The demonstration-derived target replaces the paired teacher difference with the demonstrated action minus the null reference. The force-representation ablation replaces native-rate causal history with the latest force sample. The null-mode variants test whether a physical zero or a token alone provides an adequate reference. Finally, the asynchronous variants remove either the staleness target or schedule replay during training.
+Table~\ref{tab:ablation} isolates four design choices. The demonstration-derived target replaces the paired teacher difference with the demonstrated action minus the current null-mode prediction at the same query state. The force-representation ablation replaces native-rate causal history with the latest force sample. The null-mode variants test whether a physical zero or a token alone provides an adequate reference. Finally, the asynchronous variants remove either the staleness target or schedule replay during training.
 
 \begin{table}[t]
     \centering

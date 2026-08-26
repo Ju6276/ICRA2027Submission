@@ -33,7 +33,7 @@
   \node[query,anchor=west,minimum width=2.05cm] (qnext) at (5.55,2.65)
     {query $k{+}1$};
   \node[note,anchor=south] at (2.15,3.06) {request $t_k$};
-  \node[note,anchor=south] at (4.35,3.06) {complete $\bar t_k$};
+  \node[note,anchor=south] at (4.35,3.06) {available $\bar t_k$};
 
   % Publication boundary shared by all lanes.
   \draw[dashed,draw=cInk!45,line width=0.65pt] (4.45,3.15) -- (4.45,0.16);
@@ -44,7 +44,7 @@
   \node[oldcache,anchor=west,text width=2.0cm] (cold) at (2.15,1.55)
     {packet $k{-}1$\\active previous packet};
   \node[newcache,anchor=west,text width=2.9cm] (cnew) at (4.60,1.55)
-    {packet $k$: newly complete\\$A_{T,k,1:H}^{\mathrm{null}},Z_k^{\mathrm{intent}},S_k$};
+    {packet $k$: newly available\\$A_{T,k,1:H}^{\mathrm{null}},Z_k^{\mathrm{intent}},S_k$};
   \draw[-{Latex[length=1.6mm]},draw=cCache,line width=0.8pt]
     (qk.south east) -- (4.60,1.90);
   \node[note,anchor=west] at (7.62,1.55)
@@ -72,7 +72,7 @@
     {residual continues while query $k{+}1$ is pending};
 
   \node[note,anchor=north] at (5.05,-0.50)
-    {each completed Fast inference publishes a timestamped $K$-step correction chunk;\\
+    {each available Fast result publishes a timestamped $K$-step correction chunk;\\
      expired steps are skipped and valid steps execute sequentially without interpolation};
 \end{tikzpicture}
 \end{document}

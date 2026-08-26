@@ -33,7 +33,7 @@
     (11.82,0) rectangle (18.15,5.25);
 
   % Panel 1: the supervision gap.
-  \node[title] at (2.325,4.92) {ENTANGLED FULL-ACTION PREDICTION};
+  \node[title] at (2.325,4.82) {ENTANGLED FULL-ACTION\\PREDICTION};
   \node[box,text width=11mm] (obs) at (0.78,3.78)
     {Vision\\state\\force};
   \node[box,draw=cOrange,fill=cOrange!7,text width=18mm] (oldvla) at (2.28,3.78)
@@ -50,12 +50,12 @@
     {Contact-dependent\\adjustment};
   \draw[arrow] (chunk.south) |- ($(nom.north)!0.5!(adj.north)$);
   \node[note] at (2.325,1.54) {Both roles are encoded in one prediction};
-  \node[tag,fill=cRed!10,draw=cRed!55,text=cRed,text width=37mm] at (2.325,0.57)
-    {NO EXPLICIT CORRECTION SUPERVISION};
+  \node[tag,fill=cRed!10,draw=cRed!55,text=cRed,text width=39mm] at (2.325,0.57)
+    {NO EXPLICIT CORRECTION\\SUPERVISION};
 
   % Panel 2: paired modes of one teacher.
   \node[title,text=cBlue] at (8.235,4.92)
-    {MATCHED QUERIES OF ONE FORCE-AWARE TEACHER};
+    {MATCHED FULL/NULL TEACHER QUERIES};
   \node[tag,fill=cBlue!9,text=cBlue] at (8.235,4.48)
     {$\theta$ frozen; null-mode parameters $\phi$ learned};
 

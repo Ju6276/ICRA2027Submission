@@ -3,6 +3,7 @@
 \usepackage{xcolor}
 \usepackage{microtype}
 \usepackage{amsmath,amssymb}
+\usepackage{booktabs}
 
 % Values marked with \assumed must be verified against the final training logs.
 \newcommand{\assumed}[1]{\textcolor{red}{#1}}
@@ -17,9 +18,11 @@
 
 The temporal force-conditioned teacher is fully fine-tuned on eight NVIDIA A100 GPUs. All real-robot inference and runtime measurements use a single 48~GB NVIDIA RTX 4090D GPU. \assumed{The teacher is trained for $50{,}000$ steps with AdamW at a peak learning rate of $2\times10^{-5}$. It predicts $H{=}50$ actions at $30$~Hz from the latest $100$~ms of the $100$~Hz wrench stream, and flow-matching inference uses $N_{\mathrm{flow}}{=}10$ steps.}
 
-After freezing the teacher, \assumed{we train the rank-$32$ null-mode adapter for $10{,}000$ steps at a learning rate of $10^{-4}$. The visual--language prefix is pooled into $M{=}16$ intent tokens. The residual policy comprises a causal force encoder and one pre-norm attention block with separate force and staleness heads. It predicts $K{=}5$ corrections and is trained for $30{,}000$ steps at a learning rate of $3\times10^{-4}$ under replayed asynchronous schedules. The final implementation record will specify the intent-token pooling rule and the embedding used to mask the force token for the staleness head.}
+After freezing the teacher, \assumed{we train the rank-$32$ null-mode adapter for $10{,}000$ steps at a learning rate of $10^{-4}$. The visual--language prefix is pooled into $M{=}16$ intent tokens. The residual policy comprises a causal force encoder and one pre-norm attention block with separate zero-initialized force and staleness output projections. It predicts $K{=}5$ corrections and is trained for $30{,}000$ steps at a learning rate of $3\times10^{-4}$ under replayed asynchronous schedules. The final implementation record will specify the intent-token pooling rule and the embedding used to mask the force token for the staleness head.}
 
-The action representation and rotational residual composition are defined in Sec.~III-A of the main paper. At deployment, force-conditioned and staleness corrections are bounded independently in the normalized pose-action space before composition with the reference action. \assumed{The final implementation record will specify the normalization statistics and per-head correction bounds.}
+The action representation and rotational residual composition are defined in Sec.~III-A of the main paper. At deployment, force-conditioned and staleness corrections are bounded independently in the normalized pose-action space before composition with the reference action. \assumed{Let $\mu_A$ and $D_A=\operatorname{diag}(\sigma_A)$ be the training-set action statistics. Absolute action coordinates use $\mathcal N(a)=D_A^{-1}(a-\mu_A)$, whereas action differences and the rebasing term use the scale-only map $\mathcal N_\Delta(\delta a)=D_A^{-1}\delta a$. The absolute-command map $\mathcal R$ de-normalizes the composed action before applying it relative to the reference query state. The final implementation record will verify these conventions and specify the per-head correction bounds.}
+
+\assumed{Residual-policy training examples are anchored at the $30$~Hz state/action timestamps while retaining every $100$~Hz wrench sample in $\mathcal F_t$. Residual packets may be queried more frequently at deployment; the realized publication rate is measured directly rather than inferred from the waypoint rate.}
 
 \subsection{Null-Mode Optimization}
 
@@ -48,23 +51,28 @@ Thus, $\beta<1$ emphasizes near-term corrections, $\beta=1$ weights all steps eq
 
 \subsection{Reference Packets}
 
-A reference query $k$, issued at $t_k$ from state $S_k$, publishes the immutable packet $(A_{T,k,1:H}^{\mathrm{null}},Z_k^{\mathrm{intent}},S_k,t_k,\bar t_k)$ when inference completes at $\bar t_k$. Its samples carry intended execution times
+A reference query $k$, issued at $t_k$ from state $S_k$, publishes the immutable packet $(A_{T,k,1:H}^{\mathrm{null}},Z_k^{\mathrm{intent}},S_k,t_k,\bar t_k)$ when its result becomes available at $\bar t_k$. Its samples carry intended execution times
 \begin{equation}
     t_{k,n}^{\mathrm{ref}}=t_k+(n-1)/f_A,
     \qquad n=1,\ldots,H.
     \label{eq:supp_reference_timestamps}
 \end{equation}
-Samples whose intended times precede $\bar t_k$ are skipped for direct execution; the cached chunk itself is not truncated. For $t\geq\bar t_k$, the reference pose $A_k^{\mathrm{ref}}(t)$ is obtained by timestamp-based interpolation over the original timestamped chunk.
+At time $t$, the active reference is the freshest completed, non-superseded query,
+\begin{equation}
+    k^*(t)=\arg\max_{k:\,\bar t_k\leq t}t_k.
+    \label{eq:supp_active_reference}
+\end{equation}
+An older query that completes later therefore cannot replace a newer active packet. Samples whose intended times precede $\bar t_{k^*}$ are skipped for direct execution; the cached chunk itself is not truncated. For $t\geq\bar t_{k^*}$, the reference pose $A_{k^*}^{\mathrm{ref}}(t)$ is obtained by timestamp-based interpolation over the original timestamped chunk.
 
 \subsection{Residual Packets}
 
-A residual inference packet $q$, initiated at $t_q^F$, reads the latest reference packet $k_q$ together with $(\mathcal F_{t_q^F},S_{t_q^F})$. It completes at $\bar t_q^F$ with force-conditioned and staleness correction chunks. Their samples are timestamped as
+A residual inference packet $q$, initiated at $t_q^F$, reads $k_q=k^*(t_q^F)$ together with $(\mathcal F_{t_q^F},S_{t_q^F})$. It completes at $\bar t_q^F$ with force-conditioned and staleness correction chunks. Their samples are timestamped as
 \begin{equation}
     t^F_{q,j}=t_q^F+(j-1)/f_A,
     \qquad j=1,\ldots,K.
     \label{eq:supp_residual_timestamps}
 \end{equation}
-Step $j$ is held over $[t^F_{q,j},t^F_{q,j}+1/f_A)$; correction samples are not interpolated. At control time $t$, the executor selects the most recently initiated packet that has completed and remains valid, together with its active step:
+Here $f_A$ defines the waypoint spacing within a packet; residual query times $t_q^F$ are scheduled independently. Step $j$ is held over $[t^F_{q,j},t^F_{q,j}+1/f_A)$, and correction samples are not interpolated. At control time $t$, the executor selects the most recently initiated packet that has completed and remains valid, together with its active step:
 \begin{equation}
 \begin{aligned}
     q^*(t)&=\arg\max_{q:\,\bar t_q^F\leq t<t_q^F+K/f_A}t_q^F,\\
@@ -72,18 +80,53 @@ Step $j$ is held over $[t^F_{q,j},t^F_{q,j}+1/f_A)$; correction samples are not 
 \end{aligned}
     \label{eq:supp_active_residual_step}
 \end{equation}
-Any prefix that expires during inference is therefore skipped, while the remaining valid steps execute sequentially until a newer packet completes. Within the selected interval, the runtime quantities in Eq.~(1) of the main paper are
+Any prefix that expires during inference is therefore skipped, while the remaining valid steps execute sequentially until a newer packet completes. Let $j^*=j(t;q^*)$. Within the selected interval, Eq.~(1) of the main paper is evaluated using the residual packet's query time and active step:
 \begin{equation}
 \begin{aligned}
-    k&=k_{q^*},\\
-    A_k^{\mathrm{ref}}(t)
-      &\equiv A_{k_{q^*}}^{\mathrm{ref}}
-        (t^F_{q^*,j(t;q^*)}),\\
-    \Delta\hat A^{(\cdot)}(t)
-      &=\Delta\hat A^{(\cdot)}_{q^*,j(t;q^*)}.
+    \mathcal P(A^{\mathrm{cmd}}(t))
+    \equiv{}&\mathcal P(A^{\mathrm{cmd}}_{t_{q^*}^F,j^*})\\
+    ={}&\mathcal P\!\left(A_{k_{q^*}}^{\mathrm{ref}}
+        (t^F_{q^*,j^*})\right)
+      +\Delta\hat A^{\mathrm{force}}_{q^*,j^*}
+      +\Delta\hat A^{\mathrm{stale}}_{q^*,j^*}.
 \end{aligned}
     \label{eq:supp_active_residual}
 \end{equation}
 The two corrections are bounded independently and composed in normalized delta-action coordinates. The composed command remains referenced to $S_{k_{q^*}}$ and is converted to an absolute robot command using the mapping $\mathcal R$ defined in the main paper. A packet that completes after $t_q^F+K/f_A$ is rejected. If no valid residual packet remains, the executor invokes the platform's safe hold or abort policy. \assumed{The final implementation record will specify gripper sampling and behavior beyond the last valid reference timestamp.}
+
+\section{Additional Evaluation Protocols}
+
+\subsection{Metric Aggregation}
+
+\assumed{Peak force is computed from every trial. For a bimanual trial, it is the maximum force norm over time and over both arms. Completion time is measured only on successful trials, from the first policy command to satisfaction of the task-specific success criterion. Platform-level values first aggregate trials within each task and then macro-average the four tasks. These conventions must be verified against the final evaluation code.}
+
+\subsection{Seed-Wise Task Results}
+
+\assumed{The final supplement will report the successful-trial count for each training seed, method, and task. Each count is out of ten trials and aggregates to the main paper's success-rate table.}
+
+\subsection{Residual-Bound Sensitivity}
+
+We evaluate the deployment correction bound at $0.5\times$, $1\times$, and $2\times$ its default value on USB insertion and drawer opening. The force-conditioned and staleness heads are clipped independently, with per-arm clipping in the bimanual setting.
+
+\begin{table}[t]
+    \centering
+    \scriptsize
+    \setlength{\tabcolsep}{2.5pt}
+    \caption{Sensitivity to the residual bound. Red entries are placeholders.}
+    \label{tab:supp_bound_sensitivity}
+    \begin{tabular}{lcccc}
+        \toprule
+        & \multicolumn{2}{c}{\textbf{USB insertion}}
+        & \multicolumn{2}{c}{\textbf{Drawer opening}} \\
+        \cmidrule(lr){2-3}\cmidrule(lr){4-5}
+        \textbf{Bound} & \textbf{Success (\%)} & \textbf{Peak (N)}
+        & \textbf{Success (\%)} & \textbf{Peak (N)} \\
+        \midrule
+        $0.5\times$ & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} \\
+        $1\times$   & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} \\
+        $2\times$   & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} & \assumed{$X$} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
 \end{document}

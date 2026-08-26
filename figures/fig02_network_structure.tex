@@ -61,6 +61,8 @@
     {Null-mode reference\\$A_{T,t,1:H}^{\mathrm{null}}$\\\emph{same teacher, null mode}};
   \node[block,draw=cRes,fill=cRes!8,text width=26mm] (rest) at (13.0,4.05)
     {Paired correction targets\\$\Delta A_{T,t,j}^{\mathrm{force}}$, $\Delta A_{T,k\to t,j}^{\mathrm{stale}}$};
+  \node[tinylabel,text width=27mm] at (13.0,3.32)
+    {schedule replay provides cached query $k$};
   \draw[flow,draw=cNom] (null.east) -- ++(3mm,0) |- (nomt.west);
   \draw[flow,draw=cRes] (full.east) -- ++(2mm,0) |- ([yshift=2mm]rest.west);
   \draw[flow,draw=cRes] (null.east) -- ++(5mm,0) |- ([yshift=-2mm]rest.west);
@@ -111,8 +113,10 @@
         font=\sffamily\small\bfseries] (sum) at (16.6,0.05) {$+$};
   \draw[flow,draw=cSlow] (cache.east) -- ++(8mm,0) -| (sum.north);
   \draw[flow,draw=cFast] (delta.east) -- ++(5mm,0) -| (sum.south);
-  \node[block,draw=cInk,fill=cInk!5,text width=27mm] (cmd) at (19.3,0.05)
-    {Robot command\\$\mathcal P(A^{\mathrm{cmd}}(t))=\mathcal P(A_k^{\mathrm{ref}}(t))+\Delta\hat{A}^{\mathrm{force}}(t)+\Delta\hat{A}^{\mathrm{stale}}(t)$};
+  \node[block,draw=cInk,fill=cInk!5,text width=29mm] (cmd) at (19.3,0.05)
+    {Robot command, step $j$\\
+     $\mathcal P(A^{\mathrm{cmd}}_{t,j})=\mathcal P(A_k^{\mathrm{ref}}(t_j))$\\
+     $+\Delta\hat{A}^{\mathrm{force}}_{t,j}+\Delta\hat{A}^{\mathrm{stale}}_{t,j}$};
   \draw[flow] (sum.east) -- (cmd.west);
 
   \begin{scope}[on background layer]
