@@ -1,0 +1,23 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{times}
+\usepackage{xcolor}
+\usepackage{microtype}
+
+% Values marked with \assumed must be verified against the final training logs.
+\newcommand{\assumed}[1]{\textcolor{red}{#1}}
+
+\title{ForceDelta-VLA: Supplementary Material}
+\author{Anonymous Authors}
+
+\begin{document}
+\maketitle
+
+\section{Implementation Details}
+
+The temporal force-conditioned teacher is fully fine-tuned on eight NVIDIA A100 GPUs. All real-robot inference and runtime measurements use a single 48~GB NVIDIA RTX 4090D GPU. \assumed{The teacher is trained for $50{,}000$ steps with AdamW at a peak learning rate of $2\times10^{-5}$. It predicts $H{=}50$ actions at $30$~Hz from the latest $100$~ms of the $100$~Hz wrench stream, and flow-matching inference uses $N_{\mathrm{flow}}{=}10$ steps.}
+
+After freezing the teacher, \assumed{we train the rank-$32$ null-mode adapter for $10{,}000$ steps at a learning rate of $10^{-4}$. The visual--language prefix is pooled into $M{=}16$ intent tokens. The residual policy comprises a causal force encoder and one pre-norm attention block with separate force and staleness heads. It predicts $K{=}5$ corrections and is trained for $30{,}000$ steps at a learning rate of $3\times10^{-4}$ under replayed asynchronous schedules.}
+
+The action representation and rotational residual composition are defined in Sec.~III-A of the main paper. At deployment, force-conditioned and staleness corrections are bounded independently in the normalized pose-action space before composition with the reference action.
+
+\end{document}
