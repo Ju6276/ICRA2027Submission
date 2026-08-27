@@ -2,7 +2,7 @@
 \label{sec:exp_protocol}
 
 \noindent\textbf{Hardware, tasks, and data collection.}
-The evaluation includes $5$ single-arm and $4$ bimanual tasks on two platforms (Table~\ref{tab:tasks}). The single-arm platform is a seven-degree-of-freedom Franka Emika Panda with wrist-mounted and external Intel RealSense D405 cameras. Demonstrations are collected using a 3Dconnexion SpaceMouse. The bimanual platform is an X Square Robot with one wrist-mounted camera per arm and one shared external camera. Demonstrations are collected through leader--follower teleoperation. Following ForceVLA~\cite{yu2025forcevlaenhancingvlamodels}, both platforms use robot-provided wrench estimates without additional wrist force/torque sensors.
+The evaluation includes $5$ single-arm and $4$ bimanual tasks on two platforms (Table~\ref{tab:tasks}). The single-arm platform is a 7-DoF Franka Emika Panda with wrist-mounted and external Intel RealSense D405 cameras. Demonstrations are collected using a 3Dconnexion SpaceMouse. The bimanual platform is an X Square Robot with one wrist-mounted camera per arm and one shared external camera. Demonstrations are collected through leader--follower teleoperation. Following ForceVLA~\cite{yu2025forcevlaenhancingvlamodels}, both platforms use robot-provided wrench estimates without additional wrist force/torque sensors.
 
 For each task, we collect $200$ demonstrations. Multi-view images, robot states, and commanded actions are recorded at $30$~Hz, and timestamped wrench estimates at $100$~Hz.
 
@@ -66,7 +66,7 @@ For each task, we collect $200$ demonstrations. Multi-view images, robot states,
 We compare against four external baselines: $\pi_{0.5}$~\cite{intelligence2025pi05visionlanguageactionmodelopenworld}, ForceVLA~\cite{yu2025forcevlaenhancingvlamodels}, TA-VLA~\cite{zhang2025tavlaelucidatingdesignspace}, and ImplicitRDP~\cite{chen2026implicitrdpendtoendvisualforcediffusion}. Temporal Teacher directly rolls out the Stage-1 teacher and provides an architecture-matched comparison for residual distillation. For each method and task, we evaluate $2$ independently trained seeds with $10$ trials per seed. We report success rate, peak contact force, and completion time. Peak force is computed over all trials as $\max_t\|\mathbf f(t)\|_2$ for single-arm tasks and $\max_{t,a\in\{L,R\}}\|\mathbf f_a(t)\|_2$ for bimanual tasks. Completion time is computed over successful trials.
 
 \noindent\textbf{Implementation details.}
-Both platforms execute policy commands through Cartesian impedance controllers with proportional--derivative feedback. For safety, Cartesian commands are issued at a maximum rate of $100$~Hz on both platforms. The temporal force-conditioned teacher is fully fine-tuned using $8$ NVIDIA A100 GPUs. All real-robot inference and runtime measurements use a single 48~GB NVIDIA RTX 4090D GPU.
+Both platforms execute policy commands through Cartesian impedance controllers with proportional--derivative feedback. For safety, Cartesian commands are issued at a maximum rate of $100$~Hz on both platforms. The temporal force-conditioned teacher is fully fine-tuned using $8$ NVIDIA A100 GPUs. Real-robot deployment uses a workstation equipped with $2$ NVIDIA RTX 4090 GPUs with 24~GB of memory each.
 
 \subsection{Main Results}
 \label{sec:exp_main}
@@ -120,22 +120,22 @@ Across the $180$ ForceDelta-VLA evaluation trials in Table~\ref{tab:main_results
 Two experiments assess independent residual execution. Runtime profiling quantifies the realized rate separation between the reference and residual paths; reference-delay evaluation tests whether this separation improves contact behavior as the cached reference becomes stale.
 
 \noindent\textbf{Realized rate separation.}
-We profile all paths on the button-pressing task using the deployment GPU (Table~\ref{tab:runtime}). The ForceDelta residual requires $2.43$~ms per isolated forward pass, compared with $908.69$~ms for the null-mode reference. When both ForceDelta workers share one GPU, the residual publishes at $18.19$~Hz, which is $17.2\times$ the $1.06$-Hz reference rate. ImplicitRDP publishes reactive packets at $78.10$~Hz. These measurements distinguish isolated forward cost from realized throughput under the evaluated deployment conditions.
+We profile all paths on the button-pressing task using the deployment hardware (Table~\ref{tab:runtime}). The ForceDelta residual requires $2.43$~ms per isolated forward pass, compared with $908.69$~ms for the null-mode reference. With the two workers assigned to separate GPUs, the residual publishes at $120.40$~Hz, while the reference updates at $1.06$~Hz. The $100$-Hz command interface applies the latest valid residual packet at each control update; packet publication rate is therefore distinct from command application frequency and the waypoint frequency within each packet. ImplicitRDP publishes reactive packets at $78.10$~Hz.
 
 \begin{table}[t]
     \centering
     \scriptsize
     \setlength{\tabcolsep}{2pt}
-    \caption{Intrinsic batch-one forward latency and realized packet-publication rate on button pressing. ForceDelta workers share the deployment GPU.}
+    \caption{Runtime on button pressing. Latency denotes batch-one model inference time; realized packet rate denotes the wall-clock rate at which an asynchronous worker publishes new policy packets.}
     \label{tab:runtime}
     \begin{tabular}{lcc}
         \toprule
-        \textbf{Method/path} & \textbf{Latency (ms)} $\downarrow$ & \textbf{Packet rate (Hz)} $\uparrow$ \\
+        \textbf{Method/path} & \textbf{Latency (ms)} $\downarrow$ & \textbf{Realized packet rate (Hz)} $\uparrow$ \\
         \midrule
-        ImplicitRDP reactive & $12.86 \pm 0.23$ & $\mathbf{78.10}$ \\
+        ImplicitRDP reactive & $12.86 \pm 0.23$ & $78.10$ \\
         Temporal Teacher & $934.90 \pm 13.32$ & $1.03$ \\
         ForceDelta reference & $908.69 \pm 15.01$ & $1.06$ \\
-        ForceDelta residual & $\mathbf{2.43} \pm 0.12$ & $18.19$ \\
+        ForceDelta residual & $\mathbf{2.43} \pm 0.12$ & $\mathbf{120.40}$ \\
         \bottomrule
     \end{tabular}
 \end{table}
