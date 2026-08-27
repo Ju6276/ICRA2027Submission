@@ -71,8 +71,15 @@ Both platforms execute policy commands through Cartesian impedance controllers w
 \subsection{Main Results}
 \label{sec:exp_main}
 
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/qualitative_button_total_fast_real.pdf}
+    \caption{Representative button-pressing rollout. Front- and wrist-camera observations at 4 interaction phases are aligned with robot-estimated end-effector force components and translational residual magnitude. Vertical lines indicate the selected frames.}
+    \label{fig:qualitative_button}
+\end{figure}
+
 \noindent\textbf{Qualitative results.}
-\assumed{Representative rollout visualizations align task observations with force and residual-magnitude traces and mark contact onset. Across these rollouts, the distilled force residual remains small during free-space motion and increases around contact onset and sustained interaction, consistent with its role as a local contact correction rather than a second task policy.}
+Figure~\ref{fig:qualitative_button} shows a representative button-pressing rollout with synchronized front- and wrist-camera observations, robot-estimated end-effector force components, and translational residual magnitude. As the robot transitions into sustained contact, the residual increases together with the interaction force, exhibits a pronounced transient near peak contact, and decreases as the button is released. This behavior is consistent with the residual acting as a force-responsive local correction rather than an independently generated task trajectory.
 
 \noindent\textbf{Task performance.}
 ForceDelta-VLA achieves an average success rate of $82.2\%$ (Table~\ref{tab:main_results}). The $\pi_{0.5}$, ForceVLA, and TA-VLA baselines reach $47.2\%$, $54.4\%$, and $57.2\%$, respectively. ImplicitRDP reaches $72.8\%$, and the architecture-matched Temporal Teacher reaches $68.9\%$. The largest gains over ImplicitRDP occur on USB insertion ($80\%$ vs. $55\%$), plug insertion ($70\%$ vs. $50\%$), and plug removal ($80\%$ vs. $65\%$). ForceDelta-VLA and ImplicitRDP obtain identical success rates on object flipping ($90\%$), button pressing ($85\%$), and single-arm whiteboard wiping ($90\%$).
