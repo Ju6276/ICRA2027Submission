@@ -29,7 +29,7 @@
   \node[lane,text=cSlow] at (1.65,2.65) {REFERENCE QUERY};
   \draw[axis,draw=cSlow!65] (1.85,2.65) -- (8.25,2.65);
   \node[query,anchor=west,minimum width=2.2cm] (qk) at (2.15,2.65)
-    {null-mode VLA query $k$};
+    {missing-force query $k$};
   \node[query,anchor=west,minimum width=2.05cm] (qnext) at (5.55,2.65)
     {query $k{+}1$};
   \node[note,anchor=south] at (2.15,3.06) {request $t_k$};
@@ -44,7 +44,7 @@
   \node[oldcache,anchor=west,text width=2.0cm] (cold) at (2.15,1.55)
     {packet $k{-}1$\\active previous packet};
   \node[newcache,anchor=west,text width=2.9cm] (cnew) at (4.60,1.55)
-    {packet $k$: newly available\\$A_{T,k,1:H}^{\mathrm{null}},Z_k^{\mathrm{intent}},S_k$};
+    {packet $k$: newly available\\$A_k^{\mathrm{ref}},Z_k^{\mathrm{intent}},S_k$};
   \draw[-{Latex[length=1.6mm]},draw=cCache,line width=0.8pt]
     (qk.south east) -- (4.60,1.90);
   \node[note,anchor=west] at (7.62,1.55)

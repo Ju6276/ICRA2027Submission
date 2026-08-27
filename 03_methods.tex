@@ -1,7 +1,7 @@
 \begin{figure*}[!t]
     \centering
     \includegraphics[width=0.98\textwidth]{figures/fig02_network_structure.pdf}
-    \caption{Overview of ForceDelta-VLA. \emph{Top:} three-stage training learns a temporal force-conditioned teacher, a null-force operating mode, and separate force and staleness corrections. \emph{Bottom:} the residual policy combines cached task context and a null-mode reference with recent force history.}
+    \caption{Overview of ForceDelta-VLA. \emph{Top:} three-stage training learns a temporal force-conditioned teacher, a missing-force operating mode, and separate force and staleness corrections. \emph{Bottom:} the residual policy combines cached task context and a missing-force reference with recent force history.}
     \label{fig:network_structure}
 \end{figure*}
 
@@ -29,10 +29,10 @@ Here $\mathcal P(A)=[p;r]$ contains translation $p\in\mathbb R^3$ and a continuo
 \subsection{Method Overview}
 \label{sec:method_overview}
 
-Training proceeds in three stages (Fig.~\ref{fig:network_structure}). First, we train a temporal force-conditioned VLA teacher. Second, we freeze the teacher and learn a null-force mode that supplies the reference action. Third, we freeze both modes, construct force and staleness targets, and train the residual policy.
+Training proceeds in three stages (Fig.~\ref{fig:network_structure}). First, we train a temporal force-conditioned VLA teacher. Second, we freeze the teacher and learn a missing-force mode that supplies the reference action. Third, we freeze both modes, construct cached-context force and staleness targets, and train the residual policy.
 
-\subsection{Force-Conditioned Teacher and Null Reference}
-\label{sec:teacher_and_null}
+\subsection{Force-Conditioned Teacher and Missing-Force Reference}
+\label{sec:teacher_and_missing}
 
 \subsubsection{Temporal force-conditioned teacher}
 
@@ -43,27 +43,27 @@ We build $T_\theta$ on ForceVLA~\cite{yu2025forcevlaenhancingvlamodels} and repl
 \end{equation}
 The teacher is trained on $\mathcal D$ to predict
 \begin{equation}
-    A_{T,t,1:H}^{\mathrm{full}}
+    A_{T,t,1:H}^{\mathrm{cond}}
     =T_\theta(V_t,L,S_t,z_t^F;\epsilon),
-    \label{eq:full_teacher}
+    \label{eq:conditioned_teacher}
 \end{equation}
 where $\epsilon$ is the initial flow noise. We freeze $\theta$ after training.
 
-\subsubsection{Null-force reference mode}
+\subsubsection{Missing-force reference mode}
 
-Zero force is a valid physical measurement and therefore does not represent the absence of a force history. We introduce a learned null token $z_{\varnothing F}$ and a rank-$\rho$ adapter $\phi=\{z_{\varnothing F},W_{\mathrm{in}},W_{\mathrm{out}}\}$. The adapter modifies the pose channels of the action expert,
+We distinguish an unavailable wrench history from a physically measured zero wrench. The learned missing-force mode represents the former and comprises a missing-force token $z_{\varnothing F}$ and a rank-$\rho$ adapter $\phi=\{z_{\varnothing F},W_{\mathrm{in}},W_{\mathrm{out}}\}$. The adapter modifies the pose channels of the action expert,
 \begin{equation}
     v^p\leftarrow v^p+W_{\mathrm{out}}\,
     \sigma(W_{\mathrm{in}}h),
-    \label{eq:nominal_adapter}
+    \label{eq:missing_force_adapter}
 \end{equation}
-where $h$ is an action-expert hidden state, $v^p$ its pose-channel flow output, and $\sigma$ a pointwise nonlinearity. The adapter is active only in the null mode. With $\theta$ fixed, optimizing $\phi$ under the teacher's original flow-matching objective defines a force-input-agnostic operating point.
+where $h$ is an action-expert hidden state, $v^p$ its pose-channel flow output, and $\sigma$ a pointwise nonlinearity. The adapter is active only in the missing-force mode. With $\theta$ fixed, optimizing $\phi$ under the teacher's original flow-matching objective defines the missing-force operating point.
 The resulting reference prediction is
 \begin{equation}
-    A_{T,t,1:H}^{\mathrm{null}}
-    =T_{\theta,\phi}^{\mathrm{null}}
+    A_{T,t,1:H}^{\mathrm{miss}}
+    =T_{\theta,\phi}^{\mathrm{miss}}
       (V_t,L,S_t,z_{\varnothing F};\epsilon).
-    \label{eq:teacher_null}
+    \label{eq:teacher_missing}
 \end{equation}
 
 \subsection{Reference-State-Consistent Dual-Residual Distillation}
@@ -72,16 +72,26 @@ The resulting reference prediction is
 \subsubsection{Correction targets}
 \label{sec:teacher_differencing}
 
-For the same $(V_t,L,S_t)$, the full-force and null-force queries reuse the visual--language prefix and the initial noise $\epsilon$. For $j=1,\ldots,K\leq H$, the teacher-defined force target is
+For a schedule-replay sample $(t,k)$, let $E_k$ be the visual--language prefix produced when reference query $k$ is issued from $(V_k,L,S_k)$ with flow noise $\epsilon_k$. The query publishes the timestamped missing-force chunk $A_k^{\mathrm{ref}}(\cdot)$, for which $A_k^{\mathrm{ref}}=A_{T,k}^{\mathrm{miss}}$. To match the temporal provenance of the information available to the deployed residual pathway, target generation reuses $E_k$ while updating the state and force history to their values at $t$:
+\begin{align}
+    A_{T,t|k,1:K}^{\mathrm{cond}}
+    &=T_\theta(E_k,S_t,z_t^F;\epsilon_k)_{1:K},
+    \label{eq:cached_conditioned_teacher}\\
+    A_{T,t|k,1:K}^{\mathrm{miss}}
+    &=T_{\theta,\phi}^{\mathrm{miss}}
+      (E_k,S_t,z_{\varnothing F};\epsilon_k)_{1:K}.
+    \label{eq:cached_missing_teacher}
+\end{align}
+Here $T(E_k,\cdot)$ denotes reuse of the cached visual--language prefix without encoding a current image. The reference, force-conditioned, and missing-force queries share $E_k$ and $\epsilon_k$, so the targets contain no dependence on an unavailable current image or an independent flow sample. For $j=1,\ldots,K\leq H$, the teacher-defined force-conditioned deviation target is
 \begin{equation}
-    \Delta A_{T,t,j}^{\mathrm{force}}
-    =\mathcal P\!\left(A_{T,t,j}^{\mathrm{full}}\right)
-     -\mathcal P\!\left(A_{T,t,j}^{\mathrm{null}}\right),
+    \Delta A_{T,t|k,j}^{\mathrm{force}}
+    =\mathcal P\!\left(A_{T,t|k,j}^{\mathrm{cond}}\right)
+     -\mathcal P\!\left(A_{T,t|k,j}^{\mathrm{miss}}\right),
     \label{eq:force_target}
 \end{equation}
-which supervises the force-residual head.
+which supervises the force-responsive residual head.
 
-For a schedule-replay sample $(t,k)$, the residual query predicts $K$ steps at $t_j=t+(j-1)/f_A$, where $f_A$ is the action-waypoint rate. Cached query $k$, issued from state $S_k$, provides the time-aligned null-mode reference $A_k^{\mathrm{ref}}(\cdot)$. Let $\widetilde S^{p}$ denote the normalized nine-dimensional pose coordinates, and let $\sigma_S^{p}$ and $\sigma_A^{p}$ denote the corresponding training-set standard deviations. The cached-state gap is converted to normalized action coordinates as
+The residual query predicts $K$ action samples at $t_j=t+(j-1)/f_A$, where $f_A$ is the action-sample rate within a chunk. Let $\widetilde S^{p}$ denote the normalized nine-dimensional pose coordinates, and let $\sigma_S^{p}$ and $\sigma_A^{p}$ denote the corresponding training-set standard deviations. The cached-state gap is converted to normalized action coordinates as
 \begin{equation}
     \Gamma(S_t,S_k)
     =\frac{\sigma_S^{p}+\varepsilon}{\sigma_A^{p}+\varepsilon}
@@ -92,7 +102,7 @@ For a schedule-replay sample $(t,k)$, the residual query predicts $K$ steps at $
 The staleness target is
 \begin{equation}
     \Delta A_{T,k\rightarrow t,j}^{\mathrm{stale}}
-    =\mathcal P\!\left(A_{T,t,j}^{\mathrm{null}}\right)
+    =\mathcal P\!\left(A_{T,t|k,j}^{\mathrm{miss}}\right)
       -\mathcal P\!\left(A_k^{\mathrm{ref}}(t_j)\right)
       +\Gamma(S_t,S_k).
     \label{eq:staleness_target}
@@ -101,10 +111,10 @@ Let $\mathcal R(S,a)$ convert a relative action $a$ based at state $S$ into an a
 \begin{equation}
 \begin{aligned}
     &\mathcal R\!\left(S_k,\mathcal P(A_k^{\mathrm{ref}}(t_j))
-      +\Delta A_{T,t,j}^{\mathrm{force}}
+      +\Delta A_{T,t|k,j}^{\mathrm{force}}
       +\Delta A_{T,k\rightarrow t,j}^{\mathrm{stale}}\right)\\[-2pt]
     &\qquad\approx\mathcal R\!\left(S_t,
-      \mathcal P(A_{T,t,j}^{\mathrm{full}})\right).
+      \mathcal P(A_{T,t|k,j}^{\mathrm{cond}})\right).
 \end{aligned}
     \label{eq:absolute_command_equivalence}
 \end{equation}
@@ -112,7 +122,7 @@ Let $\mathcal R(S,a)$ convert a relative action $a$ based at state $S$ into an a
 \subsubsection{Residual policy}
 \label{sec:residual_policy}
 
-Each reference packet contains $M$ intent tokens, $Z_k^{\mathrm{intent}}=\operatorname{Pool}_M(E_k,m_k)$, pooled from its visual--language prefix $E_k$ and mask $m_k$. Timestamp-based interpolation provides the reference sample $A_k^{\mathrm{ref}}(t)$ for a residual query at $t$. A causal encoder maps $\mathcal F_t$ to $u_t^F$, and the known rebasing term $\Gamma(S_t,S_k)$ is supplied directly. We also encode cache age and interpolation phase,
+Each reference packet contains $M$ intent tokens, $Z_k^{\mathrm{intent}}=\operatorname{Pool}_M(E_k,m_k)$, pooled from its visual--language prefix $E_k$ and mask $m_k$. The fast residual assumes that this task-level visual context remains locally valid within a reference interval. Timestamp-based interpolation provides the reference sample $A_k^{\mathrm{ref}}(t)$ for a residual query at $t$. A causal encoder maps $\mathcal F_t$ to $u_t^F$, and the known rebasing term $\Gamma(S_t,S_k)$ is supplied directly. We also encode cache age and interpolation phase,
 \begin{equation}
     \xi_{t,k}=
     \left[\min\!\left(\frac{t-t_k}{c},1\right);\alpha_{t,k}\right],
@@ -137,7 +147,7 @@ An attention block $\Phi$ and learned query $q_{\mathrm{res}}$ predict two $K$-s
       \Phi([\mathcal C_t^{\mathrm{maskF}};q_{\mathrm{res}}])[q_{\mathrm{res}}].
     \label{eq:staleness_output}
 \end{align}
-The mask prevents direct force dependence in the staleness output. The two passes share $\Phi$ and use separate output projections.
+The mask prevents direct force dependence in the staleness output. Under the locally valid cached visual context, the staleness head targets robot-state and reference-time mismatch. The two passes share $\Phi$ and use separate output projections.
 
 \subsubsection{Staleness-aware schedule replay}
 \label{sec:async_training}
@@ -152,7 +162,7 @@ With normalized temporal weights $w_j\propto\beta^{j-1}$, $0<\beta\leq1$, and no
 \begin{align}
     \mathcal L_{\mathrm{distill}}=\sum_{j=1}^{K}w_j\big[&
       \ell_{\mathrm{pose}}(\Delta\hat A^{\mathrm{force}}_{t,j},
-        \Delta A^{\mathrm{force}}_{T,t,j})
+        \Delta A^{\mathrm{force}}_{T,t|k,j})
     \nonumber\\[-2pt]
       &+\lambda_{\mathrm{stale}}
         \ell_{\mathrm{pose}}(\Delta\hat A^{\mathrm{stale}}_{t,j},
@@ -171,6 +181,6 @@ The coefficient $\lambda_{\mathrm{stale}}$ balances force-conditioning and stale
     \label{fig:async_deployment}
 \end{figure}
 
-The reference and residual workers execute independently (Fig.~\ref{fig:async_deployment}). A completed reference query publishes a timestamped null-mode action chunk, cached intent, and query state. Each residual query reads the active reference packet together with the current state and causal wrench history. Its timestamped $K$-step correction chunk remains bound to that reference packet, so a newly published reference is used only by subsequent residual queries.
+The reference and residual workers execute independently (Fig.~\ref{fig:async_deployment}). A completed reference query publishes a timestamped missing-force action chunk, cached intent, and query state. Each residual query reads the active reference packet together with the current state and causal wrench history. Its timestamped $K$-step correction chunk remains bound to that reference packet, so a newly published reference is used only by subsequent residual queries.
 
 Expired correction steps are skipped, and the remaining steps execute sequentially without interpolation. The reference pose is interpolated by timestamp. Force and staleness corrections are bounded separately, composed in normalized delta-action coordinates, and converted to an absolute command using the reference query state.

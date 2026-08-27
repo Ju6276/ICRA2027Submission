@@ -53,22 +53,22 @@
   \node[tag,fill=cRed!10,draw=cRed!55,text=cRed,text width=39mm] at (2.325,0.57)
     {NO EXPLICIT CORRECTION\\SUPERVISION};
 
-  % Panel 2: paired modes of one teacher.
+  % Panel 2: paired cached-context queries of one teacher.
   \node[title,text=cBlue] at (8.235,4.92)
-    {MATCHED FULL/NULL TEACHER QUERIES};
+    {MATCHED CACHED-CONTEXT QUERIES};
   \node[tag,fill=cBlue!9,text=cBlue] at (8.235,4.48)
-    {$\theta$ frozen; null-mode parameters $\phi$ learned};
+    {$\theta$ frozen; missing-force parameters $\phi$ learned};
 
   \node[box,draw=cBlue,fill=cBlue!7,text width=17mm] (fullq) at (5.73,3.45)
-    {Full-force query\\$T_\theta(z_t^F;\epsilon)$};
+    {Force-conditioned\\teacher query};
   \node[box,draw=cBlue,fill=white,text width=14mm] (fullout) at (7.78,3.45)
-    {$A_{T,t,1:H}^{\mathrm{full}}$};
+    {$A_{T,t|k,1:H}^{\mathrm{cond}}$};
   \draw[bluearrow] (fullq.east) -- (fullout.west);
 
   \node[box,draw=cGreen,fill=cGreen!7,text width=17mm] (nullq) at (5.73,1.95)
-    {Learned null query\\$T_{\theta,\phi}^{\mathrm{null}}(z_{\varnothing F};\epsilon)$};
+    {Missing-force\\teacher query};
   \node[box,draw=cGreen,fill=white,text width=14mm] (nullout) at (7.78,1.95)
-    {$A_{T,t,1:H}^{\mathrm{null}}$};
+    {$A_{T,t|k,1:H}^{\mathrm{miss}}$};
   \draw[greenarrow] (nullq.east) -- (nullout.west);
 
   \node[circle,draw=cPurple,fill=white,line width=0.75pt,minimum size=6.5mm,
@@ -77,13 +77,13 @@
   \draw[greenarrow] (nullout.east) -| (minus.south);
 
   \node[box,draw=cPurple,fill=cPurple!6,text width=19mm] (target) at (10.45,2.70)
-    {Teacher-derived\\force correction\\$\Delta A_{T,t,1:K}^{\mathrm{force}}$};
+    {Teacher-derived\\force correction\\$\Delta A_{T,t|k,1:K}^{\mathrm{force}}$};
   \draw[arrow,draw=cPurple] (minus.east) -- (target.west);
   \node[note,text width=56mm] at (8.235,0.93)
-    {Same $(V_t,L,S_t)$ and flow noise $\epsilon$\\[-1pt]
-     $\Delta A_{T,t,1:K}^{\mathrm{force}}=
-     \mathcal P(A_{T,t,1:K}^{\mathrm{full}})-
-     \mathcal P(A_{T,t,1:K}^{\mathrm{null}})$};
+    {Same cached prefix $E_k$, current state $S_t$, and noise $\epsilon_k$\\[-1pt]
+     $\Delta A_{T,t|k,1:K}^{\mathrm{force}}=
+     \mathcal P(A_{T,t|k,1:K}^{\mathrm{cond}})-
+     \mathcal P(A_{T,t|k,1:K}^{\mathrm{miss}})$};
   \node[tag,fill=cPurple!9,text=cPurple] at (8.235,0.36)
     {EXPLICIT POSE-CORRECTION TARGET};
 
@@ -92,7 +92,7 @@
     {DISTILL THE CORRECTION};
 
   \node[box,draw=cPurple,fill=cPurple!6,text width=23mm] (supervision) at (13.35,3.50)
-    {Teacher-derived target\\$\Delta A_{T,t,1:K}^{\mathrm{force}}$};
+    {Teacher-derived target\\$\Delta A_{T,t|k,1:K}^{\mathrm{force}}$};
   \node[tag,fill=cPurple!9,text=cPurple] at (13.35,2.78)
     {EXPLICIT SUPERVISION};
 
@@ -101,7 +101,7 @@
   \draw[greenarrow] (supervision.east) -- node[above,note] {distill} (residual.west);
 
   \node[tinybox,draw=cBlue,fill=cBlue!6,text width=22mm] (ref) at (13.35,1.55)
-    {Cached null-mode\\reference $A_k^{\mathrm{ref}}$};
+    {Cached missing-force\\reference $A_k^{\mathrm{ref}}$};
   \node[circle,draw=cInk,fill=white,line width=0.7pt,minimum size=6.5mm,
         font=\sffamily\small\bfseries] (sum) at (15.15,1.55) {$+$};
   \node[tinybox,draw=cOrange,fill=cOrange!6,text width=22mm] (factorized) at (16.75,1.55)
