@@ -104,8 +104,8 @@
   \draw[flow,draw=cFast] (tcnD.east) -- (expert.west);
   \draw[flow,draw=cFast] (expert.east) -- (delta.west);
   \draw[flow,draw=cSlow] (cache.east) -| ([xshift=-7mm,yshift=4.5mm]expert.west) -- ([yshift=4.5mm]expert.west);
-  \node[tinylabel,text width=40mm] at (7.6,-1.55)
-    {$S_t$, interpolated $A_k^{\mathrm{ref}}(t)$,\\cached intent tokens};
+  \node[tinylabel,text width=43mm] at (7.6,-1.55)
+    {$S_t$, interpolated $A_k^{\mathrm{ref}}(t)$, $\Gamma(S_t,S_k)$,\\cached intent tokens};
   \draw[dashflow] (7.6,-1.15) -| ([xshift=-7mm,yshift=-4.5mm]expert.west) -- ([yshift=-4.5mm]expert.west);
   \node[rate,below=1.2mm of tcnD] {timestamped 100 Hz force};
 

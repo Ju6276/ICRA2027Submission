@@ -4,6 +4,7 @@
 \usepackage{microtype}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
+\usepackage{array,tabularx}
 
 % Values marked with \assumed must be verified against the final training logs.
 \newcommand{\assumed}[1]{\textcolor{red}{#1}}
@@ -16,11 +17,23 @@
 
 \section{Training and Architecture Details}
 
-The temporal force-conditioned teacher is fully fine-tuned on eight NVIDIA A100 GPUs. All real-robot inference and runtime measurements use a single 48~GB NVIDIA RTX 4090D GPU. \assumed{The teacher is trained for $50{,}000$ steps with AdamW at a peak learning rate of $2\times10^{-5}$. It predicts $H{=}50$ actions at $30$~Hz from the latest $100$~ms of the $100$~Hz wrench stream, and flow-matching inference uses $N_{\mathrm{flow}}{=}10$ steps.}
+\assumed{The teacher is trained for $50{,}000$ steps with AdamW at a peak learning rate of $2\times10^{-5}$. It predicts $H{=}50$ actions at $30$~Hz from the latest $100$~ms of the $100$~Hz wrench stream, and flow-matching inference uses $N_{\mathrm{flow}}{=}10$ steps.}
 
 After freezing the teacher, \assumed{we train the rank-$32$ null-mode adapter for $10{,}000$ steps at a learning rate of $10^{-4}$. The visual--language prefix is pooled into $M{=}16$ intent tokens. The residual policy comprises a causal force encoder and one pre-norm attention block with separate zero-initialized force and staleness output projections. It predicts $K{=}5$ corrections and is trained for $30{,}000$ steps at a learning rate of $3\times10^{-4}$ under replayed asynchronous schedules. The final implementation record will specify the intent-token pooling rule and the embedding used to mask the force token for the staleness head.}
 
-The action representation and rotational residual composition are defined in Sec.~III-A of the main paper. At deployment, force-conditioned and staleness corrections are bounded independently in the normalized pose-action space before composition with the reference action. \assumed{Let $\mu_A$ and $D_A=\operatorname{diag}(\sigma_A)$ be the training-set action statistics. Absolute action coordinates use $\mathcal N(a)=D_A^{-1}(a-\mu_A)$, whereas action differences and the rebasing term use the scale-only map $\mathcal N_\Delta(\delta a)=D_A^{-1}\delta a$. The absolute-command map $\mathcal R$ de-normalizes the composed action before applying it relative to the reference query state. The final implementation record will verify these conventions and specify the per-head correction bounds.}
+The action representation and rotational residual composition are defined in Sec.~III-A of the main paper. Let $\widetilde S^p$ be the first nine pose coordinates of the normalized robot state, obtained after converting orientation to the continuous 6D representation, and let $\sigma_S^p$ and $\sigma_A^p$ be the corresponding training-set state and action standard deviations. The implementation computes
+\begin{equation}
+    \Gamma(S_t,S_k)=
+    \frac{\sigma_S^p+\varepsilon}{\sigma_A^p+\varepsilon}
+    \odot(\widetilde S_t^p-\widetilde S_k^p),
+    \qquad \varepsilon=10^{-6}.
+    \label{eq:supp_gamma}
+\end{equation}
+Thus, the rotational block is a scale-corrected componentwise difference in continuous 6D rotation coordinates, rather than an exact relative rotation on $\mathrm{SO}(3)$. The composed normalized action is de-normalized, applied relative to the reference-query state $S_k$, and projected to a valid rotation by Gram--Schmidt orthogonalization.
+
+The residual policy observes only the reference sample aligned with its query time. The remaining $K-1$ aligned reference samples are used for per-step target construction and command composition, but are not provided as student inputs.
+
+At deployment, force-conditioned and staleness corrections are clipped separately and element-wise before composition. The implementation accepts either nine-dimensional nonnegative bounds $b_F,b_S\in\mathbb R_{\geq0}^{9}$ or scalar values broadcast over the pose coordinates; bimanual clipping is applied independently per arm. \assumed{The final robot configuration must specify the values used for $b_F$ and $b_S$.}
 
 \assumed{Residual-policy training examples are anchored at the $30$~Hz state/action timestamps while retaining every $100$~Hz wrench sample in $\mathcal F_t$. Residual packets may be queried more frequently at deployment; the realized publication rate is measured directly rather than inferred from the waypoint rate.}
 
@@ -92,13 +105,41 @@ Any prefix that expires during inference is therefore skipped, while the remaini
 \end{aligned}
     \label{eq:supp_active_residual}
 \end{equation}
-The two corrections are bounded independently and composed in normalized delta-action coordinates. The composed command remains referenced to $S_{k_{q^*}}$ and is converted to an absolute robot command using the mapping $\mathcal R$ defined in the main paper. A packet that completes after $t_q^F+K/f_A$ is rejected. If no valid residual packet remains, the executor invokes the platform's safe hold or abort policy. \assumed{The final implementation record will specify gripper sampling and behavior beyond the last valid reference timestamp.}
+The two corrections are clipped independently and element-wise in normalized delta-action coordinates before composition. The composed command remains referenced to $S_{k_{q^*}}$ and is converted to an absolute robot command as described above. A packet that completes after $t_q^F+K/f_A$ is rejected. If no valid residual packet remains, the executor invokes the platform's safe hold or abort policy. \assumed{The final implementation record will specify gripper sampling and behavior beyond the last valid reference timestamp.}
 
 \section{Additional Evaluation Protocols}
 
+\subsection{Task Success Criteria}
+
+The task-specific success criteria are summarized in Table~\ref{tab:supp_task_criteria}.
+
+\begin{table*}[t]
+    \centering
+    \small
+    \setlength{\tabcolsep}{5pt}
+    \caption{Task success criteria. Red entries are provisional thresholds.}
+    \label{tab:supp_task_criteria}
+    \begin{tabularx}{0.94\textwidth}{ll>{\raggedright\arraybackslash}X}
+        \toprule
+        \textbf{Platform} & \textbf{Task} & \textbf{Success criterion} \\
+        \midrule
+        Single-arm & Object Flipping & \assumed{Object rotated by at least $150^{\circ}$ and left stable} \\
+        Single-arm & USB Insertion & \assumed{Connector seated to within $2$~mm of its terminal depth} \\
+        Single-arm & Cabinet Opening & \assumed{Door opened beyond $60^{\circ}$} \\
+        Single-arm & Button Pressing & \assumed{Button fully actuated} \\
+        Single-arm & Whiteboard Wiping & \assumed{At least $90\%$ of the marked region removed} \\
+        \midrule
+        Bimanual & Plug Removal & \assumed{Plug fully separated without dropping either component} \\
+        Bimanual & Plug Insertion & \assumed{Plug fully seated while the second arm stabilizes the socket} \\
+        Bimanual & Drawer Opening & \assumed{Drawer translated by at least $15$~cm} \\
+        Bimanual & Whiteboard Wiping & \assumed{At least $90\%$ of the marked region removed while the left arm stabilizes the board and the right arm wipes} \\
+        \bottomrule
+    \end{tabularx}
+\end{table*}
+
 \subsection{Metric Aggregation}
 
-\assumed{Peak force is computed from every trial. For a bimanual trial, it is the maximum force norm over time and over both arms. Completion time is measured only on successful trials, from the first policy command to satisfaction of the task-specific success criterion. Platform-level values first aggregate trials within each task and then macro-average the four tasks. These conventions must be verified against the final evaluation code.}
+\assumed{Peak force is computed from every trial. For a bimanual trial, it is the maximum force norm over time and over both arms. Completion time is measured only on successful trials, from the first policy command to satisfaction of the task-specific success criterion. Platform-level values first aggregate trials within each task and then macro-average the five single-arm or four bimanual tasks. These conventions must be verified against the final evaluation code.}
 
 \subsection{Seed-Wise Task Results}
 
@@ -106,7 +147,7 @@ The two corrections are bounded independently and composed in normalized delta-a
 
 \subsection{Residual-Bound Sensitivity}
 
-We evaluate the deployment correction bound at $0.5\times$, $1\times$, and $2\times$ its default value on USB insertion and drawer opening. The force-conditioned and staleness heads are clipped independently, with per-arm clipping in the bimanual setting.
+After fixing the robot-deployment bounds $(b_F,b_S)$, we jointly scale them by $0.5\times$, $1\times$, and $2\times$ on USB insertion and drawer opening. The two heads remain clipped separately and element-wise, with independent per-arm clipping in the bimanual setting (Table~\ref{tab:supp_bound_sensitivity}).
 
 \begin{table}[t]
     \centering
