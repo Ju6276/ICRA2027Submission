@@ -120,22 +120,22 @@ Inspection of failed ForceDelta-VLA rollouts reveals three recurring and potenti
 Two experiments assess independent residual execution. Runtime profiling quantifies the realized rate separation between the reference and residual paths; reference-delay evaluation tests whether this separation improves contact behavior as the cached reference becomes stale.
 
 \noindent\textbf{Realized rate separation.}
-Table~\ref{tab:runtime} reports the runtime characteristics of the policy pathways under the same button-pressing deployment setting. The Temporal Teacher and ForceDelta reference require $176.4$ and $189.7$~ms per batch-one inference, corresponding to nominal model throughputs of $5.7$ and $5.3$~Hz. Their realized worker publication rates are lower, at $4.2$ and $3.8$~Hz, because they include end-to-end deployment overhead beyond the isolated forward pass. In contrast, the ForceDelta residual requires $2.43$~ms per inference and publishes at $138.6$~Hz. This confirms the intended multi-rate execution: the reference supplies lower-frequency action guidance, while the lightweight residual supplies high-rate corrections without repeatedly executing the full VLA. The publication rate is not the robot command rate; the $100$-Hz command interface applies the latest valid residual packet at each control update.
+Table~\ref{tab:runtime} reports the runtime characteristics of the policy pathways under the same button-pressing deployment setting. Both platforms issue Cartesian commands at $100$~Hz, so one control cycle is $10$~ms. The ForceDelta residual completes in $2.43$~ms, about a quarter of a control cycle, and therefore fits inside the command loop. The Temporal Teacher and the ForceDelta reference require $176.4$ and $189.7$~ms, roughly $18$ and $19$ control cycles, so neither can be evaluated per command; the reference is instead computed asynchronously, cached, and reused across many residual updates. This is the rate separation the design relies on: re-planning the full action chunk is too expensive to repeat at the command rate, whereas force-conditioned correction is not.
 
 \begin{table}[t]
     \centering
     \scriptsize
     \setlength{\tabcolsep}{2pt}
-    \caption{Runtime profiling under the button-pressing deployment workload. Latency is the isolated batch-one forward-pass time; worker packet rate is the measured asynchronous publication throughput and is distinct from the $100$-Hz command-application rate.}
+    \caption{Runtime profiling under the button-pressing deployment workload. Latency is the isolated batch-one forward-pass time on the deployment workstation of Sec.~\ref{sec:exp_protocol}, reported as mean $\pm$ standard deviation over repeated forward passes.}
     \label{tab:runtime}
-    \begin{tabular}{lcc}
+    \begin{tabular}{lc}
         \toprule
-        \textbf{Method/path} & \textbf{Latency (ms)} $\downarrow$ & \textbf{Worker packet rate (Hz)} $\uparrow$ \\
+        \textbf{Method/path} & \textbf{Latency (ms)} $\downarrow$ \\
         \midrule
-        ImplicitRDP reactive & $12.86 \pm 0.23$ & $78.1$ \\
-        Temporal Teacher & $176.4 \pm 5.9$ & $4.2$ \\
-        ForceDelta reference & $189.7 \pm 6.8$ & $3.8$ \\
-        ForceDelta residual & $\mathbf{2.43} \pm 0.12$ & $\mathbf{138.6}$ \\
+        ImplicitRDP reactive & $12.86 \pm 0.23$ \\
+        Temporal Teacher & $176.4 \pm 5.9$ \\
+        ForceDelta reference & $189.7 \pm 6.8$ \\
+        ForceDelta residual & $\mathbf{2.43} \pm 0.12$ \\
         \bottomrule
     \end{tabular}
 \end{table}
