@@ -122,7 +122,13 @@ Let $\mathcal R(S,a)$ convert a relative action $a$ based at state $S$ into an a
 \subsubsection{Residual policy}
 \label{sec:residual_policy}
 
-Each reference packet contains $M$ intent tokens, $Z_k^{\mathrm{intent}}=\operatorname{Pool}_M(E_k,m_k)$, pooled from its visual--language prefix $E_k$ and mask $m_k$. The fast residual assumes that this task-level visual context remains locally valid within a reference interval. Timestamp-based interpolation provides the reference sample $A_k^{\mathrm{ref}}(t)$ for a residual query at $t$. A causal encoder maps $\mathcal F_t$ to $u_t^F$, and the known rebasing term $\Gamma(S_t,S_k)$ is supplied directly. We also encode cache age and interpolation phase,
+Each reference packet caches a compact representation of its visual--language context. Let $m_k$ denote the validity mask over tokens in $E_k$ from available image views and non-padding language positions; state, force, and action tokens are excluded from $E_k$. A learned query-based projector produces the cached intent tokens,
+\begin{equation}
+    Z_k^{\mathrm{intent}}
+    =P_{\mathrm{intent}}\!\left(\operatorname{Pool}(E_k,m_k)\right).
+    \label{eq:intent_projection}
+\end{equation}
+These tokens represent the task context available when reference query $k$ is issued. The fast residual assumes that this context remains locally valid within a reference interval. Timestamp-based interpolation provides the reference sample $A_k^{\mathrm{ref}}(t)$ for a residual query at $t$. A causal encoder maps $\mathcal F_t$ to $u_t^F$, and the known rebasing term $\Gamma(S_t,S_k)$ is supplied directly. We also encode cache age and interpolation phase,
 \begin{equation}
     \xi_{t,k}=
     \left[\min\!\left(\frac{t-t_k}{c},1\right);\alpha_{t,k}\right],

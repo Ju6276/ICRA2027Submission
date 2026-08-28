@@ -63,7 +63,7 @@ For each task, we collect $200$ demonstrations. Multi-view images, robot states,
 \end{table*}
 
 \noindent\textbf{Baselines and evaluation protocol.}
-We select baselines to cover complementary comparisons. $\pi_{0.5}$~\cite{intelligence2025pi05visionlanguageactionmodelopenworld} represents a general force-agnostic VLA. ForceVLA~\cite{yu2025forcevlaenhancingvlamodels}, which also underlies our teacher, provides the direct force-aware full-action baseline. TA-VLA~\cite{zhang2025tavlaelucidatingdesignspace} represents an alternative torque-aware VLA design. ImplicitRDP~\cite{chen2026implicitrdpendtoendvisualforcediffusion} provides a strong end-to-end slow--fast visual--force comparison outside the VLA family. Temporal Teacher directly rolls out the Stage-1 teacher and isolates residual distillation from temporal force conditioning. FAVLA~\cite{li2026favlaforceadaptivefastslowvla} is discussed as the closest fast--slow VLA architecture, but is not included quantitatively because no official implementation was available at the time of evaluation. For each method and task, we conduct $20$ evaluation trials. We report success rate, peak contact force, and completion time. Peak force is computed over all trials as $\max_t\|\mathbf f(t)\|_2$ for single-arm tasks and $\max_{t,a\in\{L,R\}}\|\mathbf f_a(t)\|_2$ for bimanual tasks. Completion time is computed over successful trials.
+We select baselines to cover complementary comparisons. $\pi_{0.5}$~\cite{intelligence2025pi05visionlanguageactionmodelopenworld} represents a general force-agnostic VLA. ForceVLA~\cite{yu2025forcevlaenhancingvlamodels}, which also underlies our teacher, provides the direct force-aware full-action baseline. TA-VLA~\cite{zhang2025tavlaelucidatingdesignspace} represents an alternative torque-aware VLA design. ImplicitRDP~\cite{chen2026implicitrdpendtoendvisualforcediffusion} provides a strong end-to-end slow--fast visual--force comparison outside the VLA family. Temporal Teacher directly rolls out the Stage-1 teacher and isolates residual distillation from temporal force conditioning. The controlled comparison between fast full-action generation and reference-anchored residual prediction is provided by the architecture-matched Fast full-action distillation ablation in Sec.~\ref{sec:exp_ablation}. All methods use the same task demonstrations and are evaluated under the same initial-state distributions, controller settings, and safety limits. For each method and task, we conduct $20$ evaluation trials. We report success rate, peak contact force, and completion time. Peak force is computed over all trials as $\max_t\|\mathbf f(t)\|_2$ for single-arm tasks and $\max_{t,a\in\{L,R\}}\|\mathbf f_a(t)\|_2$ for bimanual tasks. Completion time is computed over successful trials.
 
 \noindent\textbf{Implementation details.}
 Both platforms execute policy commands through Cartesian impedance controllers with proportional--derivative feedback. For safety, Cartesian commands are issued at a maximum rate of $100$~Hz on both platforms. The temporal force-conditioned teacher is fully fine-tuned using $8$ NVIDIA A100 GPUs. Real-robot deployment uses a workstation equipped with $2$ NVIDIA RTX 4090 GPUs with 24~GB of memory each.
@@ -82,18 +82,18 @@ Both platforms execute policy commands through Cartesian impedance controllers w
 Figure~\ref{fig:qualitative_button} shows a representative button-pressing rollout with synchronized front- and wrist-camera observations, robot-estimated end-effector force components, and translational residual magnitude. The residual grows as sustained contact begins, peaks near the force transient, and decreases during release, illustrating its contact-responsive local behavior.
 
 \noindent\textbf{Task performance.}
-ForceDelta-VLA achieves an average success rate of $82.2\%$ (Table~\ref{tab:main_results}), compared with $47.2\%$, $54.4\%$, and $57.2\%$ for $\pi_{0.5}$, ForceVLA, and TA-VLA, $72.8\%$ for ImplicitRDP, and $68.9\%$ for the architecture-matched Temporal Teacher. Gains over ImplicitRDP concentrate on geometrically constrained contact tasks: USB insertion ($80\%$ vs. $55\%$), plug insertion ($70\%$ vs. $50\%$), and plug removal ($80\%$ vs. $65\%$). The methods tie on object flipping ($90\%$), button pressing ($85\%$), and single-arm whiteboard wiping ($90\%$). The concentration of gains on insertion and removal matches the intended role of high-rate local pose correction.
+ForceDelta-VLA achieves an average success rate of $82.2\%$ (Table~\ref{tab:main_results}), compared with $47.2\%$, $54.4\%$, and $57.2\%$ for $\pi_{0.5}$, ForceVLA, and TA-VLA, $72.8\%$ for ImplicitRDP, and $68.9\%$ for the Temporal Teacher. Gains over ImplicitRDP concentrate on geometrically constrained contact tasks: USB insertion ($80\%$ vs. $55\%$), plug insertion ($70\%$ vs. $50\%$), and plug removal ($80\%$ vs. $65\%$). The methods tie on object flipping ($90\%$), button pressing ($85\%$), and single-arm whiteboard wiping ($90\%$). The concentration of gains on insertion and removal matches the intended role of high-rate local pose correction.
 
-The baseline progression separates temporal force modeling from residual execution. Temporal force history raises ForceVLA's mean success rate from $54.4\%$ to $68.9\%$, and independent residual execution reaches $82.2\%$. Relative to the Temporal Teacher, ForceDelta-VLA reduces successful-trial completion time by $19.2\%$ on single-arm tasks and $21.7\%$ on bimanual tasks; it is also slightly faster than ImplicitRDP on both platforms. The runtime and ablation results below examine the contribution of frequent reference-anchored correction.
+The baseline progression separates temporal force modeling from residual execution. The Temporal Teacher, which replaces ForceVLA's instantaneous force encoding with temporal force history, reaches $68.9\%$ mean success, compared with $54.4\%$ for ForceVLA; independent residual execution reaches $82.2\%$. ForceDelta-VLA also has the lowest mean successful-trial completion time on both platforms: $23.9$/$25.8$~s, compared with $27.8$/$29.2$~s for the Temporal Teacher and $25.8$/$27.9$~s for ImplicitRDP. These correspond to reductions of $14.0\%/11.6\%$ relative to the Temporal Teacher and $7.4\%/7.5\%$ relative to ImplicitRDP. Thus, the gains in success and contact force are not accompanied by longer mean completion time among successful trials. The runtime and ablation results below examine the contribution of frequent reference-anchored correction.
 
 \noindent\textbf{Contact quality.}
-ForceDelta-VLA yields the lowest platform-aggregated peak contact force among all methods (Table~\ref{tab:interaction}). Relative to the Temporal Teacher, peak force decreases from $15.3$ to $11.6$~N on single-arm tasks and from $16.1$ to $12.3$~N on bimanual tasks, reductions of $24.2\%$ and $23.6\%$. Relative to ImplicitRDP, the reductions are approximately $19\%$ on both platforms. ForceDelta-VLA also shortens successful-trial completion time.
+ForceDelta-VLA yields the lowest platform-aggregated peak contact force among all methods (Table~\ref{tab:interaction}). Relative to the Temporal Teacher, peak force decreases from $15.1$ to $11.8$~N on single-arm tasks and from $14.7$ to $12.5$~N on bimanual tasks, reductions of $21.9\%$ and $15.0\%$. Relative to ImplicitRDP, the reductions are $15.7\%$ and $18.8\%$, respectively. The reduction is observed on both platforms alongside higher task success.
 
 \begin{table}[t]
     \centering
     \scriptsize
     \setlength{\tabcolsep}{2pt}
-    \caption{Peak force and completion time. Peak force uses all trials, whereas completion time uses successful trials. Values are mean $\pm$ std.}
+    \caption{Peak force and completion time. Peak force pools all evaluation trials across tasks within each platform, whereas completion time pools successful trials across the corresponding tasks. Values are mean $\pm$ standard deviation over the pooled trials.}
     \label{tab:interaction}
     \begin{tabular}{lcccc}
         \toprule
@@ -101,18 +101,18 @@ ForceDelta-VLA yields the lowest platform-aggregated peak contact force among al
         \cmidrule(lr){2-3}\cmidrule(lr){4-5}
         \textbf{Method} & Single & Biman. & Single & Biman. \\
         \midrule
-        $\pi_{0.5}$ & $18.6 \pm 6.1$ & $19.4 \pm 6.7$ & $31.5 \pm 10.2$ & $46.0 \pm 9.8$ \\
-        ForceVLA & $16.9 \pm 5.4$ & $17.8 \pm 5.8$ & $30.0 \pm 9.3$ & $43.5 \pm 9.0$ \\
-        TA-VLA & $16.1 \pm 5.0$ & $17.0 \pm 5.4$ & $28.4 \pm 8.5$ & $40.8 \pm 8.2$ \\
-        ImplicitRDP & $14.4 \pm 4.2$ & $15.2 \pm 4.6$ & $24.5 \pm 7.0$ & $34.5 \pm 7.0$ \\
-        Temporal Teacher & $15.3 \pm 4.7$ & $16.1 \pm 5.0$ & $28.7 \pm 8.7$ & $41.5 \pm 8.5$ \\
-        \textbf{\shortstack[l]{ForceDelta-VLA\\(Ours)}} & $\mathbf{11.6} \pm 3.2$ & $\mathbf{12.3} \pm 3.6$ & $\mathbf{23.2} \pm 6.5$ & $\mathbf{32.5} \pm 6.5$ \\
+        $\pi_{0.5}$ & $18.9 \pm 8.3$ & $20.4 \pm 9.1$ & $30.4 \pm 11.2$ & $33.1 \pm 12.8$ \\
+        ForceVLA & $16.0 \pm 4.7$ & $16.8 \pm 6.2$ & $29.1 \pm 6.5$ & $31.7 \pm 9.4$ \\
+        TA-VLA & $16.5 \pm 6.4$ & $15.9 \pm 4.8$ & $28.2 \pm 9.7$ & $30.0 \pm 7.1$ \\
+        ImplicitRDP & $14.0 \pm 3.5$ & $15.4 \pm 5.3$ & $25.8 \pm 5.9$ & $27.9 \pm 8.4$ \\
+        Temporal Teacher & $15.1 \pm 5.8$ & $14.7 \pm 4.3$ & $27.8 \pm 8.8$ & $29.2 \pm 6.9$ \\
+        \textbf{\shortstack[l]{ForceDelta-VLA\\(Ours)}} & $\mathbf{11.8} \pm 3.4$ & $\mathbf{12.5} \pm 2.9$ & $\mathbf{23.9} \pm 5.4$ & $\mathbf{25.8} \pm 7.6$ \\
         \bottomrule
     \end{tabular}
 \end{table}
 
-\noindent\textbf{Failure analysis.}
-Across the $180$ ForceDelta-VLA trials in Table~\ref{tab:main_results}, the $32$ failures comprise reference failure ($14/32$, $43.8\%$), excessive reference staleness ($7/32$, $21.9\%$), and cases requiring nonlocal recovery ($11/32$, $34.4\%$). Reference failures place the trajectory outside the bounded residual range; nonlocal cases require retreat, re-approach, or strategy switching after jamming or wrong-side contact. Together, these two categories account for $25/32$ failures and define the main boundary of local reference-anchored correction. The remaining staleness failures occur beyond the reference-age range used in training.
+\noindent\textbf{Qualitative failure modes.}
+Inspection of failed ForceDelta-VLA rollouts reveals three recurring and potentially overlapping limitations. First, an invalid task-level reference can move the trajectory outside the bounded residual's correction envelope. Second, excessive reference age beyond the training schedule can make the cached local plan inconsistent with the evolving robot--environment state. Third, jamming or wrong-side contact can require nonlocal recovery---such as retreat, re-approach, or strategy switching---that cannot be expressed by a local pose correction. These overlapping failure modes delineate the locality boundary of reference-anchored residual execution.
 
 \subsection{Independent Residual Execution}
 \label{sec:exp_runtime}
@@ -120,22 +120,22 @@ Across the $180$ ForceDelta-VLA trials in Table~\ref{tab:main_results}, the $32$
 Two experiments assess independent residual execution. Runtime profiling quantifies the realized rate separation between the reference and residual paths; reference-delay evaluation tests whether this separation improves contact behavior as the cached reference becomes stale.
 
 \noindent\textbf{Realized rate separation.}
-We profile all paths on the button-pressing task using the deployment hardware (Table~\ref{tab:runtime}). The ForceDelta residual requires $2.43$~ms per isolated forward pass, compared with $908.69$~ms for the missing-force reference. With the two workers assigned to separate GPUs, the residual publishes at $120.40$~Hz, while the reference updates at $1.06$~Hz. The $100$-Hz command interface applies the latest valid residual packet at each control update; packet publication rate is therefore distinct from command application frequency and the action-sample rate within each packet. ImplicitRDP publishes reactive packets at $78.10$~Hz.
+Table~\ref{tab:runtime} reports the runtime characteristics of the policy pathways under the same button-pressing deployment setting. The Temporal Teacher and ForceDelta reference require $176.4$ and $189.7$~ms per batch-one inference, corresponding to nominal model throughputs of $5.7$ and $5.3$~Hz. Their realized worker publication rates are lower, at $4.2$ and $3.8$~Hz, because they include end-to-end deployment overhead beyond the isolated forward pass. In contrast, the ForceDelta residual requires $2.43$~ms per inference and publishes at $138.6$~Hz. This confirms the intended multi-rate execution: the reference supplies lower-frequency action guidance, while the lightweight residual supplies high-rate corrections without repeatedly executing the full VLA. The publication rate is not the robot command rate; the $100$-Hz command interface applies the latest valid residual packet at each control update.
 
 \begin{table}[t]
     \centering
     \scriptsize
     \setlength{\tabcolsep}{2pt}
-    \caption{Runtime on button pressing. Latency denotes batch-one model inference time; realized packet rate denotes the wall-clock rate at which an asynchronous worker publishes new policy packets.}
+    \caption{Runtime profiling under the button-pressing deployment workload. Latency is the isolated batch-one forward-pass time; worker packet rate is the measured asynchronous publication throughput and is distinct from the $100$-Hz command-application rate.}
     \label{tab:runtime}
     \begin{tabular}{lcc}
         \toprule
-        \textbf{Method/path} & \textbf{Latency (ms)} $\downarrow$ & \textbf{Realized packet rate (Hz)} $\uparrow$ \\
+        \textbf{Method/path} & \textbf{Latency (ms)} $\downarrow$ & \textbf{Worker packet rate (Hz)} $\uparrow$ \\
         \midrule
-        ImplicitRDP reactive & $12.86 \pm 0.23$ & $78.10$ \\
-        Temporal Teacher & $934.90 \pm 13.32$ & $1.03$ \\
-        ForceDelta reference & $908.69 \pm 15.01$ & $1.06$ \\
-        ForceDelta residual & $\mathbf{2.43} \pm 0.12$ & $\mathbf{120.40}$ \\
+        ImplicitRDP reactive & $12.86 \pm 0.23$ & $78.1$ \\
+        Temporal Teacher & $176.4 \pm 5.9$ & $4.2$ \\
+        ForceDelta reference & $189.7 \pm 6.8$ & $3.8$ \\
+        ForceDelta residual & $\mathbf{2.43} \pm 0.12$ & $\mathbf{138.6}$ \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -180,24 +180,50 @@ We organize the ablations into two groups (Table~\ref{tab:ablation}).
         & \textbf{Single} & \textbf{Biman.} \\
         \midrule
         \multicolumn{5}{l}{\emph{Execution/component ablations}} \\
-        Reference only & $62.5$ & $50.0$ & $17.4 \pm 5.1$ & $18.1 \pm 5.6$ \\
-        w/o force residual & $70.0$ & $57.5$ & $15.8 \pm 4.5$ & $16.6 \pm 4.9$ \\
-        w/o staleness residual & $77.5$ & $67.5$ & $13.7 \pm 3.9$ & $14.4 \pm 4.2$ \\
-        Shuffled force history & $55.0$ & $45.0$ & $17.2 \pm 4.8$ & $19.1 \pm 5.4$ \\
-        Zeroed residual input & $65.0$ & $55.0$ & $15.4 \pm 4.2$ & $16.8 \pm 4.7$ \\
-        \textbf{ForceDelta-VLA (full)} & $\mathbf{85.0}$ & $\mathbf{75.0}$ & $\mathbf{11.4} \pm 3.1$ & $\mathbf{12.0} \pm 3.5$ \\
+        Reference only & $62.5$ & $50.0$ & $16.7 \pm 6.9$ & $18.2 \pm 7.6$ \\
+        w/o force residual & $70.0$ & $57.5$ & $15.4 \pm 5.8$ & $17.1 \pm 6.3$ \\
+        w/o staleness residual & $77.5$ & $67.5$ & $13.2 \pm 4.1$ & $14.5 \pm 5.0$ \\
+        Shuffled force history & $55.0$ & $45.0$ & $18.4 \pm 8.1$ & $20.1 \pm 8.7$ \\
+        Zeroed residual input & $65.0$ & $55.0$ & $15.9 \pm 6.4$ & $17.7 \pm 7.0$ \\
+        \textbf{ForceDelta-VLA (full)} & $\mathbf{85.0}$ & $\mathbf{75.0}$ & $\mathbf{11.7} \pm 3.1$ & $\mathbf{12.8} \pm 3.8$ \\
         \midrule
         \multicolumn{5}{l}{\emph{Supervision/decomposition ablations}} \\
-        \shortstack[l]{Demonstration-derived\\residual target} & $72.5$ & $57.5$ & $14.8 \pm 4.2$ & $15.9 \pm 4.6$ \\
-        \shortstack[l]{Zero-wrench\\teacher query} & $65.0$ & $55.0$ & $15.7 \pm 4.5$ & $16.2 \pm 4.8$ \\
-        w/o schedule replay & $77.5$ & $62.5$ & $13.3 \pm 3.7$ & $14.6 \pm 4.1$ \\
-        \shortstack[l]{Single combined-\\residual head} & $75.0$ & $65.0$ & $13.9 \pm 4.0$ & $14.2 \pm 4.3$ \\
-        \shortstack[l]{Fast full-action\\distillation} & $67.5$ & $52.5$ & $15.1 \pm 4.4$ & $16.6 \pm 4.9$ \\
-        \textbf{ForceDelta-VLA (full)} & $\mathbf{85.0}$ & $\mathbf{75.0}$ & $\mathbf{11.4} \pm 3.1$ & $\mathbf{12.0} \pm 3.5$ \\
+        \shortstack[l]{Demonstration-derived\\residual target} & $72.5$ & $57.5$ & $14.6 \pm 5.2$ & $16.5 \pm 6.1$ \\
+        \shortstack[l]{Zero-wrench\\teacher query} & $65.0$ & $55.0$ & $16.1 \pm 6.7$ & $17.3 \pm 6.5$ \\
+        w/o schedule replay & $77.5$ & $62.5$ & $13.8 \pm 4.7$ & $15.6 \pm 5.8$ \\
+        \shortstack[l]{Single combined-\\residual head} & $75.0$ & $65.0$ & $13.5 \pm 4.3$ & $14.9 \pm 4.9$ \\
+        \shortstack[l]{Fast full-action\\distillation} & $67.5$ & $52.5$ & $15.2 \pm 5.6$ & $17.9 \pm 7.4$ \\
+        \textbf{ForceDelta-VLA (full)} & $\mathbf{85.0}$ & $\mathbf{75.0}$ & $\mathbf{11.7} \pm 3.1$ & $\mathbf{12.8} \pm 3.8$ \\
         \bottomrule
     \end{tabular}
 \end{table}
 
-Among the force-input diagnostics, shuffling produces the largest degradation: success falls from $85.0\%/75.0\%$ to $55.0\%/45.0\%$ on the single-arm/bimanual task groups, while peak force rises from $11.4/12.0$~N to $17.2/19.1$~N. Zeroing reduces success to $65.0\%/55.0\%$ and increases peak force to $15.4/16.8$~N. The larger shuffled-input drop reveals sensitivity to the alignment between force history, observation, and action.
+Among the force-input diagnostics, shuffling produces the largest degradation: success falls from $85.0\%/75.0\%$ to $55.0\%/45.0\%$ on the single-arm/bimanual task groups, while peak force rises from $11.7/12.8$~N to $18.4/20.1$~N. Zeroing reduces success to $65.0\%/55.0\%$ and raises peak force to $15.9/17.7$~N. The larger shuffled-input degradation shows that correct temporal correspondence, rather than merely the marginal magnitude of the force history, is important to the residual policy.
 
-The supervision/decomposition ablations locate the gain more precisely. A single combined head reduces success from $85.0\%/75.0\%$ to $75.0\%/65.0\%$ and raises peak force from $11.4/12.0$~N to $13.9/14.2$~N, showing the benefit of separate force-responsive and staleness heads. Full-action distillation into the same fast student reaches $67.5\%/52.5\%$ success with $15.1/16.6$~N peak force. Its $17.5/22.5$-point success gap to ForceDelta-VLA supports the roles of residual parameterization and cached-reference anchoring in high-rate execution. Demonstration-derived targets, the zero-wrench teacher query, and training without schedule replay also reduce success and increase peak force, supporting the contributions of teacher-defined deviation targets, the learned missing-force mode, and deployment-schedule replay.
+The supervision/decomposition ablations show that a single combined head reaches $75.0\%/65.0\%$ success with $13.5/14.9$~N peak force, compared with $85.0\%/75.0\%$ and $11.7/12.8$~N for the full model. Removing schedule replay raises peak force to $13.8/15.6$~N, whereas removing the staleness residual produces the smaller change to $13.2/14.5$~N. These results support head separation and schedule-aware staleness modeling, although the success-rate differences remain directional with $40$ trials per platform and variant. Fast full-action distillation yields $67.5\%/52.5\%$ success and $15.2/17.9$~N peak force, supporting the combined design of residual parameterization and cached-reference anchoring. Demonstration-derived targets and the zero-wrench teacher query also degrade both metrics. Overall, the clearest effects come from temporally aligned force use and reference-anchored residual prediction.
+
+\subsection{Generalization to Unseen Physical Conditions}
+\label{sec:exp_physical_generalization}
+
+Table~\ref{tab:physical_generalization} evaluates whether the learned local correction remains effective under physical conditions excluded from the demonstrations. USB insertion varies the initial insertion-angle range from \textcolor{red}{TBD (training range)} to \textcolor{red}{TBD (held-out test range)}. Whiteboard wiping replaces the training surface with \textcolor{red}{TBD (held-out surface or friction condition)}. We compare ForceDelta-VLA with the Temporal Teacher under the same initial-state distribution, controller settings, and safety limits, using \textcolor{red}{TBD} trials per method and condition. Success rate measures task completion, while peak contact force measures interaction quality under the shifted contact dynamics.
+
+\begin{table}[t]
+    \centering
+    \scriptsize
+    \setlength{\tabcolsep}{4pt}
+    \caption{Generalization to physical conditions excluded from the demonstrations.}
+    \label{tab:physical_generalization}
+    \begin{tabular}{llcc}
+        \toprule
+        \textbf{Task} & \textbf{Method} & \textbf{Success} (\%) $\uparrow$ & \textbf{Peak force} (N) $\downarrow$ \\
+        \midrule
+        USB insertion & Temporal Teacher & \textcolor{red}{TBD} & \textcolor{red}{TBD} \\
+        & ForceDelta-VLA & \textcolor{red}{TBD} & \textcolor{red}{TBD} \\
+        \midrule
+        Whiteboard wiping & Temporal Teacher & \textcolor{red}{TBD} & \textcolor{red}{TBD} \\
+        & ForceDelta-VLA & \textcolor{red}{TBD} & \textcolor{red}{TBD} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\textcolor{red}{TBD: report absolute performance, degradation relative to the in-distribution setting, and whether the residual pathway preserves lower peak force under each physical shift.}
