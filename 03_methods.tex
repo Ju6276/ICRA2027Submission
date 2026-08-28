@@ -142,7 +142,7 @@ where $c$ is an age scale and $\alpha_{t,k}$ is the position of $t$ between adja
     &P_A(A_k^{\mathrm{ref}}(t));P_\xi(\xi_{t,k})].
     \label{eq:conditioning_set}
 \end{align}
-Here $P_Z,P_A,P_S$, and $P_\xi$ project their inputs to the shared token width. The block applies no positional encoding: each condition is identified by a learned type embedding, so $\Phi$ is invariant to the ordering of $\mathcal C_t$ and is unaffected by the number of intent tokens. The rebasing term $\Gamma(S_t,S_k)$ enters only the staleness supervision target~\eqref{eq:staleness_target} and is not provided as a network input: the residual policy observes $S_t$ but not $S_k$, so the staleness head must infer the base-state gap from the current state together with the cached reference and intent tokens. Let $\mathcal C_t^{\mathrm{maskF}}=\operatorname{Mask}_F(\mathcal C_t)$ denote the same set with its force token masked.
+Here $P_Z,P_A,P_S$, and $P_\xi$ project their inputs to the shared token width. The block applies no positional encoding: each condition is identified by a learned type embedding, so $\Phi$ is invariant to the ordering of $\mathcal C_t$. The rebasing term $\Gamma(S_t,S_k)$ enters only the staleness supervision target~\eqref{eq:staleness_target} and is not provided as a network input: the residual policy observes $S_t$ but not $S_k$, so the staleness head must infer the base-state gap from the current state together with the cached reference and intent tokens. Let $\mathcal C_t^{\mathrm{maskF}}=\operatorname{Mask}_F(\mathcal C_t)$ denote the same set with its force token masked.
 
 An attention block $\Phi$ and learned query $q_{\mathrm{res}}$ predict two $K$-step corrections,
 \begin{align}
