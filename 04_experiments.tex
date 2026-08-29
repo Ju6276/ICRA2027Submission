@@ -71,18 +71,18 @@ Both platforms execute policy commands through Cartesian impedance controllers w
 \subsection{Main Results}
 \label{sec:exp_main}
 
-\begin{figure}[t]
+\noindent\textbf{Qualitative results.}
+Figure~\ref{fig:qualitative_button} highlights how the learned translational correction evolves through contact. The correction remains small during free-space motion, grows after contact onset, reaches its largest magnitude near the peak-contact transient, and decreases as contact is released. Its alignment with the force trace illustrates that the fast pathway concentrates its correction within the contact phase.
+
+\begin{figure}[!h]
     \centering
     \includegraphics[width=\columnwidth]{figures/qualitative_button_total_fast_real.pdf}
-    \caption{Representative button-pressing rollout. Front- and wrist-camera observations at 4 interaction phases are aligned with robot-estimated end-effector force components and translational residual magnitude. Vertical lines indicate the selected frames.}
+    \caption{Representative button-pressing rollout. Front- and wrist-camera observations at four interaction phases are aligned with robot-estimated end-effector force components and translational correction magnitude; vertical lines mark the displayed frames.}
     \label{fig:qualitative_button}
 \end{figure}
 
-\noindent\textbf{Qualitative results.}
-The residual grows as sustained contact begins, peaks near the force transient, and decreases during release, illustrating its contact-responsive local behavior (Fig.~\ref{fig:qualitative_button}).
-
 \noindent\textbf{Task performance.}
-ForceDelta-VLA reaches $82.2\%$ mean success, $9.4$ percentage points above the strongest baseline, ImplicitRDP ($72.8\%$), and $13.3$ percentage points above the Temporal Teacher ($68.9\%$); the remaining force-agnostic and full-action force-aware baselines are below $60\%$ (Table~\ref{tab:main_results}). Three insertion and removal tasks account for $60$ of the aggregate $85$ percentage-point margin over ImplicitRDP ($70.6\%$): USB insertion ($80\%$ vs. $55\%$), plug insertion ($70\%$ vs. $50\%$), and plug removal ($80\%$ vs. $65\%$). ForceDelta-VLA and ImplicitRDP tie on object flipping ($90\%$), button pressing ($85\%$), and single-arm whiteboard wiping ($90\%$).
+Table~\ref{tab:main_results} shows that ForceDelta-VLA reaches $82.2\%$ mean success, exceeding the strongest baseline, ImplicitRDP at $72.8\%$, by $9.4$ percentage points and the Temporal Teacher at $68.9\%$ by $13.3$ points. The remaining force-agnostic and full-action force-aware baselines stay below $60\%$. Across the nine tasks, the per-task margins over ImplicitRDP sum to $85$ percentage points. USB insertion contributes $25$ points, plug insertion $20$ points, and plug removal $15$ points; together, these three tasks account for $60$ points, or $70.6\%$ of the aggregate margin. ForceDelta-VLA and ImplicitRDP tie at $90\%$ on object flipping, $85\%$ on button pressing, and $90\%$ on single-arm whiteboard wiping.
 
 The baseline progression separates temporal force modeling from the complete residual framework. Replacing ForceVLA's instantaneous force encoding with temporal force history improves the Temporal Teacher on all nine tasks, with the largest increase on button pressing ($50\%$ to $80\%$). The complete reference-anchored residual framework further improves all nine tasks relative to the Temporal Teacher, with the largest increases on USB insertion ($55\%$ to $80\%$) and plug insertion ($50\%$ to $70\%$). Its additional gains are therefore largest on the insertion tasks, while the component ablations below examine which parts of the framework contribute to them.
 
@@ -200,9 +200,9 @@ We organize the ablations into two groups (Table~\ref{tab:ablation}).
     \end{tabular}
 \end{table}
 
-Among the force-input diagnostics, shuffling produces the largest degradation: success falls from $85.0\%/75.0\%$ to $55.0\%/45.0\%$ on the single-arm/bimanual task groups, while peak force rises from $11.7/12.8$~N to $18.4/20.1$~N. Zeroing reduces success to $65.0\%/55.0\%$ and raises peak force to $15.9/17.7$~N. Shuffling preserves the marginal magnitude of the force history but breaks its pairing with the current interaction state. The degradation shows that the residual policy uses the correctly paired force input.
+Shuffling the force history produces the largest degradation among the execution variants, exceeding the effect of zeroing the residual force input. Because shuffling preserves the marginal force magnitude while breaking its correspondence with the current interaction state, this contrast shows that the residual policy depends on correctly paired force observations. Removing the force residual also causes a larger degradation than removing the learned staleness residual on both platforms, indicating that force correction is the dominant learned component in the evaluated tasks, while the staleness residual provides an additional improvement.
 
-The supervision/decomposition ablations show that a single combined head reaches $75.0\%/65.0\%$ success with $13.5/14.9$~N peak force, compared with $85.0\%/75.0\%$ and $11.7/12.8$~N for the full model. Removing schedule replay raises peak force to $13.8/15.6$~N. Retaining $\Gamma$ but disabling the learned staleness residual yields $77.5\%/67.5\%$ success and $13.2/14.5$~N peak force; disabling the force residual yields $70.0\%/57.5\%$ and $15.4/17.1$~N. Thus, the learned staleness residual has a smaller effect than the force residual. The separate force-conditioned and force-masked predictions outperform the single predictor trained on their summed target. Fast full-action distillation yields $67.5\%/52.5\%$ success and $15.2/17.9$~N peak force, supporting reference-anchored residual prediction over direct compact full-action generation. Demonstration-derived targets and the zero-wrench teacher query also degrade both metrics. Overall, the clearest effects come from correctly paired force input and reference-anchored residual prediction.
+The supervision ablations favor the proposed target construction and output decomposition. Predicting the force and staleness targets with separate heads outperforms predicting their sum with a single head, and schedule replay improves both success and peak force. Direct compact full-action distillation performs worse than reference-anchored residual prediction, while demonstration-derived targets and the zero-wrench teacher query also degrade both metrics. Together, these comparisons support paired teacher queries, decomposed residual prediction, and reference-anchored execution as complementary parts of the full model.
 
 \subsection{Generalization to Unseen Physical Conditions}
 \label{sec:exp_physical_generalization}
