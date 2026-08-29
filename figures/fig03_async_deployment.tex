@@ -32,11 +32,11 @@
   \node[note,anchor=south] at (2.15,2.45) {request $t_k$};
   \node[note,anchor=south] at (5.55,2.45) {request $t_{k+1}$};
 
-  % Publication boundary: the single event that switches the active packet.
+  % Publication boundary: the event that publishes the new reference update.
   \draw[dashed,draw=cInk!45,line width=0.65pt] (4.45,2.55) -- (4.45,0.34);
-  \node[note,fill=white,inner sep=1pt] at (4.45,1.46) {publish packet $k$ at $\bar t_k$};
+  \node[note,fill=white,inner sep=1pt] at (4.45,1.46) {publish reference $k$ at $\bar t_k$};
 
-  % Fast command lane: fill colour encodes which packet each step reads.
+  % Fast command lane: fill colour encodes the reference used by each step.
   \node[lane,text=cFast] at (1.65,0.88) {FAST COMMAND STEPS};
   \node[note,anchor=east,text=cFast] at (1.65,0.58) {obs.\ $\mathcal F_t,S_t$};
   \draw[axis,draw=cFast!65] (1.85,0.75) -- (8.25,0.75);
@@ -49,8 +49,8 @@
       \node[newstep] at (\x,0.75) {};
     \fi
   }
-  \node[note,text=cOld] at (3.05,1.12) {reads packet $k{-}1$};
-  \node[note,text=cCache] at (6.29,1.12) {reads packet $k$};
+  \node[note,text=cOld] at (3.05,1.12) {uses reference $k{-}1$};
+  \node[note,text=cCache] at (6.29,1.12) {uses reference $k$};
 
   % Residual keeps running while the next reference query is pending.
   \draw[draw=cFast,line width=0.65pt] (5.55,0.42) -- (7.91,0.42);
@@ -59,7 +59,5 @@
   \node[note,anchor=north,text=cFast] at (6.73,0.38)
     {residual continues while query $k{+}1$ is pending};
 
-  \node[note,anchor=north] at (5.03,0.06)
-    {each correction chunk stays bound to the packet it reads; expired steps are skipped};
 \end{tikzpicture}
 \end{document}

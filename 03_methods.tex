@@ -124,13 +124,13 @@ Substitution leaves the force-conditioned chunk rebased by $\Gamma$. The transla
 \subsubsection{Residual policy}
 \label{sec:residual_policy}
 
-Each reference packet caches a compact representation of its visual--language context. Let $m_k$ denote the validity mask over tokens in $E_k$ from available image views and non-padding language positions; state, force, and action tokens are excluded from $E_k$. A learned query-based projector produces the cached intent tokens,
+Each reference query caches a compact representation of its visual--language context. Let $m_k$ denote the validity mask over tokens in $E_k$ from available image views and non-padding language positions; state, force, and action tokens are excluded from $E_k$. A learned query-based projector produces the cached intent tokens,
 \begin{equation}
     Z_k^{\mathrm{intent}}
     =P_{\mathrm{intent}}\!\left(\operatorname{Pool}(E_k,m_k)\right).
     \label{eq:intent_projection}
 \end{equation}
-These tokens represent the task context available when reference query $k$ is issued. The fast residual assumes that this context remains locally valid within a reference interval. Timestamp-based interpolation provides the reference sample $A_k^{\mathrm{ref}}(t)$ for a residual query at $t$. A causal encoder maps $\mathcal F_t$ to $u_t^F$. We also encode cache age and interpolation phase,
+Together, $A_k^{\mathrm{ref}}$, $Z_k^{\mathrm{intent}}$, and $S_k$ form the timestamped reference update for query $k$; the latest published update is cached for the fast pathway. The intent tokens represent the task context available when reference query $k$ is issued. The fast residual assumes that this context remains locally valid within a reference interval. Timestamp-based interpolation provides the reference sample $A_k^{\mathrm{ref}}(t)$ for a residual query at $t$. A causal encoder maps $\mathcal F_t$ to $u_t^F$. We also encode cache age and interpolation phase,
 \begin{equation}
     \xi_{t,k}=
     \left[\min\!\left(\frac{t-t_k}{c},1\right);\alpha_{t,k}\right],
@@ -160,11 +160,11 @@ The mask prevents direct force dependence in the staleness output. The staleness
 \subsubsection{Staleness-aware schedule replay}
 \label{sec:async_training}
 
-During offline residual-policy training, we replay asynchronous execution by sampling inter-query periods and packet latencies. Training instants follow the recorded state--action timestamps, while $\mathcal F_t$ retains all wrench samples in the causal window. If $t_i$ and $\bar t_i$ are the issue and publication times of query $i$, the active query is
+During offline residual-policy training, we replay asynchronous execution by sampling inter-query periods and reference-query latencies. Training instants follow the recorded state--action timestamps, while $\mathcal F_t$ retains all wrench samples in the causal window. If $t_i$ and $\bar t_i$ are the issue and publication times of query $i$, the active reference index is
 \begin{equation*}
     k(t)=\arg\max_{i:\bar t_i\leq t}t_i.
 \end{equation*}
-The active query supplies the cached intent, current reference sample, temporal features, and timestamped action chunk used to form the stepwise targets. Resampling the schedule varies reference age, interpolation phase, and packet latency.
+The active reference update supplies the cached intent, current reference sample, and timestamps used to compute the temporal features and stepwise targets. Resampling the schedule varies reference age, interpolation phase, and reference-query latency.
 
 With normalized temporal weights $w_j\propto\beta^{j-1}$, $0<\beta\leq1$, and normalized-coordinate mean-squared loss $\ell_{\mathrm{pose}}$, the distillation objective is
 \begin{align}
@@ -182,13 +182,13 @@ The coefficient $\lambda_{\mathrm{stale}}$ balances force-conditioning and stale
 \subsection{Independent Residual Execution}
 \label{sec:execution}
 
-\begin{figure}[t]
+The reference and residual workers execute independently (Fig.~\ref{fig:async_deployment}). A completed reference query publishes a timestamped reference update containing the missing-force action chunk, cached intent, and query state. Each residual query reads the active cached reference together with the current state and causal wrench history. Its timestamped $K$-step correction chunk remains bound to the reference update used for prediction, so a newly published reference is used only by subsequent residual queries.
+
+\begin{figure}[!h]
     \centering
     \includegraphics[width=\columnwidth]{figures/fig03_async_deployment.pdf}
-    \caption{Independent residual execution. Reference query $k$, requested at $t_k$, publishes at $\bar t_k$ the timestamped packet $(A_k^{\mathrm{ref}},Z_k^{\mathrm{intent}},S_k)$. Each cell in the fast lane is one control step, and its fill colour marks the packet that step reads: a newly published reference is used only by subsequent residual queries. Residual corrections continue while query $k{+}1$ is pending, and expired correction steps are skipped.}
+    \caption{Two-lane timeline of independent residual execution. The upper lane shows reference-query intervals and publication events; the lower lane shows fast command steps, colored by the reference update used. Fast execution continues while the next reference query is pending.}
     \label{fig:async_deployment}
 \end{figure}
-
-The reference and residual workers execute independently (Fig.~\ref{fig:async_deployment}). A completed reference query publishes a timestamped missing-force action chunk, cached intent, and query state. Each residual query reads the active reference packet together with the current state and causal wrench history. Its timestamped $K$-step correction chunk remains bound to that reference packet, so a newly published reference is used only by subsequent residual queries.
 
 Expired correction steps are skipped, and the remaining steps execute sequentially without interpolation. The reference pose is interpolated by timestamp. At each update, $\Gamma(S_t,S_k)$ is computed directly from the current and cached query states. The force residual is bounded independently; the sum $\Delta\hat A^{\mathrm{stale}}+\Gamma(S_t,S_k)$ is bounded as the staleness correction. Both are composed with the reference in normalized delta-action coordinates and converted to an absolute command using the reference query state.

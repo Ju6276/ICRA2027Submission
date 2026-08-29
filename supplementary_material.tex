@@ -35,7 +35,7 @@ The residual policy observes only the reference sample aligned with its query ti
 
 At deployment, force-conditioned and staleness corrections are clipped separately and element-wise before composition. The implementation accepts either nine-dimensional nonnegative bounds $b_F,b_S\in\mathbb R_{\geq0}^{9}$ or scalar values broadcast over the pose coordinates; bimanual clipping is applied independently per arm. \assumed{The final robot configuration must specify the values used for $b_F$ and $b_S$.}
 
-\assumed{Residual-policy training examples are anchored at the $30$~Hz state/action timestamps while retaining every $100$~Hz wrench sample in $\mathcal F_t$. Residual packets may be queried more frequently at deployment; the realized publication rate is measured directly rather than inferred from the action-sample rate within a packet.}
+\assumed{Residual-policy training examples are anchored at the $30$~Hz state/action timestamps while retaining every $100$~Hz wrench sample in $\mathcal F_t$. Residual queries may be issued more frequently at deployment; the realized correction-update rate is measured directly rather than inferred from the action-sample rate within a chunk.}
 
 \subsection{Force-Null Mode Optimization}
 
@@ -60,11 +60,11 @@ For a $K$-step residual chunk, the normalized temporal weights are
 \end{equation}
 Thus, $\beta<1$ emphasizes near-term corrections, $\beta=1$ weights all steps equally, and $\sum_jw_j=1$ keeps the loss scale stable as $K$ changes. The loss is a mean-squared error in normalized pose-action coordinates.
 
-\section{Asynchronous Packet Execution}
+\section{Asynchronous Reference and Correction Execution}
 
-\subsection{Reference Packets}
+\subsection{Reference Updates}
 
-A reference query $k$, issued at $t_k$ from state $S_k$, publishes the immutable packet $(A_{T,k,1:H}^{\mathrm{null}},Z_k^{\mathrm{intent}},S_k,t_k,\bar t_k)$ when its result becomes available at $\bar t_k$. Its samples carry intended execution times
+A reference query $k$, issued at $t_k$ from state $S_k$, publishes the immutable reference update $(A_{T,k,1:H}^{\mathrm{null}},Z_k^{\mathrm{intent}},S_k,t_k,\bar t_k)$ when its result becomes available at $\bar t_k$. Its samples carry intended execution times
 \begin{equation}
     t_{k,n}^{\mathrm{ref}}=t_k+(n-1)/f_A,
     \qquad n=1,\ldots,H.
@@ -75,17 +75,17 @@ At time $t$, the active reference is the freshest completed, non-superseded quer
     k^*(t)=\arg\max_{k:\,\bar t_k\leq t}t_k.
     \label{eq:supp_active_reference}
 \end{equation}
-An older query that completes later therefore cannot replace a newer active packet. Samples whose intended times precede $\bar t_{k^*}$ are skipped for direct execution; the cached chunk itself is not truncated. For $t\geq\bar t_{k^*}$, the reference pose $A_{k^*}^{\mathrm{ref}}(t)$ is obtained by timestamp-based interpolation over the original timestamped chunk.
+An older query that completes later therefore cannot replace a newer active reference update. Samples whose intended times precede $\bar t_{k^*}$ are skipped for direct execution; the cached chunk itself is not truncated. For $t\geq\bar t_{k^*}$, the reference pose $A_{k^*}^{\mathrm{ref}}(t)$ is obtained by timestamp-based interpolation over the original timestamped chunk.
 
-\subsection{Residual Packets}
+\subsection{Correction Updates}
 
-A residual inference packet $q$, initiated at $t_q^F$, reads $k_q=k^*(t_q^F)$ together with $(\mathcal F_{t_q^F},S_{t_q^F})$. It completes at $\bar t_q^F$ with force-conditioned and staleness correction chunks. Their samples are timestamped as
+A residual query $q$, initiated at $t_q^F$, reads $k_q=k^*(t_q^F)$ together with $(\mathcal F_{t_q^F},S_{t_q^F})$. It completes at $\bar t_q^F$ with force-conditioned and staleness correction chunks. Their samples are timestamped as
 \begin{equation}
     t^F_{q,j}=t_q^F+(j-1)/f_A,
     \qquad j=1,\ldots,K.
     \label{eq:supp_residual_timestamps}
 \end{equation}
-Here $f_A$ defines the spacing between action samples within a packet; residual query times $t_q^F$ are scheduled independently. Step $j$ is held over $[t^F_{q,j},t^F_{q,j}+1/f_A)$, and correction samples are not interpolated. At control time $t$, the executor selects the most recently initiated packet that has completed and remains valid, together with its active step:
+Here $f_A$ defines the spacing between correction samples within a chunk; residual query times $t_q^F$ are scheduled independently. Step $j$ is held over $[t^F_{q,j},t^F_{q,j}+1/f_A)$, and correction samples are not interpolated. At control time $t$, the executor selects the most recently initiated residual query whose result has completed and remains valid, together with its active step:
 \begin{equation}
 \begin{aligned}
     q^*(t)&=\arg\max_{q:\,\bar t_q^F\leq t<t_q^F+K/f_A}t_q^F,\\
@@ -93,7 +93,7 @@ Here $f_A$ defines the spacing between action samples within a packet; residual 
 \end{aligned}
     \label{eq:supp_active_residual_step}
 \end{equation}
-Any prefix that expires during inference is therefore skipped, while the remaining valid steps execute sequentially until a newer packet completes. Let $j^*=j(t;q^*)$. Within the selected interval, Eq.~(1) of the main paper is evaluated using the residual packet's query time and active step:
+Any prefix that expires during inference is therefore skipped, while the remaining valid steps execute sequentially until a newer correction chunk completes. Let $j^*=j(t;q^*)$. Within the selected interval, Eq.~(1) of the main paper is evaluated using the selected residual query time and active step:
 \begin{equation}
 \begin{aligned}
     \mathcal P(A^{\mathrm{cmd}}(t))
@@ -105,7 +105,7 @@ Any prefix that expires during inference is therefore skipped, while the remaini
 \end{aligned}
     \label{eq:supp_active_residual}
 \end{equation}
-The two corrections are clipped independently and element-wise in normalized delta-action coordinates before composition. The composed command remains referenced to $S_{k_{q^*}}$ and is converted to an absolute robot command as described above. A packet that completes after $t_q^F+K/f_A$ is rejected. If no valid residual packet remains, the executor invokes the platform's safe hold or abort policy. \assumed{The final implementation record will specify gripper sampling and behavior beyond the last valid reference timestamp.}
+The two corrections are clipped independently and element-wise in normalized delta-action coordinates before composition. The composed command remains referenced to $S_{k_{q^*}}$ and is converted to an absolute robot command as described above. A correction chunk that completes after $t_q^F+K/f_A$ is rejected. If no valid correction chunk remains, the executor invokes the platform's safe hold or abort policy. \assumed{The final implementation record will specify gripper sampling and behavior beyond the last valid reference timestamp.}
 
 \section{Additional Evaluation Protocols}
 
