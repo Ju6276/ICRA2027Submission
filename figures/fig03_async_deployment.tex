@@ -16,48 +16,53 @@
                   minimum width=2.8mm,minimum height=4.6mm,inner sep=0pt},
   newstep/.style={rounded corners=1pt,draw=cCache,fill=cCache!35,line width=0.5pt,
                   minimum width=2.8mm,minimum height=4.6mm,inner sep=0pt},
+  pendstep/.style={rounded corners=1pt,draw=cCache,dashed,dash pattern=on 0.6pt off 0.6pt,
+                   fill=cOld!35,line width=0.5pt,
+                   minimum width=2.8mm,minimum height=4.6mm,inner sep=0pt},
   lane/.style={font=\sffamily\scriptsize\bfseries,anchor=east},
   note/.style={font=\sffamily\tiny,align=center,text=cInk!75}
 }
 
 \begin{document}
 \begin{tikzpicture}[x=1cm,y=1cm]
-  % Reference-query lane: one query occupies the interval from request to publication.
+  % Reference-query lane: one query occupies the interval from issue to publication.
   \node[lane,text=cSlow] at (1.65,2.05) {REFERENCE QUERY};
   \draw[axis,draw=cSlow!65] (1.85,2.05) -- (8.25,2.05);
   \node[query,anchor=west,minimum width=2.2cm] (qk) at (2.15,2.05)
     {reference query $k$};
   \node[query,anchor=west,minimum width=2.05cm] (qnext) at (5.55,2.05)
     {query $k{+}1$};
-  \node[note,anchor=south] at (2.15,2.45) {request $t_k$};
-  \node[note,anchor=south] at (5.55,2.45) {request $t_{k+1}$};
+  \node[note,anchor=south] at (2.15,2.45) {issue $t_k$};
+  \node[note,anchor=south] at (5.55,2.45) {issue $t_{k+1}$};
 
   % Publication boundary: the event that publishes the new reference update.
   \draw[dashed,draw=cInk!45,line width=0.65pt] (4.45,2.55) -- (4.45,0.34);
-  \node[note,fill=white,inner sep=1pt] at (4.45,1.46) {publish reference $k$ at $\bar t_k$};
+  \node[note,fill=white,inner sep=1pt] at (4.45,1.46) {publish $\bar t_k$};
 
   % Fast command lane: fill colour encodes the reference used by each step.
   \node[lane,text=cFast] at (1.65,0.88) {FAST COMMAND STEPS};
   \node[note,anchor=east,text=cFast] at (1.65,0.58) {obs.\ $\mathcal F_t,S_t$};
   \draw[axis,draw=cFast!65] (1.85,0.75) -- (8.25,0.75);
+  % The step just after publication is still served by a chunk predicted before it.
   \foreach \i in {0,...,16} {
     \pgfmathsetmacro{\x}{2.15+0.36*\i}
-    \pgfmathparse{\x<4.45 ? 1 : 0}
-    \ifnum\pgfmathresult=1
+    \ifnum\i<7
       \node[oldstep] at (\x,0.75) {};
+    \else\ifnum\i=7
+      \node[pendstep] at (\x,0.75) {};
     \else
       \node[newstep] at (\x,0.75) {};
-    \fi
+    \fi\fi
   }
-  \node[note,text=cOld] at (3.05,1.12) {uses reference $k{-}1$};
-  \node[note,text=cCache] at (6.29,1.12) {uses reference $k$};
+  \node[note,text=cOld] at (3.41,1.12) {reference $k{-}1$};
+  \node[note,text=cCache] at (6.47,1.12) {reference $k$};
 
   % Residual keeps running while the next reference query is pending.
   \draw[draw=cFast,line width=0.65pt] (5.55,0.42) -- (7.91,0.42);
   \draw[draw=cFast,line width=0.65pt] (5.55,0.42) -- (5.55,0.52);
   \draw[draw=cFast,line width=0.65pt] (7.91,0.42) -- (7.91,0.52);
   \node[note,anchor=north,text=cFast] at (6.73,0.38)
-    {residual continues while query $k{+}1$ is pending};
+    {query $k{+}1$ pending};
 
 \end{tikzpicture}
 \end{document}

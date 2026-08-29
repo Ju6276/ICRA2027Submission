@@ -184,10 +184,10 @@ The coefficient $\lambda_{\mathrm{stale}}$ balances force-conditioning and stale
 
 The reference and residual workers execute independently (Fig.~\ref{fig:async_deployment}). A completed reference query publishes a timestamped reference update containing the missing-force action chunk, cached intent, and query state. Each residual query reads the active cached reference together with the current state and causal wrench history. Its timestamped $K$-step correction chunk remains bound to the reference update used for prediction, so a newly published reference is used only by subsequent residual queries.
 
-\begin{figure}[!h]
+\begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{figures/fig03_async_deployment.pdf}
-    \caption{Two-lane timeline of independent residual execution. The upper lane shows reference-query intervals and publication events; the lower lane shows fast command steps, colored by the reference update used. Fast execution continues while the next reference query is pending.}
+    \caption{Two-lane timeline of independent residual execution. The upper lane shows reference queries, each spanning its issue time $t_k$ and its publication time $\bar t_k$; the lower lane shows fast command steps, colored by the reference update each step uses. A correction chunk stays bound to the reference update it was predicted from: in the schedule shown, the dashed step just after $\bar t_k$ belongs to a chunk predicted before publication and still executes under reference $k{-}1$, so reference $k$ takes effect only through subsequent residual queries. The bracket marks fast execution continuing while query $k{+}1$ is pending.}
     \label{fig:async_deployment}
 \end{figure}
 
