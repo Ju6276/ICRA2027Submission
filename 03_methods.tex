@@ -83,7 +83,7 @@ For a schedule-replay sample $(t,k)$, let $E_k$ be the visual--language prefix p
       (E_k,S_t,z_{\varnothing F};\epsilon_k)_{1:K}.
     \label{eq:cached_missing_teacher}
 \end{align}
-Here $T(E_k,\cdot)$ reuses the cached prefix without encoding a current image. The reference, force-conditioned, and missing-force queries share $E_k$ and $\epsilon_k$. For $j=1,\ldots,K\leq H$, the teacher-defined force-conditioned deviation target is
+Here $T(E_k,\cdot)$ reuses the cached prefix without encoding a current image. The reference, force-conditioned, and missing-force queries share $E_k$ and $\epsilon_k$. For $j=1,\ldots,K\leq H$, the teacher-defined force-responsive residual target is
 \begin{equation}
     \Delta A_{T,t|k,j}^{\mathrm{force}}
     =\mathcal P\!\left(A_{T,t|k,j}^{\mathrm{cond}}\right)
