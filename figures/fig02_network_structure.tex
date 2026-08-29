@@ -44,30 +44,30 @@
   \node[teacher] (teacher) at (6.9,4.75) {Temporal Force-Aware VLA\\train Stage 1; then freeze};
   \draw[flow] (obs.east) -- (teacher.west);
   \draw[flow,draw=cFast] (fhist.east) -- (tcnT.west);
-  \draw[flow,draw=cFast] (tcnT.east) -| ([xshift=-5mm,yshift=-4.5mm]teacher.west) -- ([yshift=-4.5mm]teacher.west);
+  \draw[flow,draw=cFast] (tcnT.east) -- ++(0.35,0) |- ([yshift=-5mm]teacher.west);
 
   \node[block,draw=cTeacher,fill=cTeacher!5] (full) at (9.85,5.35)
     {Force-conditioned query\\$A_{T,t|k,1:H}^{\mathrm{cond}}$};
   \node[block,draw=cTeacher,fill=cTeacher!5] (null) at (9.85,4.05)
     {Missing-force query\\$A_{T,t|k,1:H}^{\mathrm{miss}}$};
-  \draw[flow,draw=cTeacher] ([yshift=3.5mm]teacher.east) -- (full.west);
-  \draw[flow,draw=cTeacher] ([yshift=-3.5mm]teacher.east) -- (null.west);
+  \draw[flow,draw=cTeacher] (teacher.east |- full.west) -- (full.west);
+  \draw[flow,draw=cTeacher] (teacher.east |- null.west) -- (null.west);
 
-  \node[block,draw=cCache,fill=cCache!9,text width=30mm] (nomt) at (13.1,5.35)
-    {Missing-force reference\\$A_k^{\mathrm{ref}}$};
-  \node[block,draw=cTeacher,fill=cTeacher!8,text width=32mm] (rest) at (13.1,3.95)
+  \node[block,draw=cTeacher,fill=cTeacher!8,text width=32mm] (rest) at (13.55,5.35)
     {Paired correction targets\\$\Delta A_{T,t|k,j}^{\mathrm{force}}$\\
      $\Delta A_{T,k\to t,j}^{\mathrm{stale}}$};
-  \draw[flow,draw=cCache] (null.east) -- ++(3mm,0) |- (nomt.west);
-  \draw[flow,draw=cTeacher] (full.east) -- ++(2mm,0) |- ([yshift=2mm]rest.west);
-  \draw[flow,draw=cTeacher] (null.east) -- ++(5mm,0) |- ([yshift=-2mm]rest.west);
+  \node[block,draw=cCache,fill=cCache!9,text width=30mm] (nomt) at (13.55,4.05)
+    {Missing-force reference\\$A_k^{\mathrm{ref}}$};
+  \draw[flow,draw=cTeacher] (full.east) -- (rest.west);
+  \draw[flow,draw=cCache] (null.east) -- (nomt.west);
+  \draw[flow,draw=cTeacher] (null.east) -- ++(0.42,0) |- ([yshift=-2.6mm]rest.west);
 
-  \node[fast,text width=32mm] (fastT) at (16.8,4.55)
+  \node[fast,text width=32mm] (fastT) at (17.15,4.55)
     {Residual Policy\\$\Delta\hat A^{\mathrm{force}}_{t,1:K}$, $\Delta\hat A^{\mathrm{stale}}_{t,1:K}$};
-  \draw[flow,draw=cTeacher] (rest.east) -- (fastT.west);
-  \draw[flow,draw=cCache] (nomt.east) -- ++(3mm,0) |- ([yshift=4mm]fastT.west);
+  \draw[flow,draw=cTeacher] (rest.east) -- ++(0.40,0) |- (fastT.west);
+  \draw[flow,draw=cCache] (nomt.east) -- (fastT.west |- nomt.east);
 
-  \node[loss] (lres) at (19.6,4.55) {$\mathcal L_{\mathrm{distill}}$};
+  \node[loss] (lres) at (19.95,4.55) {$\mathcal L_{\mathrm{distill}}$};
   \draw[dashflow,draw=cFast] (fastT.east) -- (lres.west);
 
   \begin{scope}[on background layer]
@@ -97,17 +97,18 @@
   \node[block,draw=cFast,fill=cFast!5,text width=26mm] (delta) at (14.05,-0.75)
     {$K$-step corrections\\$\Delta\hat A^{\mathrm{force}}_{t,1:K}$, $\Delta\hat A^{\mathrm{stale}}_{t,1:K}$};
   \draw[flow,draw=cFast] (forceD.east) -- (tcnD.west);
-  \draw[flow,draw=cFast] (tcnD.east) -- (expert.west);
+  \draw[flow,draw=cFast] (tcnD.east) -- ++(0.40,0) |- (expert.west);
   \draw[flow,draw=cFast] (expert.east) -- (delta.west);
-  \draw[flow,draw=cSlow] (cache.east) -| ([xshift=-7mm,yshift=4.5mm]expert.west) -- ([yshift=4.5mm]expert.west);
-  \node[tinylabel,text width=48mm] at (7.7,-1.55)
+  \draw[flow,draw=cSlow] (cache.east) -- ++(0.35,0) coordinate (cbr);
+  \fill[cSlow] (cbr) circle (0.9pt);
+  \draw[flow,draw=cSlow] (cbr) |- ([yshift=3.6mm]expert.west);
+  \node[tinylabel,anchor=north] at ($(tcnD.east)!0.55!(expert.west)+(0,-0.18)$)
     {conditioning $\mathcal C_t$};
-  \draw[dashflow] (7.7,-1.15) -| ([xshift=-7mm,yshift=-4.5mm]expert.west) -- ([yshift=-4.5mm]expert.west);
 
   \node[circle,draw=cInk,fill=white,line width=0.8pt,minimum size=7mm,
-        font=\sffamily\small\bfseries] (sum) at (16.75,0.05) {$+$};
-  \draw[flow,draw=cSlow] (cache.east) -- ++(8mm,0) -| (sum.north);
-  \draw[flow,draw=cFast] (delta.east) -- ++(5mm,0) -| (sum.south);
+        font=\sffamily\small\bfseries] (sum) at (16.85,0.05) {$+$};
+  \draw[flow,draw=cSlow] (cbr) -- (sum.west |- cbr) -- (sum.west);
+  \draw[flow,draw=cFast] (delta.east) -- ++(0.40,0) |- (sum.south);
   \node[block,draw=cInk,fill=cInk!5,text width=31mm] (cmd) at (19.45,0.05)
     {Robot command, step $j$\\
      $\mathcal P(A^{\mathrm{cmd}}_{t,j})=\mathcal P(A_k^{\mathrm{ref}}(t_j))$\\
