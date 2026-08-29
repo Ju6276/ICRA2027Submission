@@ -143,7 +143,7 @@ Table~\ref{tab:runtime} reports isolated model-forward latency under the same bu
 \end{table}
 
 \noindent\textbf{Robustness to delayed references.}
-We evaluate USB insertion and plug insertion with $0$, $100$, and $200$~ms of additional reference-publication delay, using $10$ trials per task, method, and delay. Aggregated across the two tasks, ForceDelta-VLA maintains higher success and lower peak force than the Temporal Teacher across the tested delays (Fig.~\ref{fig:latency_sensitivity}). From $0$ to $200$~ms, success falls from $75\%$ to $60\%$ for ForceDelta-VLA and from $60\%$ to $35\%$ for the Temporal Teacher, while peak contact force rises from $12.5$ to $16.2$~N and from $16.0$ to $25.6$~N, respectively. These results show that the residual framework remains more robust to delayed reference availability than direct Temporal Teacher execution.
+We evaluate USB insertion and plug insertion with $0$, $100$, and $200$~ms of additional reference-availability delay, using $10$ trials per task, method, and delay. Aggregated across the two tasks, ForceDelta-VLA maintains higher success and lower peak force than the Temporal Teacher across the tested delays (Fig.~\ref{fig:latency_sensitivity}). From $0$ to $200$~ms, success falls from $75\%$ to $60\%$ for ForceDelta-VLA and from $60\%$ to $35\%$ for the Temporal Teacher, while peak contact force rises from $12.5$ to $16.2$~N and from $16.0$ to $25.6$~N, respectively. These results show that the residual framework remains more robust to delayed reference availability than direct Temporal Teacher execution.
 
 \begin{figure}[t]
     \centering
@@ -155,7 +155,7 @@ We evaluate USB insertion and plug insertion with $0$, $100$, and $200$~ms of ad
         \centering
         \includegraphics[width=\linewidth]{figures/fig4b_peak_force_delay.pdf}
     \end{minipage}
-    \caption{Sensitivity to additional reference-publication delay on the two insertion tasks. Left: success rate. Right: peak force. Blue solid lines with circular markers denote ForceDelta-VLA; gray dashed lines with square markers denote Temporal Teacher.}
+    \caption{Sensitivity to additional reference-availability delay on the two insertion tasks. Left: success rate. Right: peak force. Blue solid lines with circular markers denote ForceDelta-VLA; gray dashed lines with square markers denote Temporal Teacher.}
     \label{fig:latency_sensitivity}
 \end{figure}
 

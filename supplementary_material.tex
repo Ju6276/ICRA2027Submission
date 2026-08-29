@@ -79,13 +79,13 @@ An older query that completes later therefore cannot replace a newer active refe
 
 \subsection{Correction Updates}
 
-A residual query $q$, initiated at $t_q^F$, reads $k_q=k^*(t_q^F)$ together with $(\mathcal F_{t_q^F},S_{t_q^F})$. It completes at $\bar t_q^F$ with force-conditioned and staleness correction chunks. Their samples are timestamped as
+A residual query $q$, started at $t_q^F$, reads $k_q=k^*(t_q^F)$ together with $(\mathcal F_{t_q^F},S_{t_q^F})$. It completes at $\bar t_q^F$ with force-conditioned and staleness correction chunks. Their samples are timestamped as
 \begin{equation}
     t^F_{q,j}=t_q^F+(j-1)/f_A,
     \qquad j=1,\ldots,K.
     \label{eq:supp_residual_timestamps}
 \end{equation}
-Here $f_A$ defines the spacing between correction samples within a chunk; residual query times $t_q^F$ are scheduled independently. Step $j$ is held over $[t^F_{q,j},t^F_{q,j}+1/f_A)$, and correction samples are not interpolated. At control time $t$, the executor selects the most recently initiated residual query whose result has completed and remains valid, together with its active step:
+Here $f_A$ defines the spacing between correction samples within a chunk; residual query start times $t_q^F$ are scheduled independently. Step $j$ is held over $[t^F_{q,j},t^F_{q,j}+1/f_A)$, and correction samples are not interpolated. At control time $t$, the executor selects the most recently started residual query whose result has completed and remains valid, together with its active step:
 \begin{equation}
 \begin{aligned}
     q^*(t)&=\arg\max_{q:\,\bar t_q^F\leq t<t_q^F+K/f_A}t_q^F,\\

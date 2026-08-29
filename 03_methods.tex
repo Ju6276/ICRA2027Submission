@@ -73,7 +73,7 @@ The resulting reference prediction is
 \subsubsection{Correction targets}
 \label{sec:teacher_differencing}
 
-For a schedule-replay sample $(t,k)$, let $E_k$ be the visual--language prefix produced when reference query $k$ starts from $(V_k,L,S_k)$ with flow noise $\epsilon_k$. The query publishes the timestamped missing-force chunk $A_k^{\mathrm{ref}}(\cdot)$, for which $A_k^{\mathrm{ref}}=A_{T,k}^{\mathrm{miss}}$. To match the temporal provenance of the information available to the deployed residual pathway, target generation reuses $E_k$ while updating the state and force history to their values at $t$:
+For a schedule-replay sample $(t,k)$, let $E_k$ be the visual--language prefix produced when reference query $k$ starts at $t_k$ with inputs $(V_k,L,S_k)$ and flow noise $\epsilon_k$. The query publishes the timestamped missing-force chunk $A_k^{\mathrm{ref}}(\cdot)$, for which $A_k^{\mathrm{ref}}=A_{T,k}^{\mathrm{miss}}$. To match the temporal provenance of the information available to the deployed residual pathway, target generation reuses $E_k$ while updating the state and force history to their values at $t$:
 \begin{align}
     A_{T,t|k,1:K}^{\mathrm{cond}}
     &=T_\theta(E_k,S_t,z_t^F;\epsilon_k)_{1:K},
@@ -187,7 +187,7 @@ The reference and residual workers execute independently (Fig.~\ref{fig:async_de
 \begin{figure}[!h]
     \centering
     \includegraphics[width=\columnwidth]{figures/fig03_async_deployment.pdf}
-    \caption{Two-lane timeline of independent residual execution. Fill color denotes the reference bound to each $K$-step correction chunk. The dashed post-publication step remains in the preceding chunk, so reference $k$ is adopted by the next chunk.}
+    \caption{Two-lane timeline of independent residual execution. Fill color denotes the reference bound to each $K$-step correction chunk. The dashed post-availability step remains in the preceding chunk, so reference $k$ is adopted by the next chunk.}
     \label{fig:async_deployment}
 \end{figure}
 
