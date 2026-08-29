@@ -130,6 +130,7 @@ Each reference query caches a compact representation of its visual--language con
     =P_{\mathrm{intent}}\!\left(\operatorname{Pool}(E_k,m_k)\right).
     \label{eq:intent_projection}
 \end{equation}
+The intent tokens represent the visual--language task context available when reference query $k$ starts.
 Together, $A_k^{\mathrm{ref}}$, $Z_k^{\mathrm{intent}}$, and $S_k$ form the timestamped reference update for query $k$; the latest available update is cached for the fast pathway. The residual treats this context as locally valid within a reference interval. Timestamp-based interpolation provides $A_k^{\mathrm{ref}}(t)$. A causal encoder maps $\mathcal F_t$ to $u_t^F$. Cache age and interpolation phase are encoded as
 \begin{equation}
     \xi_{t,k}=
