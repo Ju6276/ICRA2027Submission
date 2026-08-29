@@ -5,8 +5,7 @@
 \definecolor{cTeacher}{HTML}{6C5CE7}
 \definecolor{cSlow}{HTML}{2878B5}
 \definecolor{cFast}{HTML}{E67E22}
-\definecolor{cNom}{HTML}{2E8B57}
-\definecolor{cRes}{HTML}{C0392B}
+\definecolor{cCache}{HTML}{2E8B57}
 \definecolor{cInk}{HTML}{263238}
 
 \tikzset{
@@ -21,10 +20,11 @@
   fast/.style={rounded corners=3pt,draw=cFast,fill=cFast!10,line width=1pt,
                align=center,minimum height=15mm,text width=29mm,font=\sffamily\scriptsize\bfseries},
   loss/.style={rounded corners=2pt,draw=cInk!60,fill=gray!7,line width=0.65pt,
-               align=center,minimum height=7mm,text width=21mm,font=\sffamily\tiny},
-  tag/.style={font=\sffamily\scriptsize\bfseries,text=cInk},
-  rate/.style={rounded corners=2pt,fill=cInk!8,inner sep=1.2pt,font=\sffamily\tiny\bfseries,text=cInk},
-  tinylabel/.style={font=\sffamily\tiny,align=center,text=cInk!75}
+               align=center,minimum height=7mm,text width=21mm,
+               font=\sffamily\fontsize{6.4}{7.4}\selectfont},
+  rate/.style={rounded corners=2pt,fill=cInk!8,inner sep=1.2pt,
+               font=\sffamily\fontsize{6.4}{7.4}\selectfont\bfseries,text=cInk},
+  tinylabel/.style={font=\sffamily\fontsize{6.4}{7.4}\selectfont,align=center,text=cInk!75}
 }
 
 \begin{document}
@@ -32,97 +32,92 @@
   % ---------------- Training ----------------
   \node[font=\sffamily\small\bfseries,text=cTeacher] (trainTitle) at (10,6.75)
     {TRAINING: RESIDUAL SUPERVISION DISTILLATION};
-  \node[rate,fill=cTeacher!12] at (5.9,6.15) {STAGE 1: TRAIN FORCE TEACHER};
-  \node[rate,fill=cNom!12] at (10.3,6.15) {STAGE 2: LEARN MISSING-FORCE MODE};
-  \node[rate,fill=cFast!12] at (15.2,6.15) {STAGE 3: PAIRED TARGETS + RESIDUAL DISTILLATION};
+  \node[rate,fill=cTeacher!12] (stg1) at (5.9,6.15) {STAGE 1: TRAIN FORCE TEACHER};
+  \node[rate,fill=cCache!12] (stg2) at (10.3,6.15) {STAGE 2: LEARN MISSING-FORCE MODE};
+  \node[rate,fill=cFast!12] (stg3) at (15.2,6.15) {STAGE 3: PAIRED TARGETS + DISTILLATION};
 
   \node[block] (obs) at (1.3,4.75) {Vision $V_t$, language $L$\\robot state $S_t$};
   \node[block,draw=cFast,fill=cFast!5] (fhist) at (1.3,3.45)
     {Causal wrench history\\$\mathcal F_t$};
-  \node[block,draw=cFast,fill=cFast!8] (tcnT) at (4.05,3.45)
-    {Causal temporal encoder\\$z_t^F=E_T^F(\mathcal{F}_t)$};
+  \node[block,draw=cFast,fill=cFast!8,text width=27mm] (tcnT) at (4.05,3.45)
+    {Causal temporal\\encoder\\$z_t^F=E_T^F(\mathcal F_t)$};
   \node[teacher] (teacher) at (6.9,4.75) {Temporal Force-Aware VLA\\train Stage 1; then freeze};
   \draw[flow] (obs.east) -- (teacher.west);
   \draw[flow,draw=cFast] (fhist.east) -- (tcnT.west);
   \draw[flow,draw=cFast] (tcnT.east) -| ([xshift=-5mm,yshift=-4.5mm]teacher.west) -- ([yshift=-4.5mm]teacher.west);
-  \node[tinylabel,text width=32mm] at (6.9,3.35)
-    {cached V--L prefix $E_k$\\shared noise draw $\epsilon_k$};
 
   \node[block,draw=cTeacher,fill=cTeacher!5] (full) at (9.85,5.35)
     {Force-conditioned query\\$A_{T,t|k,1:H}^{\mathrm{cond}}$};
   \node[block,draw=cTeacher,fill=cTeacher!5] (null) at (9.85,4.05)
     {Missing-force query\\$A_{T,t|k,1:H}^{\mathrm{miss}}$};
-  \node[tinylabel,text width=32mm] at (9.85,3.25)
-    {learned $z_{\varnothing F}$ and rank-$\rho$\\pose-channel adapter, teacher frozen};
   \draw[flow,draw=cTeacher] ([yshift=3.5mm]teacher.east) -- (full.west);
   \draw[flow,draw=cTeacher] ([yshift=-3.5mm]teacher.east) -- (null.west);
 
-  \node[block,draw=cNom,fill=cNom!9,text width=26mm] (nomt) at (13.0,5.35)
-    {Missing-force reference\\$A_k^{\mathrm{ref}}$\\\emph{same learned mode}};
-  \node[block,draw=cRes,fill=cRes!8,text width=26mm] (rest) at (13.0,4.05)
-    {Paired correction targets\\$\Delta A_{T,t|k,j}^{\mathrm{force}}$, $\Delta A_{T,k\to t,j}^{\mathrm{stale}}$};
-  \node[tinylabel,text width=27mm] at (13.0,3.32)
-    {schedule replay provides cached query $k$};
-  \draw[flow,draw=cNom] (null.east) -- ++(3mm,0) |- (nomt.west);
-  \draw[flow,draw=cRes] (full.east) -- ++(2mm,0) |- ([yshift=2mm]rest.west);
-  \draw[flow,draw=cRes] (null.east) -- ++(5mm,0) |- ([yshift=-2mm]rest.west);
+  \node[block,draw=cCache,fill=cCache!9,text width=30mm] (nomt) at (13.1,5.35)
+    {Missing-force reference\\$A_k^{\mathrm{ref}}$};
+  \node[block,draw=cTeacher,fill=cTeacher!8,text width=32mm] (rest) at (13.1,3.95)
+    {Paired correction targets\\$\Delta A_{T,t|k,j}^{\mathrm{force}}$\\
+     $\Delta A_{T,k\to t,j}^{\mathrm{stale}}$};
+  \draw[flow,draw=cCache] (null.east) -- ++(3mm,0) |- (nomt.west);
+  \draw[flow,draw=cTeacher] (full.east) -- ++(2mm,0) |- ([yshift=2mm]rest.west);
+  \draw[flow,draw=cTeacher] (null.east) -- ++(5mm,0) |- ([yshift=-2mm]rest.west);
 
-  \node[fast,text width=31mm] (fastT) at (16.5,4.55)
-    {Residual Policy\\$\Delta\hat{A}^{\mathrm{force}}_{t,1:K}$, $\Delta\hat{A}^{\mathrm{stale}}_{t,1:K}$};
-  \draw[flow,draw=cRes] (rest.east) -- (fastT.west);
-  \draw[flow,draw=cNom] (nomt.east) -- ++(3mm,0) |- ([yshift=4mm]fastT.west);
+  \node[fast,text width=32mm] (fastT) at (16.8,4.55)
+    {Residual Policy\\$\Delta\hat A^{\mathrm{force}}_{t,1:K}$, $\Delta\hat A^{\mathrm{stale}}_{t,1:K}$};
+  \draw[flow,draw=cTeacher] (rest.east) -- (fastT.west);
+  \draw[flow,draw=cCache] (nomt.east) -- ++(3mm,0) |- ([yshift=4mm]fastT.west);
 
-  \node[loss] (lres) at (19.4,4.55) {$\mathcal{L}_{\mathrm{distill}}$};
+  \node[loss] (lres) at (19.6,4.55) {$\mathcal L_{\mathrm{distill}}$};
   \draw[dashflow,draw=cFast] (fastT.east) -- (lres.west);
 
   \begin{scope}[on background layer]
     \node[rounded corners=5pt,draw=cTeacher!40,fill=cTeacher!2,inner sep=2.5mm,
-          fit=(trainTitle)(obs)(fhist)(tcnT)(teacher)(full)(null)(nomt)(rest)(fastT)(lres)] {};
+          fit=(trainTitle)(stg1)(stg3)(obs)(fhist)(tcnT)(teacher)(full)(null)
+              (nomt)(rest)(fastT)(lres)] {};
   \end{scope}
 
   % ---------------- Deployment ----------------
-  \node[font=\sffamily\small\bfseries,text=cSlow,anchor=west] at (0,1.55)
+  \node[font=\sffamily\small\bfseries,text=cSlow,anchor=west] (depTitle) at (0,1.80)
     {DEPLOYMENT: INDEPENDENT RESIDUAL EXECUTION};
 
   \node[block] (obsD) at (1.3,0.35) {$V_k, L, S_k$};
   \node[slow] (slowD) at (4.2,0.35) {Teacher, missing-force mode\\reference worker};
-  \node[block,draw=cSlow,fill=cSlow!5,text width=27mm] (cache) at (7.4,0.35)
-    {Cached reference: action chunk\\$A_k^{\mathrm{ref}}$, intent $Z_k^{\mathrm{intent}}$,\\timestamps, query state $S_k$};
+  \node[block,draw=cSlow,fill=cSlow!5,text width=29mm] (cache) at (7.55,0.35)
+    {Reference update\\$A_k^{\mathrm{ref}}$, $Z_k^{\mathrm{intent}}$, $S_k$};
   \draw[flow,draw=cSlow] (obsD.east) -- (slowD.west);
   \draw[flow,draw=cSlow] (slowD.east) -- (cache.west);
-  \node[rate,above=1.2mm of slowD] {reference update};
+  \node[rate,above=1.2mm of slowD] {start $t_k$; available $\bar t_k$};
 
   \node[block,draw=cFast,fill=cFast!5] (forceD) at (1.3,-1.35)
     {Causal wrench history\\$\mathcal F_t$};
-  \node[block,draw=cFast,fill=cFast!8] (tcnD) at (4.2,-1.35)
-    {Student force TCN\\$u_t^F$};
-  \node[fast,text width=31mm] (expert) at (10.6,-0.75)
+  \node[block,draw=cFast,fill=cFast!8,text width=27mm] (tcnD) at (4.2,-1.35)
+    {Causal encoder\\$u_t^F=E_T^F(\mathcal F_t)$};
+  \node[fast,text width=31mm] (expert) at (10.75,-0.75)
     {Independently Executable\\Residual Policy};
-  \node[block,draw=cFast,fill=cFast!5,text width=25mm] (delta) at (13.9,-0.75)
-    {$K$-step corrections\\$\Delta\hat{A}^{\mathrm{force}}_{t,1:K}$, $\Delta\hat{A}^{\mathrm{stale}}_{t,1:K}$};
+  \node[block,draw=cFast,fill=cFast!5,text width=26mm] (delta) at (14.05,-0.75)
+    {$K$-step corrections\\$\Delta\hat A^{\mathrm{force}}_{t,1:K}$, $\Delta\hat A^{\mathrm{stale}}_{t,1:K}$};
   \draw[flow,draw=cFast] (forceD.east) -- (tcnD.west);
   \draw[flow,draw=cFast] (tcnD.east) -- (expert.west);
   \draw[flow,draw=cFast] (expert.east) -- (delta.west);
   \draw[flow,draw=cSlow] (cache.east) -| ([xshift=-7mm,yshift=4.5mm]expert.west) -- ([yshift=4.5mm]expert.west);
-  \node[tinylabel,text width=43mm] at (7.6,-1.55)
-    {$S_t$, interpolated $A_k^{\mathrm{ref}}(t)$,\\cached intent tokens};
-  \draw[dashflow] (7.6,-1.15) -| ([xshift=-7mm,yshift=-4.5mm]expert.west) -- ([yshift=-4.5mm]expert.west);
-  \node[rate,below=1.2mm of tcnD] {timestamped 100 Hz force};
+  \node[tinylabel,text width=48mm] at (7.7,-1.55)
+    {conditioning $\mathcal C_t$};
+  \draw[dashflow] (7.7,-1.15) -| ([xshift=-7mm,yshift=-4.5mm]expert.west) -- ([yshift=-4.5mm]expert.west);
 
   \node[circle,draw=cInk,fill=white,line width=0.8pt,minimum size=7mm,
-        font=\sffamily\small\bfseries] (sum) at (16.6,0.05) {$+$};
+        font=\sffamily\small\bfseries] (sum) at (16.75,0.05) {$+$};
   \draw[flow,draw=cSlow] (cache.east) -- ++(8mm,0) -| (sum.north);
   \draw[flow,draw=cFast] (delta.east) -- ++(5mm,0) -| (sum.south);
-  \node[block,draw=cInk,fill=cInk!5,text width=31mm] (cmd) at (19.3,0.05)
+  \node[block,draw=cInk,fill=cInk!5,text width=31mm] (cmd) at (19.45,0.05)
     {Robot command, step $j$\\
      $\mathcal P(A^{\mathrm{cmd}}_{t,j})=\mathcal P(A_k^{\mathrm{ref}}(t_j))$\\
-     $+\Delta\hat{A}^{\mathrm{force}}_{t,j}+\Delta\hat{A}^{\mathrm{stale}}_{t,j}$\\
-     $+\Gamma(S_t,S_k)$ (deterministic)};
+     $+\Delta\hat A^{\mathrm{force}}_{t,j}+\Delta\hat A^{\mathrm{stale}}_{t,j}$\\
+     $+\Gamma(S_t,S_k)$};
   \draw[flow] (sum.east) -- (cmd.west);
 
   \begin{scope}[on background layer]
     \node[rounded corners=5pt,draw=cSlow!45,fill=cSlow!2,inner sep=2.5mm,
-          fit=(obsD)(slowD)(cache)(forceD)(tcnD)(expert)(delta)(sum)(cmd)] {};
+          fit=(depTitle)(obsD)(slowD)(cache)(forceD)(tcnD)(expert)(delta)(sum)(cmd)] {};
   \end{scope}
 \end{tikzpicture}
 \end{document}

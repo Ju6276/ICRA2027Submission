@@ -2,17 +2,16 @@
 \usepackage{amsmath,amssymb}
 \usetikzlibrary{arrows.meta,positioning,calc}
 
-\definecolor{cBlue}{HTML}{2457A6}
-\definecolor{cGreen}{HTML}{2E7D32}
-\definecolor{cPurple}{HTML}{7048A8}
-\definecolor{cOrange}{HTML}{D96A16}
+\definecolor{cSlow}{HTML}{2878B5}
+\definecolor{cFast}{HTML}{E67E22}
+\definecolor{cTeacher}{HTML}{6C5CE7}
 \definecolor{cRed}{HTML}{C62828}
 \definecolor{cInk}{HTML}{263238}
 
 \tikzset{
   arrow/.style={-{Latex[length=1.8mm]},draw=cInk!72,line width=0.72pt},
-  bluearrow/.style={-{Latex[length=1.8mm]},draw=cBlue,line width=0.78pt},
-  greenarrow/.style={-{Latex[length=1.8mm]},draw=cGreen,line width=0.78pt},
+  slowarrow/.style={-{Latex[length=1.8mm]},draw=cSlow,line width=0.78pt},
+  fastarrow/.style={-{Latex[length=1.8mm]},draw=cFast,line width=0.78pt},
   box/.style={rounded corners=2.2pt,draw=cInk!45,fill=white,line width=0.65pt,
               align=center,font=\sffamily\scriptsize,minimum height=8mm},
   tinybox/.style={rounded corners=1.8pt,draw=cInk!40,fill=white,line width=0.6pt,
@@ -26,91 +25,59 @@
 \begin{document}
 \begin{tikzpicture}[x=1cm,y=1cm]
   \filldraw[rounded corners=4pt,fill=gray!2,draw=cInk!24,line width=0.7pt]
-    (0,0) rectangle (4.65,5.25);
-  \filldraw[rounded corners=4pt,fill=cBlue!2,draw=cBlue!35,line width=0.7pt]
-    (4.82,0) rectangle (11.65,5.25);
-  \filldraw[rounded corners=4pt,fill=cGreen!2,draw=cGreen!38,line width=0.7pt]
-    (11.82,0) rectangle (18.15,5.25);
+    (0,0) rectangle (8.55,5.15);
+  \filldraw[rounded corners=4pt,fill=cSlow!3,draw=cSlow!35,line width=0.7pt]
+    (8.75,0) rectangle (18.15,5.15);
 
   % Panel 1: the supervision gap.
-  \node[title] at (2.325,4.82) {ENTANGLED FULL-ACTION\\PREDICTION};
-  \node[box,text width=11mm] (obs) at (0.78,3.78)
-    {Vision\\state\\force};
-  \node[box,draw=cOrange,fill=cOrange!7,text width=18mm] (oldvla) at (2.28,3.78)
+  \node[title] at (4.275,4.72) {ENTANGLED FULL-ACTION PREDICTION};
+  \node[box,text width=16mm] (obs) at (1.55,3.55)
+    {Vision, state,\\force};
+  \node[box,draw=cFast,fill=cFast!7,text width=28mm] (oldvla) at (4.35,3.55)
     {Force-aware\\generative policy};
-  \node[box,draw=cOrange,fill=cOrange!7,text width=13mm] (chunk) at (3.83,3.78)
-    {Full action\\chunk $A_T$};
+  \node[box,draw=cFast,fill=cFast!7,text width=20mm] (chunk) at (7.15,3.55)
+    {Full action\\chunk};
   \draw[arrow] (obs.east) -- (oldvla.west);
   \draw[arrow] (oldvla.east) -- (chunk.west);
 
-  \node[tinybox,draw=cBlue,fill=cBlue!5,text width=17mm] (nom) at (1.28,2.30)
+  \node[tinybox,draw=cSlow,fill=cSlow!6,text width=22mm] (nom) at (2.85,2.10)
     {Task-level\\motion};
-  \node[font=\sffamily\normalsize\bfseries,text=cInk] at (2.30,2.30) {$+$};
-  \node[tinybox,draw=cOrange,fill=cOrange!6,text width=17mm] (adj) at (3.33,2.30)
+  \node[font=\sffamily\normalsize\bfseries,text=cInk] at (4.35,2.10) {$+$};
+  \node[tinybox,draw=cFast,fill=cFast!6,text width=22mm] (adj) at (5.85,2.10)
     {Contact-dependent\\adjustment};
   \draw[arrow] (chunk.south) |- ($(nom.north)!0.5!(adj.north)$);
-  \node[note] at (2.325,1.54) {Both roles are encoded in one prediction};
-  \node[tag,fill=cRed!10,draw=cRed!55,text=cRed,text width=39mm] at (2.325,0.57)
-    {NO EXPLICIT CORRECTION\\SUPERVISION};
+  \node[note] at (4.275,1.38) {Both roles are encoded in one prediction};
+  \node[tag,fill=cRed!10,draw=cRed!55,text=cRed,text width=46mm] at (4.275,0.52)
+    {NO EXPLICIT CORRECTION SUPERVISION};
 
-  % Panel 2: paired cached-context queries of one teacher.
-  \node[title,text=cBlue] at (8.235,4.92)
-    {MATCHED CACHED-CONTEXT QUERIES};
-  \node[tag,fill=cBlue!9,text=cBlue] at (8.235,4.48)
-    {$\theta$ frozen; missing-force parameters $\phi$ learned};
+  % Panel 2: matched teacher queries give the force target.
+  \node[title,text=cSlow] at (13.45,4.72) {MATCHED CACHED-CONTEXT QUERIES};
+  \node[tag,fill=cSlow!9,text=cSlow] at (13.45,4.28)
+    {teacher frozen; missing-force mode learned};
 
-  \node[box,draw=cBlue,fill=cBlue!7,text width=17mm] (fullq) at (5.73,3.45)
+  \node[box,draw=cSlow,fill=cSlow!7,text width=24mm] (fullq) at (10.15,3.30)
     {Force-conditioned\\teacher query};
-  \node[box,draw=cBlue,fill=white,text width=14mm] (fullout) at (7.78,3.45)
-    {$A_{T,t|k,1:H}^{\mathrm{cond}}$};
-  \draw[bluearrow] (fullq.east) -- (fullout.west);
+  \node[box,draw=cSlow,fill=white,text width=16mm] (fullout) at (12.65,3.30)
+    {$A^{\mathrm{cond}}$};
+  \draw[slowarrow] (fullq.east) -- (fullout.west);
 
-  \node[box,draw=cGreen,fill=cGreen!7,text width=17mm] (nullq) at (5.73,1.95)
+  \node[box,draw=cSlow,fill=cSlow!4,text width=24mm] (nullq) at (10.15,1.85)
     {Missing-force\\teacher query};
-  \node[box,draw=cGreen,fill=white,text width=14mm] (nullout) at (7.78,1.95)
-    {$A_{T,t|k,1:H}^{\mathrm{miss}}$};
-  \draw[greenarrow] (nullq.east) -- (nullout.west);
+  \node[box,draw=cSlow,fill=white,text width=16mm] (nullout) at (12.65,1.85)
+    {$A^{\mathrm{miss}}$};
+  \draw[slowarrow] (nullq.east) -- (nullout.west);
 
-  \node[circle,draw=cPurple,fill=white,line width=0.75pt,minimum size=6.5mm,
-        font=\sffamily\small\bfseries] (minus) at (9.08,2.70) {$-$};
-  \draw[bluearrow] (fullout.east) -| (minus.north);
-  \draw[greenarrow] (nullout.east) -| (minus.south);
+  \node[circle,draw=cTeacher,fill=white,line width=0.75pt,minimum size=6.5mm,
+        font=\sffamily\small\bfseries] (minus) at (14.15,2.58) {$-$};
+  \draw[slowarrow] (fullout.east) -| (minus.north);
+  \draw[slowarrow] (nullout.east) -| (minus.south);
 
-  \node[box,draw=cPurple,fill=cPurple!6,text width=19mm] (target) at (10.45,2.70)
-    {Teacher-derived\\force correction\\$\Delta A_{T,t|k,1:K}^{\mathrm{force}}$};
-  \draw[arrow,draw=cPurple] (minus.east) -- (target.west);
-  \node[note,text width=56mm] at (8.235,0.93)
-    {Same cached prefix $E_k$, current state $S_t$, and noise $\epsilon_k$\\[-1pt]
-     $\Delta A_{T,t|k,1:K}^{\mathrm{force}}=
-     \mathcal P(A_{T,t|k,1:K}^{\mathrm{cond}})-
-     \mathcal P(A_{T,t|k,1:K}^{\mathrm{miss}})$};
-  \node[tag,fill=cPurple!9,text=cPurple] at (8.235,0.36)
+  \node[box,draw=cTeacher,fill=cTeacher!6,text width=24mm] (target) at (16.45,2.58)
+    {Force-correction\\target};
+  \draw[arrow,draw=cTeacher] (minus.east) -- (target.west);
+  \node[note,text width=58mm] at (13.45,0.95)
+    {Same cached visual--language prefix, state, and noise};
+  \node[tag,fill=cTeacher!9,text=cTeacher] at (13.45,0.42)
     {EXPLICIT POSE-CORRECTION TARGET};
-
-  % Panel 3: the core factorization enabled by the explicit target.
-  \node[title,text=cGreen] at (14.985,4.92)
-    {DISTILL THE CORRECTION};
-
-  \node[box,draw=cPurple,fill=cPurple!6,text width=23mm] (supervision) at (13.35,3.50)
-    {Teacher-derived target\\$\Delta A_{T,t|k,1:K}^{\mathrm{force}}$};
-  \node[tag,fill=cPurple!9,text=cPurple] at (13.35,2.78)
-    {EXPLICIT SUPERVISION};
-
-  \node[box,draw=cGreen,fill=cGreen!7,text width=22mm] (residual) at (16.55,3.50)
-    {Force-responsive\\residual branch\\$\Delta\hat A_{t,1:K}^{\mathrm{force}}$};
-  \draw[greenarrow] (supervision.east) -- node[above,note] {distill} (residual.west);
-
-  \node[tinybox,draw=cBlue,fill=cBlue!6,text width=22mm] (ref) at (13.35,1.55)
-    {Cached missing-force\\reference $A_k^{\mathrm{ref}}$};
-  \node[circle,draw=cInk,fill=white,line width=0.7pt,minimum size=6.5mm,
-        font=\sffamily\small\bfseries] (sum) at (15.15,1.55) {$+$};
-  \node[tinybox,draw=cOrange,fill=cOrange!6,text width=22mm] (factorized) at (16.75,1.55)
-    {Factorized\\pose action};
-  \draw[bluearrow] (ref.east) -- (sum.west);
-  \draw[greenarrow] (residual.south) |- (sum.north);
-  \draw[arrow,draw=cOrange] (sum.east) -- (factorized.west);
-
-  \node[note,text width=53mm] at (14.985,0.48)
-    {The generative reference is retained;\\only the correction is distilled and exposed.};
 \end{tikzpicture}
 \end{document}

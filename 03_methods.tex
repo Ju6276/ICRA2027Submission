@@ -1,7 +1,7 @@
 \begin{figure*}[!t]
     \centering
     \includegraphics[width=0.98\textwidth]{figures/fig02_network_structure.pdf}
-    \caption{Overview of ForceDelta-VLA. \emph{Top:} three-stage training learns a temporal force-conditioned teacher, a missing-force operating mode, and separate force and staleness corrections. \emph{Bottom:} the residual policy combines cached task context and a missing-force reference with recent force history.}
+    \caption{Overview of ForceDelta-VLA. \emph{Top:} three-stage training freezes a temporal force-conditioned teacher, learns a missing-force mode, and distills paired force and staleness targets. Matched teacher queries reuse the cached visual--language prefix $E_k$ and noise $\epsilon_k$; schedule replay uses each query's start and availability times to select the active reference. \emph{Bottom:} a completed reference query writes the reference update $(A_k^{\mathrm{ref}},Z_k^{\mathrm{intent}},S_k)$ at $\bar t_k$. Each residual query reads the conditioning set $\mathcal C_t$ and outputs two $K$-step corrections, which are composed with the interpolated reference and $\Gamma(S_t,S_k)$.}
     \label{fig:network_structure}
 \end{figure*}
 
