@@ -122,7 +122,7 @@ Inspection of failed ForceDelta-VLA rollouts suggests three recurring limitation
 Two experiments assess independent residual execution. Runtime profiling quantifies the inference-time separation between the reference and residual paths; reference-delay evaluation tests whether this separation improves contact behavior as the cached reference becomes stale.
 
 \noindent\textbf{Inference-time separation.}
-Table~\ref{tab:runtime} reports isolated model-forward latency under the same button-pressing deployment setting. The $100$-Hz Cartesian target-update limit corresponds to a nominal $10$-ms per-update computation budget. The ForceDelta residual forward pass takes $2.43$~ms, about a quarter of this budget. The Temporal Teacher and the ForceDelta reference require $176.4$ and $189.7$~ms, respectively, so neither can be evaluated for every target update; the reference is instead computed asynchronously, cached, and reused across residual updates. This separation allows the force-conditioned correction model, but not the full generative policy, to be evaluated within the nominal per-update inference budget.
+Table~\ref{tab:runtime} reports isolated model-forward latency under the same button-pressing deployment setting. The $100$-Hz Cartesian target-update limit is a $10$-ms per-update budget. The ForceDelta residual forward pass takes $2.43$~ms. The Temporal Teacher and the ForceDelta reference take $176.4$ and $189.7$~ms, so the reference is computed asynchronously and reused. Only the residual fits in the per-update budget.
 
 \begin{table}[t]
     \centering
@@ -143,7 +143,7 @@ Table~\ref{tab:runtime} reports isolated model-forward latency under the same bu
 \end{table}
 
 \noindent\textbf{Robustness to delayed references.}
-We evaluate USB insertion and plug insertion with $0$, $100$, and $200$~ms of additional reference-availability delay, using $10$ trials per task, method, and delay. Aggregated across the two tasks, ForceDelta-VLA maintains higher success and lower peak force than the Temporal Teacher across the tested delays (Fig.~\ref{fig:latency_sensitivity}). From $0$ to $200$~ms, success falls from $75\%$ to $60\%$ for ForceDelta-VLA and from $60\%$ to $35\%$ for the Temporal Teacher, while peak contact force rises from $12.5$ to $16.2$~N and from $16.0$ to $25.6$~N, respectively. These results show that the residual framework remains more robust to delayed reference availability than direct Temporal Teacher execution.
+We evaluate USB insertion and plug insertion with $0$, $100$, and $200$~ms of additional reference-availability delay, using $10$ trials per task, method, and delay. Aggregated across the two tasks, ForceDelta-VLA maintains higher success and lower peak force than the Temporal Teacher across the tested delays (Fig.~\ref{fig:latency_sensitivity}). From $0$ to $200$~ms, success falls from $75\%$ to $60\%$ for ForceDelta-VLA and from $60\%$ to $35\%$ for the Temporal Teacher, while peak contact force rises from $12.5$ to $16.2$~N and from $16.0$ to $25.6$~N, respectively. The residual path degrades less than rolling out the Temporal Teacher under the same delay.
 
 \begin{figure}[t]
     \centering
