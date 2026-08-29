@@ -25,15 +25,15 @@
 
 \begin{document}
 \begin{tikzpicture}[x=1cm,y=1cm]
-  % Reference-query lane: one query occupies the interval from issue to publication.
+  % Reference-query lane: one query occupies the interval from start to availability.
   \node[lane,text=cSlow] at (1.65,2.05) {REFERENCE QUERY};
   \draw[axis,draw=cSlow!65] (1.75,2.05) -- (8.45,2.05);
   \node[query,anchor=west,minimum width=2.02cm] (qk) at (2.15,2.05)
     {reference query $k$};
   \node[query,anchor=west,minimum width=2.05cm] (qnext) at (5.57,2.05)
     {query $k{+}1$};
-  \node[note,anchor=south] at (2.15,2.47) {issue $t_k$};
-  \node[note,anchor=south] at (5.57,2.47) {issue $t_{k+1}$};
+  \node[note,anchor=south] at (2.15,2.47) {start $t_k$};
+  \node[note,anchor=south] at (5.57,2.47) {start $t_{k+1}$};
 
   % Publication boundary, placed in the gap between two command steps.
   \draw[dashed,draw=cInk!65,line width=0.7pt] (4.31,2.55) -- (4.31,0.50);

@@ -35,7 +35,7 @@ The residual policy observes only the reference sample aligned with its query ti
 
 At deployment, force-conditioned and staleness corrections are clipped separately and element-wise before composition. The implementation accepts either nine-dimensional nonnegative bounds $b_F,b_S\in\mathbb R_{\geq0}^{9}$ or scalar values broadcast over the pose coordinates; bimanual clipping is applied independently per arm. \assumed{The final robot configuration must specify the values used for $b_F$ and $b_S$.}
 
-\assumed{Residual-policy training examples are anchored at the $30$~Hz state/action timestamps while retaining every $100$~Hz wrench sample in $\mathcal F_t$. Residual queries may be issued more frequently at deployment; the realized correction-update rate is measured directly rather than inferred from the action-sample rate within a chunk.}
+\assumed{Residual-policy training examples are anchored at the $30$~Hz state/action timestamps while retaining every $100$~Hz wrench sample in $\mathcal F_t$. Residual queries may start more frequently at deployment; the realized correction-update rate is measured directly rather than inferred from the action-sample rate within a chunk.}
 
 \subsection{Force-Null Mode Optimization}
 
@@ -64,7 +64,7 @@ Thus, $\beta<1$ emphasizes near-term corrections, $\beta=1$ weights all steps eq
 
 \subsection{Reference Updates}
 
-A reference query $k$, issued at $t_k$ from state $S_k$, publishes the immutable reference update $(A_{T,k,1:H}^{\mathrm{null}},Z_k^{\mathrm{intent}},S_k,t_k,\bar t_k)$ when its result becomes available at $\bar t_k$. Its samples carry intended execution times
+A reference query $k$, started at $t_k$ from state $S_k$, publishes the immutable reference update $(A_{T,k,1:H}^{\mathrm{null}},Z_k^{\mathrm{intent}},S_k,t_k,\bar t_k)$ when its result becomes available at $\bar t_k$. Its samples carry intended execution times
 \begin{equation}
     t_{k,n}^{\mathrm{ref}}=t_k+(n-1)/f_A,
     \qquad n=1,\ldots,H.

@@ -73,7 +73,7 @@ The resulting reference prediction is
 \subsubsection{Correction targets}
 \label{sec:teacher_differencing}
 
-For a schedule-replay sample $(t,k)$, let $E_k$ be the visual--language prefix produced when reference query $k$ is issued from $(V_k,L,S_k)$ with flow noise $\epsilon_k$. The query publishes the timestamped missing-force chunk $A_k^{\mathrm{ref}}(\cdot)$, for which $A_k^{\mathrm{ref}}=A_{T,k}^{\mathrm{miss}}$. To match the temporal provenance of the information available to the deployed residual pathway, target generation reuses $E_k$ while updating the state and force history to their values at $t$:
+For a schedule-replay sample $(t,k)$, let $E_k$ be the visual--language prefix produced when reference query $k$ starts from $(V_k,L,S_k)$ with flow noise $\epsilon_k$. The query publishes the timestamped missing-force chunk $A_k^{\mathrm{ref}}(\cdot)$, for which $A_k^{\mathrm{ref}}=A_{T,k}^{\mathrm{miss}}$. To match the temporal provenance of the information available to the deployed residual pathway, target generation reuses $E_k$ while updating the state and force history to their values at $t$:
 \begin{align}
     A_{T,t|k,1:K}^{\mathrm{cond}}
     &=T_\theta(E_k,S_t,z_t^F;\epsilon_k)_{1:K},
@@ -130,7 +130,7 @@ Each reference query caches a compact representation of its visual--language con
     =P_{\mathrm{intent}}\!\left(\operatorname{Pool}(E_k,m_k)\right).
     \label{eq:intent_projection}
 \end{equation}
-Together, $A_k^{\mathrm{ref}}$, $Z_k^{\mathrm{intent}}$, and $S_k$ form the timestamped reference update for query $k$; the latest published update is cached for the fast pathway. The intent tokens represent the task context available when reference query $k$ is issued. The fast residual assumes that this context remains locally valid within a reference interval. Timestamp-based interpolation provides the reference sample $A_k^{\mathrm{ref}}(t)$ for a residual query at $t$. A causal encoder maps $\mathcal F_t$ to $u_t^F$. We also encode cache age and interpolation phase,
+Together, $A_k^{\mathrm{ref}}$, $Z_k^{\mathrm{intent}}$, and $S_k$ form the timestamped reference update for query $k$; the latest published update is cached for the fast pathway. The intent tokens represent the task context available when reference query $k$ starts. The fast residual assumes that this context remains locally valid within a reference interval. Timestamp-based interpolation provides the reference sample $A_k^{\mathrm{ref}}(t)$ for a residual query at $t$. A causal encoder maps $\mathcal F_t$ to $u_t^F$. We also encode cache age and interpolation phase,
 \begin{equation}
     \xi_{t,k}=
     \left[\min\!\left(\frac{t-t_k}{c},1\right);\alpha_{t,k}\right],
@@ -160,7 +160,7 @@ The mask prevents direct force dependence in the staleness output. The staleness
 \subsubsection{Staleness-aware schedule replay}
 \label{sec:async_training}
 
-During offline residual-policy training, we replay asynchronous execution by sampling inter-query periods and reference-query latencies. Training instants follow the recorded state--action timestamps, while $\mathcal F_t$ retains all wrench samples in the causal window. If $t_i$ and $\bar t_i$ are the issue and publication times of query $i$, the active reference index is
+During offline residual-policy training, we replay asynchronous execution by sampling inter-query periods and reference-query latencies. Training instants follow the recorded state--action timestamps, while $\mathcal F_t$ retains all wrench samples in the causal window. If $t_i$ and $\bar t_i$ are the start and availability times of query $i$, the active reference index is
 \begin{equation*}
     k(t)=\arg\max_{i:\bar t_i\leq t}t_i.
 \end{equation*}
