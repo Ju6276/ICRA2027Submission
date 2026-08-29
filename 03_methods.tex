@@ -185,7 +185,7 @@ The coefficient $\lambda_{\mathrm{stale}}$ balances force-conditioning and stale
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{figures/fig03_async_deployment.pdf}
-    \caption{Independent residual execution. Reference and residual workers publish timestamped packets independently. Residual corrections continue while the next reference query is pending; expired correction steps are skipped.}
+    \caption{Independent residual execution. Reference query $k$, requested at $t_k$, publishes at $\bar t_k$ the timestamped packet $(A_k^{\mathrm{ref}},Z_k^{\mathrm{intent}},S_k)$. Each cell in the fast lane is one control step, and its fill colour marks the packet that step reads: a newly published reference is used only by subsequent residual queries. Residual corrections continue while query $k{+}1$ is pending, and expired correction steps are skipped.}
     \label{fig:async_deployment}
 \end{figure}
 

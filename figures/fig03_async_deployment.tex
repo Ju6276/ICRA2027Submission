@@ -12,69 +12,54 @@
   axis/.style={-{Latex[length=1.7mm]},line width=0.65pt},
   query/.style={rounded corners=2pt,draw=cSlow,fill=cSlow!9,line width=0.85pt,
                 align=center,font=\sffamily\scriptsize,minimum height=7mm},
-  oldcache/.style={rounded corners=2pt,draw=cOld,fill=cOld!9,line width=0.8pt,
-                   align=center,font=\sffamily\scriptsize,minimum height=7mm},
-  newcache/.style={rounded corners=2pt,draw=cCache,fill=cCache!9,line width=0.9pt,
-                   align=center,font=\sffamily\scriptsize,minimum height=7mm},
-  tick/.style={rounded corners=1.5pt,draw=cFast,fill=cFast!10,line width=0.75pt,
-               minimum width=5.5mm,minimum height=6.5mm,inner sep=1pt,
-               font=\sffamily\scriptsize},
+  oldstep/.style={rounded corners=1pt,draw=cOld,fill=cOld!35,line width=0.5pt,
+                  minimum width=2.8mm,minimum height=4.6mm,inner sep=0pt},
+  newstep/.style={rounded corners=1pt,draw=cCache,fill=cCache!35,line width=0.5pt,
+                  minimum width=2.8mm,minimum height=4.6mm,inner sep=0pt},
   lane/.style={font=\sffamily\scriptsize\bfseries,anchor=east},
   note/.style={font=\sffamily\tiny,align=center,text=cInk!75}
 }
 
 \begin{document}
 \begin{tikzpicture}[x=1cm,y=1cm]
-  % Reference-query lane.
-  \node[lane,text=cSlow] at (1.65,2.65) {REFERENCE QUERY};
-  \draw[axis,draw=cSlow!65] (1.85,2.65) -- (8.25,2.65);
-  \node[query,anchor=west,minimum width=2.2cm] (qk) at (2.15,2.65)
-    {missing-force query $k$};
-  \node[query,anchor=west,minimum width=2.05cm] (qnext) at (5.55,2.65)
+  % Reference-query lane: one query occupies the interval from request to publication.
+  \node[lane,text=cSlow] at (1.65,2.05) {REFERENCE QUERY};
+  \draw[axis,draw=cSlow!65] (1.85,2.05) -- (8.25,2.05);
+  \node[query,anchor=west,minimum width=2.2cm] (qk) at (2.15,2.05)
+    {reference query $k$};
+  \node[query,anchor=west,minimum width=2.05cm] (qnext) at (5.55,2.05)
     {query $k{+}1$};
-  \node[note,anchor=south] at (2.15,3.06) {request $t_k$};
-  \node[note,anchor=south] at (4.35,3.06) {available $\bar t_k$};
+  \node[note,anchor=south] at (2.15,2.45) {request $t_k$};
+  \node[note,anchor=south] at (5.55,2.45) {request $t_{k+1}$};
 
-  % Publication boundary shared by all lanes.
-  \draw[dashed,draw=cInk!45,line width=0.65pt] (4.45,3.15) -- (4.45,0.16);
-  \node[note,fill=white,inner sep=1pt] at (4.45,2.05) {publish packet $k$};
+  % Publication boundary: the single event that switches the active packet.
+  \draw[dashed,draw=cInk!45,line width=0.65pt] (4.45,2.55) -- (4.45,0.34);
+  \node[note,fill=white,inner sep=1pt] at (4.45,1.46) {publish packet $k$ at $\bar t_k$};
 
-  % Active-cache lane: old packet before publication, new packet after it.
-  \node[lane,text=cCache] at (1.65,1.55) {CACHED REF. + CONTEXT};
-  \node[oldcache,anchor=west,text width=2.0cm] (cold) at (2.15,1.55)
-    {packet $k{-}1$\\active previous packet};
-  \node[newcache,anchor=west,text width=2.9cm] (cnew) at (4.60,1.55)
-    {packet $k$: newly available\\$A_k^{\mathrm{ref}},Z_k^{\mathrm{intent}},S_k$};
-  \draw[-{Latex[length=1.6mm]},draw=cCache,line width=0.8pt]
-    (qk.south east) -- (4.60,1.90);
-  \node[note,anchor=west] at (7.62,1.55)
-    {expired prefix skipped\\for execution};
-
-  % Fast command lane: discrete chunk steps on either side of the cache switch.
-  \node[lane,text=cFast] at (1.65,0.48) {FAST COMMAND STEPS};
-  \node[note,anchor=west,text=cFast] at (1.90,0.82)
-    {Fast observation $\mathcal F_{t_q^F},S_{t_q^F}$};
-  \draw[axis,draw=cFast!65] (1.85,0.48) -- (8.25,0.48);
-  \foreach \x in {2.15,2.85,3.55,4.20,4.80,5.50,6.20,6.90,7.60} {
-    \node[tick] at (\x,0.48) {$\Delta$};
+  % Fast command lane: fill colour encodes which packet each step reads.
+  \node[lane,text=cFast] at (1.65,0.88) {FAST COMMAND STEPS};
+  \node[note,anchor=east,text=cFast] at (1.65,0.58) {obs.\ $\mathcal F_t,S_t$};
+  \draw[axis,draw=cFast!65] (1.85,0.75) -- (8.25,0.75);
+  \foreach \i in {0,...,16} {
+    \pgfmathsetmacro{\x}{2.15+0.36*\i}
+    \pgfmathparse{\x<4.45 ? 1 : 0}
+    \ifnum\pgfmathresult=1
+      \node[oldstep] at (\x,0.75) {};
+    \else
+      \node[newstep] at (\x,0.75) {};
+    \fi
   }
-  \draw[-{Latex[length=1.5mm]},draw=cOld,line width=0.7pt]
-    (cold.south) -- (3.20,0.84);
-  \draw[-{Latex[length=1.5mm]},draw=cCache,line width=0.75pt]
-    (cnew.south) -- (5.65,0.84);
-  \node[note,fill=white,inner sep=1pt] at (3.20,0.98) {read packet $k{-}1$};
-  \node[note,fill=white,inner sep=1pt] at (5.65,0.98) {read packet $k$};
-  \node[note,anchor=north,text width=26mm] at (3.20,0.18)
-    {each correction chunk remains bound to the packet it reads};
+  \node[note,text=cOld] at (3.05,1.12) {reads packet $k{-}1$};
+  \node[note,text=cCache] at (6.29,1.12) {reads packet $k$};
 
-  \draw[draw=cFast,line width=0.65pt] (5.55,-0.03) -- (7.60,-0.03);
-  \draw[draw=cFast,line width=0.65pt] (5.55,-0.03) -- (5.55,0.08);
-  \draw[draw=cFast,line width=0.65pt] (7.60,-0.03) -- (7.60,0.08);
-  \node[note,text=cFast] at (6.58,-0.23)
+  % Residual keeps running while the next reference query is pending.
+  \draw[draw=cFast,line width=0.65pt] (5.55,0.42) -- (7.91,0.42);
+  \draw[draw=cFast,line width=0.65pt] (5.55,0.42) -- (5.55,0.52);
+  \draw[draw=cFast,line width=0.65pt] (7.91,0.42) -- (7.91,0.52);
+  \node[note,anchor=north,text=cFast] at (6.73,0.38)
     {residual continues while query $k{+}1$ is pending};
 
-  \node[note,anchor=north] at (5.05,-0.50)
-    {each available Fast result publishes a timestamped $K$-step correction chunk;\\
-     expired steps are skipped and valid steps execute sequentially without interpolation};
+  \node[note,anchor=north] at (5.03,0.06)
+    {each correction chunk stays bound to the packet it reads; expired steps are skipped};
 \end{tikzpicture}
 \end{document}
