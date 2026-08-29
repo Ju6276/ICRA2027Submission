@@ -12,17 +12,18 @@ We consider an offline dataset $\mathcal D$ of teleoperated manipulation traject
 \begin{equation*}
     \mathcal F_t=\{(s,\mathbf w(s))\mid t-T_F\leq s\leq t\},
 \end{equation*}
-where $T_F$ is the history duration and $\mathbf w(s)=[\mathbf f(s);\boldsymbol\tau(s)]\in\mathbb R^6$ is the external end-effector wrench. Pose actions and wrench measurements use the corresponding robot-base frame. A force-conditioned teacher $T_\theta$ maps $(V_t,L,S_t,\mathcal F_t)$ to an $H$-step action chunk relative to $S_t$. Pose actions and residuals below use its normalized pose-action coordinates, with differences scaled by the action standard deviations.
+where $T_F$ is the history duration and $\mathbf w(s)=[\mathbf f(s);\boldsymbol\tau(s)]\in\mathbb R^6$ is the per-arm external end-effector wrench. Pose actions and wrench measurements use the corresponding robot-base frame. A force-conditioned teacher $T_\theta$ maps $(V_t,L,S_t,\mathcal F_t)$ to an $H$-step action chunk relative to $S_t$. Pose actions and residuals below use its normalized pose-action coordinates, with differences scaled by the action standard deviations.
 
-Our objective is to construct explicit supervision for a force-responsive correction and distill it into a residual policy that can be evaluated independently of the generative teacher. Let $\mathcal P(\cdot)$ extract the pose component of an action. We use a reference-state-consistent dual-residual decomposition that factors the commanded pose into a reference and two additive corrections,
+Our objective is to construct explicit supervision for a force-responsive correction and distill it into a residual policy that can be evaluated independently of the generative teacher. Let $\mathcal P(\cdot)$ extract the pose component of an action. We factor the commanded pose into a reference, two learned corrections, and a deterministic reference-state rebasing term,
 \begin{equation}
     \mathcal P(A^{\mathrm{cmd}})
     =\mathcal P(A^{\mathrm{ref}})
       +\Delta\hat A^{\mathrm{force}}
-      +\Delta\hat A^{\mathrm{stale}}.
+      +\Delta\hat A^{\mathrm{stale}}
+      +\Gamma(S_t,S_k).
     \label{eq:action_comp}
 \end{equation}
-The force term models the teacher's force-conditioning deviation, and the staleness term accounts for the earlier state underlying the cached reference. Both modify only pose; the gripper command is inherited from the reference.
+The force residual models the teacher's force-conditioning deviation, the learned staleness residual models the remaining cached-reference discrepancy, and $\Gamma$ rebases the reference query state $S_k$ to the current state $S_t$. All three terms modify only pose; the gripper command is inherited from the reference.
 
 Here $\mathcal P(A)=[p;r]$ contains translation $p\in\mathbb R^3$ and a continuous 6D rotation representation $r\in\mathbb R^6$~\cite{zhou2020continuityrotationrepresentationsneural}. Translation is added directly; rotational corrections are added in the teacher's 6D action coordinates and mapped to a valid rotation matrix by Gram--Schmidt orthogonalization. On the bimanual platform, $\mathcal P(A)$, $S_t$, and $\mathcal F_t$ concatenate the corresponding per-arm quantities, so the pose-action dimension doubles and a single residual query predicts both arms jointly. All residual operations, including the coordinate rebasing of Sec.~\ref{sec:teacher_differencing} and the deployment bounds of Sec.~\ref{sec:execution}, act component-wise over the concatenated pose vector under a shared bound rather than per-arm bounds.
 
@@ -91,7 +92,7 @@ Here $T(E_k,\cdot)$ denotes reuse of the cached visual--language prefix without 
 \end{equation}
 which supervises the force-responsive residual head.
 
-The residual query predicts $K$ action samples at $t_j=t+(j-1)/f_A$, where $f_A$ is the action-sample rate within a chunk. Let $\widetilde S^{p}$ denote the normalized nine-dimensional pose coordinates, and let $\sigma_S^{p}$ and $\sigma_A^{p}$ denote the corresponding training-set standard deviations. The cached-state gap is converted to normalized action coordinates as
+The residual query predicts $K$ action samples at $t_j=t+(j-1)/f_A$, where $f_A$ is the action-sample rate within a chunk. Let $\widetilde S^{p}$ denote the normalized pose coordinates (nine per arm), and let $\sigma_S^{p}$ and $\sigma_A^{p}$ denote the corresponding training-set standard deviations. The cached-state gap is converted to normalized action coordinates as
 \begin{equation}
     \Gamma(S_t,S_k)
     =\frac{\sigma_S^{p}+\varepsilon}{\sigma_A^{p}+\varepsilon}
@@ -99,12 +100,11 @@ The residual query predicts $K$ action samples at $t_j=t+(j-1)/f_A$, where $f_A$
     \qquad \varepsilon=10^{-6}.
     \label{eq:coordinate_rebasing}
 \end{equation}
-The staleness target is
+The learned staleness target is
 \begin{equation}
     \Delta A_{T,k\rightarrow t,j}^{\mathrm{stale}}
     =\mathcal P\!\left(A_{T,t|k,j}^{\mathrm{miss}}\right)
-      -\mathcal P\!\left(A_k^{\mathrm{ref}}(t_j)\right)
-      +\Gamma(S_t,S_k).
+      -\mathcal P\!\left(A_k^{\mathrm{ref}}(t_j)\right).
     \label{eq:staleness_target}
 \end{equation}
 Let $\mathcal R(S,a)$ convert a relative action $a$ based at state $S$ into an absolute robot command. The paired targets align the two coordinate bases stepwise:
@@ -112,13 +112,14 @@ Let $\mathcal R(S,a)$ convert a relative action $a$ based at state $S$ into an a
 \begin{aligned}
     &\mathcal R\!\left(S_k,\mathcal P(A_k^{\mathrm{ref}}(t_j))
       +\Delta A_{T,t|k,j}^{\mathrm{force}}
-      +\Delta A_{T,k\rightarrow t,j}^{\mathrm{stale}}\right)\\[-2pt]
+      +\Delta A_{T,k\rightarrow t,j}^{\mathrm{stale}}
+      +\Gamma(S_t,S_k)\right)\\[-2pt]
     &\qquad\approx\mathcal R\!\left(S_t,
       \mathcal P(A_{T,t|k,j}^{\mathrm{cond}})\right).
 \end{aligned}
     \label{eq:absolute_command_equivalence}
 \end{equation}
-Substituting~\eqref{eq:force_target} and~\eqref{eq:staleness_target} cancels the missing-force and reference terms and leaves the force-conditioned chunk rebased from $S_k$ to $S_t$ by $\Gamma$, so the relation is an identity in the normalized pose coordinates apart from the regularizer $\varepsilon$ in~\eqref{eq:coordinate_rebasing}. It holds component-wise for translation and for the 6D rotation channels, and the orthogonalization then acts on identical arguments on both sides.
+Substitution leaves the force-conditioned chunk rebased by $\Gamma$. The translational rebasing is exact in normalized Euclidean coordinates up to $\varepsilon$; the 6D rotational rebasing is a representation-space approximation rather than an exact relative rotation on $\mathrm{SO}(3)$ and is projected by Gram--Schmidt. Equation~\eqref{eq:absolute_command_equivalence} describes the unclipped composition and remains approximate for rotation.
 
 \subsubsection{Residual policy}
 \label{sec:residual_policy}
@@ -142,7 +143,7 @@ where $c$ is an age scale and $\alpha_{t,k}$ is the position of $t$ between adja
     &P_A(A_k^{\mathrm{ref}}(t));P_\xi(\xi_{t,k})].
     \label{eq:conditioning_set}
 \end{align}
-Here $P_Z,P_A,P_S$, and $P_\xi$ project their inputs to the shared token width. The block applies no positional encoding: each condition is identified by a learned type embedding, so $\Phi$ is invariant to the ordering of $\mathcal C_t$. The rebasing term $\Gamma(S_t,S_k)$ enters only the staleness supervision target~\eqref{eq:staleness_target} and is not provided as a network input: the residual policy observes $S_t$ but not $S_k$, so the staleness head must infer the base-state gap from the current state together with the cached reference and intent tokens. Let $\mathcal C_t^{\mathrm{maskF}}=\operatorname{Mask}_F(\mathcal C_t)$ denote the same set with its force token masked.
+Here $P_Z,P_A,P_S$, and $P_\xi$ project their inputs to the shared token width. The block applies no positional encoding: each condition is identified by a learned type embedding, so $\Phi$ is invariant to the ordering of $\mathcal C_t$. The deterministic term $\Gamma(S_t,S_k)$ is computed outside the policy and is therefore excluded from $\mathcal C_t$. Let $\mathcal C_t^{\mathrm{maskF}}=\operatorname{Mask}_F(\mathcal C_t)$ denote the same set with its force token masked.
 
 An attention block $\Phi$ and learned query $q_{\mathrm{res}}$ predict two $K$-step corrections,
 \begin{align}
@@ -154,7 +155,7 @@ An attention block $\Phi$ and learned query $q_{\mathrm{res}}$ predict two $K$-s
       \Phi([\mathcal C_t^{\mathrm{maskF}};q_{\mathrm{res}}])[q_{\mathrm{res}}].
     \label{eq:staleness_output}
 \end{align}
-The mask prevents direct force dependence in the staleness output. Under the locally valid cached visual context, the staleness head targets robot-state and reference-time mismatch. The two passes share $\Phi$ and use separate output projections.
+The mask prevents direct force dependence in the staleness output. The staleness head predicts the cached missing-force reference discrepancy under the locally valid visual context. The two passes share $\Phi$ and use separate output projections.
 
 \subsubsection{Staleness-aware schedule replay}
 \label{sec:async_training}
@@ -163,7 +164,7 @@ During offline residual-policy training, we replay asynchronous execution by sam
 \begin{equation*}
     k(t)=\arg\max_{i:\bar t_i\leq t}t_i.
 \end{equation*}
-This query supplies the cached intent, current reference sample, temporal features, and $\Gamma(S_t,S_k)$. Its timestamped action chunk provides the stepwise staleness targets. Resampling the schedule varies reference age, interpolation phase, and packet latency.
+The active query supplies the cached intent, current reference sample, temporal features, and timestamped action chunk used to form the stepwise targets. Resampling the schedule varies reference age, interpolation phase, and packet latency.
 
 With normalized temporal weights $w_j\propto\beta^{j-1}$, $0<\beta\leq1$, and normalized-coordinate mean-squared loss $\ell_{\mathrm{pose}}$, the distillation objective is
 \begin{align}
@@ -190,4 +191,4 @@ The coefficient $\lambda_{\mathrm{stale}}$ balances force-conditioning and stale
 
 The reference and residual workers execute independently (Fig.~\ref{fig:async_deployment}). A completed reference query publishes a timestamped missing-force action chunk, cached intent, and query state. Each residual query reads the active reference packet together with the current state and causal wrench history. Its timestamped $K$-step correction chunk remains bound to that reference packet, so a newly published reference is used only by subsequent residual queries.
 
-Expired correction steps are skipped, and the remaining steps execute sequentially without interpolation. The reference pose is interpolated by timestamp. Force and staleness corrections are bounded separately, composed in normalized delta-action coordinates, and converted to an absolute command using the reference query state.
+Expired correction steps are skipped, and the remaining steps execute sequentially without interpolation. The reference pose is interpolated by timestamp. At each update, $\Gamma(S_t,S_k)$ is computed directly from the current and cached query states. The force residual is bounded independently; the sum $\Delta\hat A^{\mathrm{stale}}+\Gamma(S_t,S_k)$ is bounded as the staleness correction. Both are composed with the reference in normalized delta-action coordinates and converted to an absolute command using the reference query state.
