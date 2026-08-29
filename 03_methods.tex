@@ -187,7 +187,7 @@ The reference and residual workers execute independently (Fig.~\ref{fig:async_de
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{figures/fig03_async_deployment.pdf}
-    \caption{Two-lane timeline of independent residual execution. The upper lane shows reference queries, each spanning its issue time $t_k$ and its publication time $\bar t_k$; the lower lane shows fast command steps, colored by the reference update each step uses. A correction chunk stays bound to the reference update it was predicted from: in the schedule shown, the dashed step just after $\bar t_k$ belongs to a chunk predicted before publication and still executes under reference $k{-}1$, so reference $k$ takes effect only through subsequent residual queries. The bracket marks fast execution continuing while query $k{+}1$ is pending.}
+    \caption{Two-lane timeline of independent residual execution. The upper lane shows reference queries, each spanning its issue time $t_k$ and its publication time $\bar t_k$, at which the reference update becomes available. The lower lane shows fast command steps, colored by the reference update each step uses, with brackets marking two consecutive $K$-step correction chunks. A correction chunk stays bound to the reference update it was predicted from: in the schedule shown, the dashed step just after $\bar t_k$ is the last step of the chunk predicted before publication and still uses reference $k{-}1$, so reference $k$ takes effect only with the next chunk.}
     \label{fig:async_deployment}
 \end{figure}
 

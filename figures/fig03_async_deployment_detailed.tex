@@ -11,7 +11,7 @@
 \tikzset{
   axis/.style={-{Latex[length=1.7mm]},line width=0.65pt},
   query/.style={rounded corners=2pt,draw=cSlow,fill=cSlow!9,line width=0.85pt,
-                align=center,font=\sffamily\scriptsize,minimum height=7mm},
+                align=center,font=\sffamily\scriptsize,minimum height=8mm},
   oldstep/.style={rounded corners=1pt,draw=cOld,fill=cOld!35,line width=0.5pt,
                   minimum width=2.8mm,minimum height=4.6mm,inner sep=0pt},
   newstep/.style={rounded corners=1pt,draw=cCache,fill=cCache!35,line width=0.5pt,
@@ -20,7 +20,9 @@
                    fill=cOld!35,line width=0.5pt,
                    minimum width=2.8mm,minimum height=4.6mm,inner sep=0pt},
   lane/.style={font=\sffamily\scriptsize\bfseries,anchor=east},
-  note/.style={font=\sffamily\tiny,align=center,text=cInk!75}
+  note/.style={font=\sffamily\tiny,align=center,text=cInk!75},
+  io/.style={rounded corners=2pt,draw=cFast!55,fill=cFast!4,line width=0.5pt,
+             align=center,font=\sffamily\tiny,text=cInk!85,inner sep=1.6mm}
 }
 
 \begin{document}
@@ -29,15 +31,16 @@
   \node[lane,text=cSlow] at (1.65,2.05) {REFERENCE QUERY};
   \draw[axis,draw=cSlow!65] (1.75,2.05) -- (8.45,2.05);
   \node[query,anchor=west,minimum width=2.02cm] (qk) at (2.15,2.05)
-    {reference query $k$};
+    {reference query $k$\\$V_k,L,S_k$};
   \node[query,anchor=west,minimum width=2.05cm] (qnext) at (5.57,2.05)
     {query $k{+}1$};
-  \node[note,anchor=south] at (2.15,2.47) {issue $t_k$};
-  \node[note,anchor=south] at (5.57,2.47) {issue $t_{k+1}$};
+  \node[note,anchor=south] at (2.15,2.52) {issue $t_k$};
+  \node[note,anchor=south] at (5.57,2.52) {issue $t_{k+1}$};
 
-  % Publication boundary, placed in the gap between two command steps.
-  \draw[dashed,draw=cInk!65,line width=0.7pt] (4.31,2.55) -- (4.31,0.50);
-  \node[note,anchor=west,inner sep=1pt] at (4.38,1.45) {publish $\bar t_k$};
+  % Publication boundary: the event that publishes the reference update.
+  \draw[dashed,draw=cInk!65,line width=0.7pt] (4.31,2.60) -- (4.31,0.50);
+  \node[note,anchor=west,inner sep=1pt] at (4.38,1.44)
+    {publish $\bar t_k$\\$A_k^{\mathrm{ref}},Z_k^{\mathrm{intent}},S_k$};
 
   % Fast command lane: steps precede $t_k$, and fill colour encodes the reference used.
   \node[lane,text=cFast] at (1.65,0.75) {FAST COMMAND STEPS};
@@ -64,5 +67,14 @@
   \draw[draw=cCache,line width=0.55pt] (4.71,0.45) -- (4.71,0.53);
   \draw[draw=cCache,line width=0.55pt] (6.43,0.45) -- (6.43,0.53);
   \node[note,anchor=north,text=cCache] at (5.57,0.42) {next chunk};
+
+  % Residual query inputs and outputs, following Eqs. (11)-(13).
+  \node[io,anchor=north,text width=74mm] (iobox) at (5.10,0.08)
+    {residual query at $t$\\[1pt]
+     conditioning $\mathcal C_t$:\ $Z_k^{\mathrm{intent}},\,u_t^F,\,S_t,\,
+       A_k^{\mathrm{ref}}(t),\,\xi_{t,k}$\\[1pt]
+     outputs:\ $\Delta\hat A^{\mathrm{force}}_{t,1:K}$ from $\mathcal C_t$,\quad
+       $\Delta\hat A^{\mathrm{stale}}_{t,1:K}$ from $\mathcal C_t^{\mathrm{maskF}}$};
+  \draw[draw=cFast!55,line width=0.5pt] (5.57,0.28) -- (5.57,0.08);
 \end{tikzpicture}
 \end{document}
