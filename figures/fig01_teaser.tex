@@ -39,7 +39,7 @@
     (5.55,0) rectangle (18.15,5.15);
 
   % =============================================== LEFT: the current situation
-  \node[title] at (2.675,4.90) {PRIOR FORCE-AWARE VLAs};
+  \node[title] at (2.675,4.90) {FULL-ACTION FORCE-AWARE VLAs};
 
   \node[box,text width=34mm] (obs) at (2.675,3.95)
     {Vision, language, state, force};
@@ -63,23 +63,25 @@
   % ---- Row A: offline construction of an explicit correction target.
   % The two predictions are stacked with the minus sign between them, so the
   % operand order is given by position rather than by a sign convention.
-  \node[rowlab,anchor=west] at (6.15,4.68) {OFFLINE SUPERVISION};
+  \node[rowlab,anchor=west] at (6.15,4.76) {OFFLINE SUPERVISION};
 
   \node[box,draw=cTeacher,fill=cTeacher!6,text width=26mm] (tq) at (7.75,3.65)
     {Frozen teacher};
-  \node[tinybox,draw=cSlow,text width=28mm] (cond) at (11.30,4.25)
+  \node[tinybox,draw=cSlow,text width=28mm] (cond) at (11.30,4.30)
     {force-conditioned prediction};
-  \node[tinybox,draw=cSlow,text width=28mm] (miss) at (11.30,3.05)
+  \node[tinybox,draw=cSlow,text width=28mm] (miss) at (11.30,3.00)
     {missing-force prediction};
-  \node[font=\sffamily\LARGE\bfseries,text=cTeacher] at (11.30,3.66) {$-$};
+  \node[circle,draw=cTeacher,fill=white,line width=0.8pt,minimum size=5mm,
+        inner sep=0pt,font=\sffamily\small\bfseries,text=cTeacher]
+    at (11.30,3.65) {$-$};
 
   \coordinate (tf) at (9.40,3.65);
   \draw[plain,draw=cTeacher] (tq.east) -- (tf);
   \draw[teacharrow] (tf) |- (cond.west);
   \draw[teacharrow] (tf) |- (miss.west);
 
-  \node[box,draw=cTeacher,fill=cTeacher!8,text width=28mm] (target) at (15.85,3.65)
-    {Explicit force-\\correction target};
+  \node[box,draw=cTeacher,fill=cTeacher!8,text width=30mm] (target) at (15.85,3.65)
+    {Teacher-defined\\force-responsive target};
 
   \coordinate (jn) at (13.20,3.65);
   \draw[plain,draw=cSlow] (cond.east) -| (jn);

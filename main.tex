@@ -68,7 +68,7 @@ ForceDelta-VLA: Distilling Force-Conditioned Action\\Corrections for Contact-Ric
       \centering
       \includegraphics[width=0.98\linewidth,height=0.28\textheight,keepaspectratio]{figures/fig01_teaser.pdf}
       % \vspace{-0.2in}
-      \captionof{figure}{ForceDelta-VLA. \emph{Left:} force-aware VLAs emit a single generative action chunk that fuses task-level motion with contact-dependent adjustment, so the correction has no explicit supervision target and is refreshed only at the generative query rate. \emph{Right, top:} a frozen teacher is queried twice under the same cached context, differing only in whether the wrench history is supplied; the difference between the force-conditioned and missing-force predictions is an explicit force-correction target. \emph{Right, bottom:} the distilled residual updates at the control rate from recent wrench history, and its corrections compose with a reference that refreshes asynchronously.}
+      \captionof{figure}{ForceDelta-VLA. \emph{Left:} full-action force-aware VLAs couple task motion and contact-dependent adjustment within each generative action chunk. \emph{Right:} matched force-conditioned and learned missing-force queries of a frozen teacher define a teacher-derived force-responsive residual target. At deployment, the distilled residual composes high-rate pose corrections with an asynchronously refreshed missing-force reference.}
       \label{fig:teaser}
       \vspace{-0.1in}
       \bigskip}
