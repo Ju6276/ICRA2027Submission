@@ -12,79 +12,110 @@
   arrow/.style={-{Latex[length=1.8mm]},draw=cInk!72,line width=0.72pt},
   slowarrow/.style={-{Latex[length=1.8mm]},draw=cSlow,line width=0.78pt},
   fastarrow/.style={-{Latex[length=1.8mm]},draw=cFast,line width=0.78pt},
+  teacharrow/.style={-{Latex[length=1.8mm]},draw=cTeacher,line width=0.78pt},
+  plain/.style={draw=cInk!72,line width=0.72pt},
   box/.style={rounded corners=2.2pt,draw=cInk!45,fill=white,line width=0.65pt,
               align=center,font=\sffamily\scriptsize,minimum height=8mm},
   tinybox/.style={rounded corners=1.8pt,draw=cInk!40,fill=white,line width=0.6pt,
-                  align=center,font=\sffamily\tiny,minimum height=6.5mm},
+                  align=center,font=\sffamily\tiny,minimum height=7mm},
+  % One output carrying both roles: blue (task-level) blended into orange (contact).
+  mixbox/.style={rounded corners=2.2pt,draw=cInk!50,line width=0.65pt,
+                 align=center,font=\sffamily\scriptsize,minimum height=9.5mm,
+                 left color=cSlow!18,right color=cFast!18},
   title/.style={font=\sffamily\scriptsize\bfseries,text=cInk,align=center},
+  rowlab/.style={font=\sffamily\tiny\bfseries,text=cInk!60,align=left},
   note/.style={font=\sffamily\tiny,text=cInk!78,align=center},
-  tag/.style={rounded corners=1.5pt,inner xsep=3pt,inner ysep=1.5pt,
+  tag/.style={rounded corners=1.5pt,inner xsep=3pt,inner ysep=1.8pt,
               font=\sffamily\tiny\bfseries,align=center}
 }
 
 \begin{document}
 \begin{tikzpicture}[x=1cm,y=1cm]
-  \filldraw[rounded corners=4pt,fill=gray!2,draw=cInk!24,line width=0.7pt]
-    (0,0) rectangle (8.55,5.15);
-  \filldraw[rounded corners=4pt,fill=cSlow!3,draw=cSlow!35,line width=0.7pt]
-    (8.75,0) rectangle (18.15,5.15);
 
-  % Panel 1: the supervision gap.
-  \node[title] at (4.275,4.72) {ENTANGLED FULL-ACTION PREDICTION};
-  \node[box,text width=16mm] (obs) at (1.55,3.55)
-    {Vision, state,\\force};
-  \node[box,draw=cFast,fill=cFast!7,text width=28mm] (oldvla) at (4.35,3.55)
-    {Force-aware\\generative policy};
-  \node[box,draw=cFast,fill=cFast!7,text width=20mm] (chunk) at (7.15,3.55)
-    {Full action\\chunk};
-  \draw[arrow] (obs.east) -- (oldvla.west);
-  \draw[arrow] (oldvla.east) -- (chunk.west);
+  % ---------------------------------------------------------------- panels
+  \filldraw[rounded corners=4pt,fill=gray!3,draw=cInk!22,line width=0.7pt]
+    (0,0) rectangle (5.35,5.15);
+  \filldraw[rounded corners=4pt,fill=cTeacher!3,draw=cTeacher!38,line width=0.8pt]
+    (5.55,0) rectangle (18.15,5.15);
 
-  \node[tinybox,draw=cSlow,fill=cSlow!6,text width=22mm] (nom) at (5.15,2.10)
-    {Task-level\\motion};
-  \node[font=\sffamily\normalsize\bfseries,text=cInk] at (6.30,2.10) {$+$};
-  \node[tinybox,draw=cFast,fill=cFast!6,text width=22mm] (adj) at (7.45,2.10)
-    {Contact-dependent\\adjustment};
-  \coordinate (hub) at (6.30,2.56);
-  \draw[draw=cInk!72,line width=0.72pt] (chunk.south) -- ++(0,-0.16) -| (hub);
-  \draw[draw=cInk!72,line width=0.72pt] (hub) -- (hub -| nom.north);
-  \draw[draw=cInk!72,line width=0.72pt] (hub) -- (hub -| adj.north);
-  \draw[arrow] (hub -| nom.north) -- (nom.north);
-  \draw[arrow] (hub -| adj.north) -- (adj.north);
-  \node[note] at (4.275,1.38) {Both roles are encoded in one prediction};
-  \node[tag,fill=cRed!10,draw=cRed!55,text=cRed,text width=46mm] at (4.275,0.52)
+  % =============================================== LEFT: the current situation
+  \node[title] at (2.675,4.90) {PRIOR FORCE-AWARE VLAs};
+
+  \node[box,text width=34mm] (obs) at (2.675,3.95)
+    {Vision, language, state, force};
+  \node[box,text width=40mm] (pol) at (2.675,2.72)
+    {Force-aware generative policy};
+  \node[mixbox,text width=44mm] (chunk) at (2.675,1.48)
+    {Full action chunk};
+
+  \draw[arrow] (obs.south) -- (pol.north);
+  \draw[arrow] (pol.south) -- (chunk.north);
+
+  \node[note,text width=46mm] at (2.675,0.76)
+    {task motion and contact adjustment fused,\\
+     refreshed only at the generative query rate};
+  \node[tag,fill=cRed!10,draw=cRed!55,text=cRed,text width=44mm] at (2.675,0.26)
     {NO EXPLICIT CORRECTION SUPERVISION};
 
-  % Panel 2: matched teacher queries give the force target.
-  \node[title,text=cSlow] at (13.45,4.72) {MATCHED CACHED-CONTEXT QUERIES};
-  \node[tag,fill=cSlow!9,text=cSlow] at (13.45,4.28)
-    {teacher frozen; missing-force mode learned};
+  % ================================================= RIGHT: ForceDelta-VLA
+  \node[title,text=cTeacher] at (11.85,4.90) {ForceDelta-VLA (ours)};
 
-  \node[box,draw=cSlow,fill=cSlow!7,text width=24mm] (fullq) at (10.15,3.30)
-    {Force-conditioned\\teacher query};
-  \node[box,draw=cSlow,fill=white,text width=16mm] (fullout) at (12.55,3.30)
-    {$A^{\mathrm{cond}}$};
-  \draw[slowarrow] (fullq.east) -- (fullout.west);
+  % ---- Row A: offline construction of an explicit correction target.
+  % The two predictions are stacked with the minus sign between them, so the
+  % operand order is given by position rather than by a sign convention.
+  \node[rowlab,anchor=west] at (6.15,4.68) {OFFLINE SUPERVISION};
 
-  \node[box,draw=cSlow,fill=cSlow!4,text width=24mm] (nullq) at (10.15,1.85)
-    {Missing-force\\teacher query};
-  \node[box,draw=cSlow,fill=white,text width=16mm] (nullout) at (12.55,1.85)
-    {$A^{\mathrm{miss}}$};
-  \draw[slowarrow] (nullq.east) -- (nullout.west);
+  \node[box,draw=cTeacher,fill=cTeacher!6,text width=26mm] (tq) at (7.75,3.65)
+    {Frozen teacher};
+  \node[tinybox,draw=cSlow,text width=28mm] (cond) at (11.30,4.25)
+    {force-conditioned prediction};
+  \node[tinybox,draw=cSlow,text width=28mm] (miss) at (11.30,3.05)
+    {missing-force prediction};
+  \node[font=\sffamily\LARGE\bfseries,text=cTeacher] at (11.30,3.66) {$-$};
 
-  \node[circle,draw=cTeacher,fill=white,line width=0.75pt,minimum size=6.5mm,
-        font=\sffamily\small\bfseries] (minus) at (14.35,2.58) {$-$};
-  \coordinate (join) at (13.55,2.58);
-  \draw[draw=cSlow,line width=0.78pt] (fullout.east) -- (join |- fullout.east) -- (join);
-  \draw[draw=cSlow,line width=0.78pt] (nullout.east) -- (join |- nullout.east) -- (join);
-  \draw[arrow,draw=cTeacher] (join) -- (minus.west);
+  \coordinate (tf) at (9.40,3.65);
+  \draw[plain,draw=cTeacher] (tq.east) -- (tf);
+  \draw[teacharrow] (tf) |- (cond.west);
+  \draw[teacharrow] (tf) |- (miss.west);
 
-  \node[box,draw=cTeacher,fill=cTeacher!6,text width=24mm] (target) at (16.45,2.58)
-    {Force-correction\\target};
-  \draw[arrow,draw=cTeacher] (minus.east) -- (target.west);
-  \node[note,text width=58mm] at (13.45,0.95)
-    {Same cached visual--language prefix, state, and noise};
-  \node[tag,fill=cTeacher!9,text=cTeacher] at (13.45,0.42)
-    {EXPLICIT POSE-CORRECTION TARGET};
+  \node[box,draw=cTeacher,fill=cTeacher!8,text width=28mm] (target) at (15.85,3.65)
+    {Explicit force-\\correction target};
+
+  \coordinate (jn) at (13.20,3.65);
+  \draw[plain,draw=cSlow] (cond.east) -| (jn);
+  \draw[plain,draw=cSlow] (miss.east) -| (jn);
+  \draw[teacharrow] (jn) -- (target.west);
+
+  % ---- separator between offline construction and deployment
+  \draw[dashed,draw=cInk!28,line width=0.6pt] (6.05,2.62) -- (15.55,2.62);
+  \draw[dashed,draw=cInk!28,line width=0.6pt] (16.15,2.62) -- (17.85,2.62);
+
+  % ---- Row B: asynchronous deployment
+  \node[rowlab,anchor=west] at (6.15,2.46) {ASYNCHRONOUS DEPLOYMENT};
+
+  % The residual block is tall enough for both inputs to enter on straight lines.
+  \node[box,draw=cSlow,fill=cSlow!7,text width=30mm] (ref) at (8.35,1.93)
+    {Reference query};
+  \node[tinybox,draw=cSlow,fill=cSlow!4,text width=26mm] (cache) at (11.85,1.93)
+    {cached reference update};
+  \node[tinybox,draw=cFast,fill=cFast!4,text width=30mm] (wrench) at (8.35,1.03)
+    {100\,Hz wrench history};
+  \node[box,draw=cFast,fill=cFast!8,text width=28mm,minimum height=13mm]
+    (res) at (15.85,1.48) {Residual policy};
+
+  \draw[slowarrow] (ref.east) -- (cache.west);
+  \draw[slowarrow] (cache.east) -- ([yshift=4.5mm]res.west);
+  \draw[fastarrow] (wrench.east) -- ([yshift=-4.5mm]res.west);
+  \draw[teacharrow] (target.south) -- (res.north);
+  \node[note,text=cTeacher,anchor=west] at (16.02,2.40) {distill};
+
+  \node[tag,fill=cFast!12,draw=cFast!60,text=cFast!85!black,text width=30mm]
+    (cmd) at (15.85,0.42) {COMMANDED POSE AT 100\,Hz};
+  \draw[fastarrow] (res.south) -- (cmd.north);
+
+  \node[note,text width=44mm] at (11.90,0.36)
+    {residual corrections compose with the cached\\
+     reference, which refreshes independently};
+
 \end{tikzpicture}
 \end{document}
