@@ -124,12 +124,15 @@ Substitution leaves the force-conditioned chunk rebased by $\Gamma$. Translation
 \subsubsection{Residual policy}
 \label{sec:residual_policy}
 
-Each reference query caches a compact representation of its visual--language context. Let $m_k$ denote the validity mask over tokens in $E_k$ from available image views and non-padding language positions; state, force, and action tokens are excluded from $E_k$. A learned query-based projector produces the cached intent tokens,
-\begin{equation}
+Each reference query caches a compact representation of its visual--language context. Let $m_k$ denote the validity mask over tokens in $E_k$ from available image views and non-padding language positions; state, force, and action tokens are excluded from $E_k$. We compress the prefix in two stages,
+\begin{align}
+    (\bar E_k,\bar m_k)
+    &=\operatorname{Pool}_{M}(E_k,m_k),\nonumber\\
     Z_k^{\mathrm{intent}}
-    =P_{\mathrm{intent}}\!\left(\operatorname{Pool}(E_k,m_k)\right).
+    &=P_{\mathrm{intent}}(\bar E_k,\bar m_k).
     \label{eq:intent_projection}
-\end{equation}
+\end{align}
+Here $\operatorname{Pool}_{M}$ partitions the padded prefix into contiguous, approximately equal-width positional bins and applies masked mean pooling within each bin, retaining the bin-validity mask $\bar m_k$. The projector $P_{\mathrm{intent}}$ uses $Q$ learned queries to aggregate the valid pooled tokens. We use $M=16$ bins and $Q=2$ learned queries.
 The intent tokens represent the visual--language task context available when reference query $k$ starts.
 Together, $A_k^{\mathrm{ref}}$, $Z_k^{\mathrm{intent}}$, and $S_k$ form the timestamped reference update for query $k$; the latest available update is cached for the fast pathway. The residual treats this context as locally valid within a reference interval. Timestamp-based interpolation provides $A_k^{\mathrm{ref}}(t)$. A causal encoder maps $\mathcal F_t$ to $u_t^F$. Cache age and interpolation phase are encoded as
 \begin{equation}
@@ -158,14 +161,14 @@ An attention block $\Phi$ and learned query $q_{\mathrm{res}}$ predict two $K$-s
 \end{align}
 The mask prevents direct dependence of the staleness output on the force token. The two passes share $\Phi$ and use separate output projections.
 
-\subsubsection{Staleness-aware schedule replay}
+\subsubsection{Asynchronous schedule replay}
 \label{sec:async_training}
 
-During offline residual-policy training, we replay asynchronous execution by sampling inter-query periods and reference-query latencies. Training instants follow the recorded state--action timestamps, while $\mathcal F_t$ retains all wrench samples in the causal window. If $t_i$ and $\bar t_i$ are the start and availability times of query $i$, the active reference index is
+We sample an asynchronous schedule before cached-context target extraction and replay the resulting fixed schedule during residual-policy optimization. The schedule specifies inter-query periods and reference-query latencies. Training instants follow the recorded state--action timestamps, while $\mathcal F_t$ retains all wrench samples in the causal window. If $t_i$ and $\bar t_i$ are the start and availability times of query $i$, the active reference index is
 \begin{equation*}
     k(t)=\arg\max_{i:\bar t_i\leq t}t_i.
 \end{equation*}
-The active reference update supplies the cached intent, current reference sample, and timestamps used to compute the temporal features and stepwise targets. Resampling the schedule varies reference age, interpolation phase, and reference-query latency.
+The active reference update supplies the cached intent, current reference sample, and timestamps used to compute the temporal features and stepwise targets. The schedule determines the reference age, interpolation phase, and reference-query latency represented during optimization.
 
 With normalized temporal weights $w_j\propto\beta^{j-1}$, $0<\beta\leq1$, and normalized-coordinate mean-squared loss $\ell_{\mathrm{pose}}$, the distillation objective is
 \begin{align}

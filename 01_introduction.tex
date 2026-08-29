@@ -6,7 +6,7 @@ Existing asynchronous policies separate computation or sensor-update rates~\cite
 
 ForceDelta-VLA constructs both learned targets from the cached context available to the fast pathway. Matched force-conditioned and missing-force teacher queries share a visual--language prefix and flow noise; their action difference supervises the force residual, while a second target captures the remaining discrepancy between the cached reference and the cached-context missing-force prediction. The known query-to-current state displacement is rebased deterministically, and the learned corrections execute independently of generative inference.
 
-We evaluate ForceDelta-VLA on five single-arm and four bimanual real-robot tasks spanning contact establishment, precision insertion, friction-dominated motion, and constrained manipulation. The proposed method achieves an $82.2\%$ mean success rate, compared with $54.4\%$ for ForceVLA and $72.8\%$ for ImplicitRDP, while reducing peak contact force by approximately $16\%$ and $19\%$ on the single-arm and bimanual platforms, respectively.
+We evaluate ForceDelta-VLA on five single-arm and four bimanual real-robot tasks spanning contact establishment, precision insertion, friction-dominated motion, and constrained manipulation. The proposed method achieves an $82.2\%$ mean success rate, compared with $54.4\%$ for ForceVLA and $72.8\%$ for ImplicitRDP, while reducing successful-trial peak contact force by approximately $16\%$ and $19\%$ on the single-arm and bimanual platforms, respectively.
 
 The contributions of this work are:
 \begin{enumerate}
