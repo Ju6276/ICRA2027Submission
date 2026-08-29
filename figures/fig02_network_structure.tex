@@ -25,25 +25,29 @@
   stagelab/.style={rounded corners=2pt,inner xsep=3pt,inner ysep=1.6pt,
                    font=\sffamily\fontsize{6.6}{7.6}\selectfont\bfseries,text=cInk!85},
   note/.style={font=\sffamily\fontsize{6.2}{7.2}\selectfont,align=center,text=cInk!70},
-  op/.style={font=\sffamily\LARGE\bfseries,text=cTeacher},
-  opf/.style={font=\sffamily\large\bfseries,text=cInk!80},
+  op/.style={circle,draw=cTeacher,fill=white,line width=0.55pt,minimum size=3.2mm,
+             inner sep=0pt,font=\sffamily\scriptsize\bfseries,text=cTeacher},
+  opf/.style={circle,draw=cInk!55,fill=white,line width=0.5pt,minimum size=2.8mm,
+              inner sep=0pt,font=\sffamily\scriptsize\bfseries,text=cInk!80},
   ptitle/.style={font=\sffamily\small\bfseries}
 }
 
 \begin{document}
 \begin{tikzpicture}[x=1cm,y=1cm]
 
-  \filldraw[rounded corners=4pt,fill=cTeacher!2,draw=cTeacher!35,line width=0.8pt]
-    (0,4.40) rectangle (18.6,8.75);
-  \filldraw[rounded corners=4pt,fill=cFast!2,draw=cFast!40,line width=0.8pt]
-    (0,0) rectangle (18.6,4.15);
+  \begin{scope}[on background layer]
+    \filldraw[rounded corners=4pt,fill=cTeacher!2,draw=cTeacher!35,line width=0.8pt]
+      (0,4.40) rectangle (18.6,8.75);
+    \filldraw[rounded corners=4pt,fill=cFast!2,draw=cFast!40,line width=0.8pt]
+      (0,0) rectangle (18.6,4.15);
+  \end{scope}
 
   % =========================================================== TRAINING PANEL
   \node[ptitle,text=cTeacher,anchor=west] at (0.25,8.45)
     {TRAINING: THREE STAGES};
 
   % ---- Stage 1: force-conditioned teacher
-  \node[stagelab,fill=cInk!7,anchor=west] at (0.20,8.00) {STAGE 1};
+  \node[stagelab,fill=cTeacher!10,anchor=west] (stage1) at (0.20,8.00) {STAGE 1};
   \node[block] (obs) at (1.45,6.90) {$V_t$,\ $L$,\ $S_t$};
   \node[block,draw=cFast!70] (fh) at (1.45,6.00) {wrench history $\mathcal F_t$};
   \node[block,draw=cFast!70] (enc) at (1.45,5.10) {causal encoder\\$z_t^F$};
@@ -56,7 +60,7 @@
   \draw[flow,draw=cFast!80] (enc.east) -- ([yshift=-9mm]tea.west);
 
   % ---- Stage 2: missing-force mode
-  \node[stagelab,fill=cInk!7,anchor=west] at (5.45,8.00) {STAGE 2};
+  \node[stagelab,fill=cTeacher!10,anchor=west] (stage2) at (5.45,8.00) {STAGE 2};
   \node[hero,draw=cTeacher,fill=cTeacher!6,text width=24mm,minimum height=22mm]
     (miss) at (7.00,6.00)
     {Missing-force mode $T_{\theta,\phi}^{\mathrm{miss}}$\\[1.5pt]
@@ -65,41 +69,43 @@
   \draw[flow,draw=cTeacher] (tea.east) -- (miss.west);
 
   % ---- Stage 3: cached-context targets, built as two differences
-  \node[stagelab,fill=cInk!7,anchor=west] at (8.95,8.00) {STAGE 3};
+  \node[stagelab,fill=cTeacher!10,anchor=west] (stage3) at (8.75,8.00) {STAGE 3};
   \node[hero,draw=cTeacher,fill=cTeacher!6,text width=17mm,minimum height=18mm]
-    (ctx) at (10.15,6.20) {Shared context $E_k$,\ $\epsilon_k$};
-  \node[note] (sched) at (10.15,4.95) {schedule replay $(t,k)$};
+    (ctx) at (9.85,6.20) {Shared cached prefix and noise $E_k$,\ $\epsilon_k$};
+  \node[note] (sched) at (9.85,4.95) {schedule replay $(t,k)$};
   \draw[flow,draw=cInk!55] (sched.north) -- (ctx.south);
 
-  \node[small,draw=cSlow,text width=28mm] (pcond) at (13.05,7.30)
-    {force-conditioned\\$A_{T,t|k}^{\mathrm{cond}}$};
-  \node[small,draw=cSlow,text width=28mm] (pmiss) at (13.05,6.20)
-    {missing-force\\$A_{T,t|k}^{\mathrm{miss}}$};
-  \node[small,draw=cSlow,fill=cSlow!5,text width=28mm] (pref) at (13.05,5.10)
-    {reference\\$A_k^{\mathrm{ref}}(t_j)$};
-  \node[op] at (13.05,6.75) {$-$};
-  \node[op] at (13.05,5.65) {$-$};
+  \node[small,draw=cSlow,text width=31mm] (pcond) at (12.65,7.45)
+    {force-conditioned $(S_t,z_t^F)$\\$A_{T,t|k}^{\mathrm{cond}}$};
+  \node[small,draw=cSlow,text width=31mm] (pmiss) at (12.65,6.20)
+    {learned missing-force $(S_t,z_{\varnothing F})$\\$A_{T,t|k}^{\mathrm{miss}}$};
+  \node[small,draw=cSlow,fill=cSlow!5,text width=31mm] (pref) at (12.65,4.95)
+    {cached reference\\$A_k^{\mathrm{ref}}(t_j)$};
+  \node[op] (subF) at (14.75,6.825) {$-$};
+  \node[op] (subS) at (14.75,5.575) {$-$};
 
-  \coordinate (fk) at (11.30,6.20);
-  \draw[plain,draw=cTeacher] (ctx.east) -- (fk);
-  \draw[flow,draw=cTeacher] (fk) |- (pcond.west);
-  \draw[flow,draw=cTeacher] (fk) -- (pmiss.west);
-  \draw[flow,draw=cTeacher] (fk) |- (pref.west);
+  \draw[flow,draw=cTeacher] ([yshift=3mm]ctx.east) -- (pcond.west);
+  \draw[flow,draw=cTeacher] ([yshift=-3mm]ctx.east) -- (pmiss.west);
+  \draw[flow,draw=cInk!55] (sched.east) -- (pref.west);
 
-  \node[small,draw=cTeacher,fill=cTeacher!8,text width=26mm] (tgtF) at (16.80,6.75)
-    {force target\\$\Delta A_{T,t|k}^{\mathrm{force}}$};
-  \node[small,draw=cTeacher,fill=cTeacher!8,text width=26mm] (tgtS) at (16.80,5.65)
+  \node[small,draw=cTeacher,fill=cTeacher!8,text width=26mm] (tgtF) at (16.95,6.825)
+    {force residual target\\$\Delta A_{T,t|k}^{\mathrm{force}}$};
+  \node[small,draw=cTeacher,fill=cTeacher!8,text width=26mm] (tgtS) at (16.95,5.575)
     {staleness target\\$\Delta A_{T,k\to t}^{\mathrm{stale}}$};
-  \draw[flow,draw=cTeacher] (13.35,6.75) -- (tgtF.west);
-  \draw[flow,draw=cTeacher] (13.35,5.65) -- (tgtS.west);
+  \draw[plain,draw=cTeacher] (pcond.east) -- (subF.north);
+  \draw[plain,draw=cTeacher] ([yshift=2.5mm]pmiss.east) -- (subF.south);
+  \draw[flow,draw=cTeacher] (subF.east) -- (tgtF.west);
+  \draw[plain,draw=cTeacher] ([yshift=-2.5mm]pmiss.east) -- (subS.north);
+  \draw[plain,draw=cTeacher] (pref.east) -- (subS.south);
+  \draw[flow,draw=cTeacher] (subS.east) -- (tgtS.west);
 
   \begin{scope}[on background layer]
-    \node[rounded corners=4pt,fill=cInk!4,draw=cInk!18,inner sep=2.5mm,
-          fit=(obs)(fh)(enc)(tea)(tag1)] {};
-    \node[rounded corners=4pt,fill=cInk!4,draw=cInk!18,inner sep=2.5mm,
-          fit=(miss)(tag2)] {};
-    \node[rounded corners=4pt,fill=cInk!4,draw=cInk!18,inner sep=2.5mm,
-          fit=(ctx)(sched)(pcond)(pref)(tgtF)(tgtS)] {};
+    \node[rounded corners=4pt,fill=cTeacher!2,draw=cTeacher!28,line width=0.55pt,
+          inner sep=2mm,fit=(stage1)(obs)(fh)(enc)(tea)(tag1)] {};
+    \node[rounded corners=4pt,fill=cTeacher!2,draw=cTeacher!28,line width=0.55pt,
+          inner sep=2mm,fit=(stage2)(miss)(tag2)] {};
+    \node[rounded corners=4pt,fill=cTeacher!2,draw=cTeacher!28,line width=0.55pt,
+          inner sep=1.6mm,fit=(stage3)(ctx)(sched)(pcond)(pref)(tgtF)(tgtS)] {};
   \end{scope}
 
   % ========================================================= DEPLOYMENT PANEL
@@ -145,9 +151,6 @@
   \node[small,draw=cFast,fill=cFast!5,text width=30mm] (c3) at (12.55,1.65)
     {$\Delta\hat A^{\mathrm{stale}}_{t,j}$};
   \node[small,text width=30mm] (c4) at (12.55,0.75) {$\Gamma(S_t,S_k)$};
-  \node[opf] at (12.55,3.00) {$+$};
-  \node[opf] at (12.55,2.10) {$+$};
-  \node[opf] at (12.55,1.20) {$+$};
   \node[note] at (12.55,0.30) {deterministic, outside the policy};
 
   \draw[flow,draw=cFast] (hF.east) -- (c2.west);
@@ -162,6 +165,9 @@
   \node[hero,draw=cInk!70,fill=cInk!5,text width=24mm,minimum height=12mm]
     (cmd) at (16.85,2.10) {Commanded pose $\mathcal P(A^{\mathrm{cmd}}_{t,j})$};
   \draw[flow] (bus) -- (cmd.west);
+  \node[opf] at (14.70,3.00) {$+$};
+  \node[opf] at (14.70,2.10) {$+$};
+  \node[opf] at (14.70,1.20) {$+$};
 
 \end{tikzpicture}
 \end{document}

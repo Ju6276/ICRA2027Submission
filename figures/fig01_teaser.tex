@@ -70,7 +70,7 @@
     {learned missing-force prediction};
   \node[circle,draw=cTeacher,fill=white,line width=0.8pt,minimum size=5mm,
         inner sep=0pt,font=\sffamily\small\bfseries,text=cTeacher]
-    at (11.30,3.65) {$-$};
+    (subF) at (13.55,3.65) {$-$};
 
   \coordinate (tf) at (9.40,3.65);
   \draw[plain,draw=cTeacher] (tq.east) -- (tf);
@@ -80,10 +80,9 @@
   \node[box,draw=cTeacher,fill=cTeacher!8,text width=30mm] (target) at (15.85,3.65)
     {Teacher-defined\\force-responsive\\residual target};
 
-  \coordinate (jn) at (13.20,3.65);
-  \draw[plain,draw=cSlow] (cond.east) -| (jn);
-  \draw[plain,draw=cSlow] (miss.east) -| (jn);
-  \draw[teacharrow] (jn) -- (target.west);
+  \draw[plain,draw=cSlow] (cond.east) -| (subF.north);
+  \draw[plain,draw=cSlow] (miss.east) -| (subF.south);
+  \draw[teacharrow] (subF.east) -- (target.west);
 
   % ---- separator between offline construction and deployment
   \draw[dashed,draw=cInk!28,line width=0.6pt] (6.05,2.62) -- (15.55,2.62);

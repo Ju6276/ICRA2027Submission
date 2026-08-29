@@ -1,7 +1,7 @@
 \begin{figure*}[!t]
     \centering
     \includegraphics[width=0.98\textwidth]{figures/fig02_network_structure.pdf}
-    \caption{Overview of ForceDelta-VLA. \emph{Top:} training. Stage~1 trains the force-conditioned teacher on a causal wrench encoding and then freezes it; Stage~2 fits the missing-force mode with the teacher fixed; Stage~3 replays the asynchronous schedule to draw a sample $(t,k)$, queries the frozen models under the shared cached context $(E_k,\epsilon_k)$ with state and force advanced to $t$, and forms the two supervision targets as differences of the resulting predictions. \emph{Bottom:} the residual policy. A shared attention block is evaluated twice over the conditioning set, the second time with the force token masked, yielding the force and staleness corrections; the commanded pose adds them to the interpolated reference and the deterministic rebasing term $\Gamma(S_t,S_k)$.}
+    \caption{Overview of ForceDelta-VLA. \emph{Top:} three-stage training of the temporal teacher, learned missing-force mode, and cached-context residual targets. Schedule replay selects $(t,k)$; cached-context teacher predictions and the active reference form the force and staleness targets. \emph{Bottom:} force-present and force-masked passes through a shared attention block predict two residuals, which compose with the interpolated reference and deterministic rebasing term $\Gamma(S_t,S_k)$.}
     \label{fig:network_structure}
 \end{figure*}
 
