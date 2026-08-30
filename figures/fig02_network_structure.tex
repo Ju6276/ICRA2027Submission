@@ -153,9 +153,9 @@
 
   % Distillation loss taps both head outputs on a shared bus, so it never
   % has to cross the arrows that fence the two heads in.
-  \node[loss,text width=26mm] (ldist) at (9.00,0.45)
+  \node[loss,text width=26mm] (ldist) at (9.00,0.42)
     {$\mathcal L_{\mathrm{distill}}$ vs. Stage-3 targets};
-  \draw[dashflow] (10.85,2.58) -- (10.85,0.45) -- (ldist.east);
+  \draw[dashflow] (10.85,2.58) -- (10.85,1.05) -- (9.00,1.05) -- (ldist.north);
   \fill[cInk!55] (10.85,2.58) circle (0.55pt);
   \fill[cInk!55] (10.85,1.63) circle (0.55pt);
 
@@ -166,14 +166,19 @@
     {$\Delta\hat A^{\mathrm{force}}_{t,j}$};
   \node[small,draw=cFast,fill=cFast!5,text width=28mm] (c3) at (12.85,1.63)
     {$\Delta\hat A^{\mathrm{stale}}_{t,j}$};
-  \node[small,text width=28mm] (c4) at (12.85,0.68) {$\Gamma(S_t,S_k)$};
-  \node[note] at (12.85,0.19) {deterministic, outside the policy};
+  \node[small,text width=28mm] (c4) at (12.85,0.85) {$\Gamma(S_t,S_k)$};
 
   \draw[flow,draw=cFast] (hF.east) -- (c2.west);
   \draw[flow,draw=cFast] (hS.east) -- (c3.west);
 
   % The four terms meet on one bus and are summed at a single junction.
-  \draw[plain] (c1.east) -- (14.70,3.53) -- (14.70,0.68) -- (c4.east);
+  \draw[plain] (c1.east) -- (14.70,3.53) -- (14.70,0.85) -- (c4.east);
+
+  % The reference and rebasing terms come from the packet, not from the policy.
+  \draw[flow,draw=cSlow!85] (10.30,3.53) -- (c1.west);
+  \node[note,anchor=north east] at (11.25,3.46) {from reference update $k$};
+  \draw[flow,draw=cSlow!85] (12.85,0.32) -- (c4.south);
+  \node[note,anchor=north] at (12.85,0.30) {from reference update $k$};
   \draw[plain] (c2.east) -- (14.70,2.58);
   \draw[plain] (c3.east) -- (14.70,1.63);
   \foreach \y in {3.53,2.58,1.63,0.68} \fill[cInk!75] (14.70,\y) circle (0.55pt);
