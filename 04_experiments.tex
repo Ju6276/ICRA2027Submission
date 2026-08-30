@@ -6,7 +6,7 @@ The evaluation includes $5$ single-arm and $4$ bimanual tasks on two platforms (
 
 For each task, we collect $200$ demonstrations. Multi-view images, robot states, and commanded actions are recorded at $30$~Hz, and timestamped wrench estimates at $100$~Hz.
 
-\begin{table}[!ht]
+\begin{table}[t]
     \centering
     \small
     \setlength{\tabcolsep}{3pt}
@@ -74,7 +74,7 @@ On both platforms, composed pose commands are sent at $100$~Hz to Cartesian impe
 \noindent\textbf{Qualitative results.}
 Figure~\ref{fig:qualitative_button} highlights how the learned translational correction evolves through contact. The correction is comparatively smaller before sustained contact, increases during pressing, exhibits a transient near peak contact, and decreases as contact is released. Its alignment with the force trace illustrates that the fast pathway concentrates its correction within the contact phase.
 
-\begin{figure}[!h]
+\begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{figures/qualitative_button_total_fast_real.pdf}
     \caption{Representative button-pressing rollout. Front- and wrist-camera observations at four interaction phases are aligned with robot-estimated end-effector force components and translational correction magnitude; vertical lines mark the displayed frames.}
@@ -145,7 +145,7 @@ Table~\ref{tab:runtime} reports isolated model-forward latency under the same bu
 \noindent\textbf{Robustness to delayed references.}
 We evaluate USB insertion and plug insertion with $0$, $100$, and $200$~ms of additional reference-availability delay, using $10$ trials per task, method, and delay. Aggregated across the two tasks, ForceDelta-VLA maintains higher success and lower successful-trial peak force than the Temporal Teacher across the tested delays (Fig.~\ref{fig:latency_sensitivity}). From $0$ to $200$~ms, success falls from $75\%$ to $60\%$ for ForceDelta-VLA and from $60\%$ to $35\%$ for the Temporal Teacher, while successful-trial peak contact force rises from $12.5$ to $16.2$~N and from $16.0$ to $25.6$~N, respectively. On these two insertion tasks, ForceDelta-VLA degrades more gradually under additional reference delay.
 
-\begin{figure}[!h]
+\begin{figure}[t]
     \centering
     \begin{minipage}[c]{0.49\columnwidth}
         \centering
@@ -167,7 +167,7 @@ We organize the ablations into two groups (Table~\ref{tab:ablation}).
 
 \emph{Supervision/decomposition ablations} retrain the affected variant. \textbf{Demonstration-derived residual target} subtracts the missing-force teacher prediction from the demonstrated action at the same query state. \textbf{Zero-wrench teacher query} replaces the learned missing-force mode during reference and target construction with an all-zero-wrench teacher query. \textbf{w/o schedule replay} omits the sampled asynchronous schedule used for cached-context target extraction. \textbf{Single combined-residual head} predicts the sum of the two learned targets with one head while retaining deterministic rebasing. \textbf{Fast full-action distillation} uses the same compact student inputs and update schedule but directly distills the frozen teacher's force-conditioned pose action.
 
-\begin{table}[!ht]
+\begin{table}[t]
     \centering
     \scriptsize
     \setlength{\tabcolsep}{2pt}
