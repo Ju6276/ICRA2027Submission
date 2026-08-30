@@ -191,8 +191,8 @@ The reference and residual workers execute independently (Fig.~\ref{fig:async_de
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{figures/fig03_async_deployment.pdf}
-    \caption{Three-lane timeline of independent residual execution. Fill color denotes the reference bound to each correction chunk when its residual query is issued. Reference $k$ becomes available while a $K$-step chunk bound to $k-1$ is executing; the dashed post-availability steps retain that binding, and the next residual query binds its chunk to $k$.}
+    \caption{Three-lane timeline of independent residual execution. Fill color denotes the reference bound to each correction chunk at residual-query start. Reference $k$ becomes available while a $K$-step chunk bound to $k{-}1$ is executing; the dashed post-availability steps retain that binding, and the next residual query binds its chunk to $k$.}
     \label{fig:async_deployment}
 \end{figure}
 
-Expired correction steps are skipped, and the remaining steps execute sequentially without interpolation. The reference pose is interpolated by timestamp. At each command step, $\Gamma(S_t,S_k)$ is computed directly from the current state and the query state cached with the bound reference update. The force residual is bounded independently; the sum $\Delta\hat A^{\mathrm{stale}}+\Gamma(S_t,S_k)$ is bounded as the staleness correction. Both are composed with the reference in normalized delta-action coordinates and converted to an absolute command using the reference query state.
+Expired correction steps are skipped, and the remaining steps execute sequentially without interpolation. The reference pose is interpolated by timestamp. At each residual query, $\Gamma(S_t,S_k)$ is computed from the current state $S_t$ and the state $S_k$ cached with the bound reference update. The force residual is bounded independently; the sum $\Delta\hat A^{\mathrm{stale}}+\Gamma(S_t,S_k)$ is bounded as the staleness correction. Both are composed with the reference in normalized delta-action coordinates and converted to an absolute command using the reference query state.
