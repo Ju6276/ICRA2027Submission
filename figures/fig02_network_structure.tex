@@ -68,7 +68,7 @@
   \node[note] (tag2) at (6.75,7.48) {only $\phi$ trained};
   \draw[flow,draw=cTeacher] (tea.east) -- (miss.west);
 
-  % ---- Stage 3: three cached-context queries, two differences
+  % ---- Stage 3: two cached-context predictions and the active reference
   \node[stagelab,fill=cTeacher!10,anchor=west] (stage3) at (8.75,8.00) {STAGE 3};
   \node[hero,draw=cTeacher,fill=cTeacher!6,text width=20mm,minimum height=22mm]
     (ctx) at (9.75,6.00) {Shared cached prefix and noise $E_k$,\ $\epsilon_k$};
@@ -76,11 +76,11 @@
   \draw[flow,draw=cTeacher] (miss.east) -- (ctx.west);
 
   \node[small,draw=cSlow,text width=30mm] (pcond) at (13.10,7.55)
-    {force-conditioned $(S_t,z_t^F)$\\$A_{T,t|k}^{\mathrm{cond}}$};
+    {force-conditioned $(S_t,z_t^F)$\\$\mathcal P(A_{T,t|k}^{\mathrm{cond}})$};
   \node[small,draw=cSlow,text width=30mm] (pmiss) at (13.10,6.30)
-    {learned missing-force $(S_t,z_{\varnothing F})$\\$A_{T,t|k}^{\mathrm{miss}}$};
+    {learned missing-force $(S_t,z_{\varnothing F})$\\$\mathcal P(A_{T,t|k}^{\mathrm{miss}})$};
   \node[small,draw=cSlow,fill=cSlow!5,text width=30mm] (pref) at (13.10,5.05)
-    {cached reference\\$A_k^{\mathrm{ref}}(t_j)$};
+    {query-$k$ cached reference\\$\mathcal P(A_k^{\mathrm{ref}}(t_j))$};
 
   % Orthogonal fork: one riser feeds all three queries.
   \draw[plain,draw=cTeacher] (ctx.east) -- (11.15,6.00);
@@ -179,12 +179,12 @@
 
   % The reference and rebasing terms come from the packet, not from the policy.
   \draw[flow,draw=cSlow!85] (10.30,3.53) -- (c1.west);
-  \node[note,anchor=north east] at (11.25,3.46) {from reference update $k$};
-  \draw[flow,draw=cSlow!85] (12.85,0.32) -- (c4.south);
-  \node[note,anchor=north] at (12.85,0.30) {from reference update $k$};
+  \node[note,anchor=north east] at (11.25,3.46) {cached action from update $k$};
+  \draw[flow,draw=cSlow!85] (12.85,0.28) -- (c4.south);
+  \node[note,anchor=south] at (12.85,0.02) {current $S_t$, cached $S_k$};
   \draw[plain] (c2.east) -- (14.70,2.58);
   \draw[plain] (c3.east) -- (14.70,1.63);
-  \foreach \y in {3.53,2.58,1.63,0.68} \fill[cInk!75] (14.70,\y) circle (0.55pt);
+  \foreach \y in {3.53,2.58,1.63,0.85} \fill[cInk!75] (14.70,\y) circle (0.55pt);
 
   \node[opf,minimum size=4mm] (sum) at (15.22,2.105) {$+$};
   \draw[plain] (14.70,2.105) -- (sum.west);
