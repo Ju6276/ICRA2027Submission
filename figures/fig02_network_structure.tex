@@ -153,11 +153,14 @@
 
   % Distillation loss taps both head outputs on a shared bus, so it never
   % has to cross the arrows that fence the two heads in.
-  \node[loss,text width=26mm] (ldist) at (9.00,0.42)
-    {$\mathcal L_{\mathrm{distill}}$ vs. Stage-3 targets};
+  \node[loss,text width=22mm] (ldist) at (9.00,0.42)
+    {$\mathcal L_{\mathrm{distill}}$ on both heads};
   \draw[dashflow] (10.85,2.58) -- (10.85,1.05) -- (9.00,1.05) -- (ldist.north);
-  \fill[cInk!55] (10.85,2.58) circle (0.55pt);
-  \fill[cInk!55] (10.85,1.63) circle (0.55pt);
+  \fill[cInk!60] (10.85,2.58) circle (0.9pt);
+  \fill[cInk!60] (10.85,1.63) circle (0.9pt);
+  % Second input of the loss: the targets built in Stage 3 above.
+  \draw[dashflow] (6.60,0.42)
+    -- node[note,pos=0.25,above,inner sep=1.6pt]{Stage-3 targets} (ldist.west);
 
   % ---- composition: one term of Eq. (1) per row, summed on a single bus
   \node[small,draw=cSlow,fill=cSlow!5,text width=28mm] (c1) at (12.85,3.53)
