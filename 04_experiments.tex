@@ -95,7 +95,7 @@ Among successful trials, ForceDelta-VLA yields the lowest platform-aggregated pe
     \centering
     \scriptsize
     \setlength{\tabcolsep}{2pt}
-    \caption{Peak force and completion time over successful trials. Values pool successful trials across tasks within each platform and report mean $\pm$ standard deviation.}
+    \caption{Peak force and completion time, reported as mean $\pm$ standard deviation over successful trials pooled across tasks within each platform.}
     \label{tab:interaction}
     \begin{tabular}{lcccc}
         \toprule
@@ -128,7 +128,7 @@ Table~\ref{tab:runtime} reports isolated model-forward latency under the same bu
     \centering
     \scriptsize
     \setlength{\tabcolsep}{2pt}
-    \caption{Runtime profiling under the button-pressing deployment workload. Latency is the isolated batch-one forward-pass time on the deployment workstation of Sec.~\ref{sec:exp_protocol}, reported as mean $\pm$ standard deviation over repeated forward passes.}
+    \caption{Batch-one forward-pass latency under the button-pressing deployment workload, reported as mean $\pm$ standard deviation over repeated passes on the deployment workstation.}
     \label{tab:runtime}
     \begin{tabular}{lc}
         \toprule
@@ -171,7 +171,7 @@ We organize the ablations into two groups (Table~\ref{tab:ablation}).
     \centering
     \scriptsize
     \setlength{\tabcolsep}{2pt}
-    \caption{Ablation results on four tasks: USB insertion and whiteboard wiping (single-arm), and plug insertion and drawer opening (bimanual). Success rate and successful-trial peak force are reported separately for the two platforms.}
+    \caption{Ablation results on USB insertion and whiteboard wiping (single-arm) and plug insertion and drawer opening (bimanual); peak force is computed over successful trials.}
     \label{tab:ablation}
     \begin{tabular}{lcccc}
         \toprule
@@ -218,7 +218,7 @@ The supervision ablations favor the proposed target construction and output deco
 
     \scriptsize
     \setlength{\tabcolsep}{5pt}
-    \caption{Generalization to unseen physical conditions in bimanual whiteboard wiping. Each method performs $10$ trials on each of three unseen board--eraser configurations. Success aggregates all $30$ trials; peak force uses successful trials.}
+    \caption{Generalization to unseen physical conditions in bimanual whiteboard wiping over three board--eraser configurations ($10$ trials each); peak force is computed over successful trials.}
     \label{tab:physical_generalization}
     \begin{tabular}{lcc}
         \toprule
