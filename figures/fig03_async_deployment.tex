@@ -4,7 +4,6 @@
 
 \definecolor{cSlow}{HTML}{2878B5}
 \definecolor{cFast}{HTML}{E67E22}
-\definecolor{cCache}{HTML}{2E8B57}
 \definecolor{cOld}{HTML}{78909C}
 \definecolor{cInk}{HTML}{263238}
 
@@ -12,11 +11,13 @@
   axis/.style={-{Latex[length=1.7mm]},line width=0.65pt},
   query/.style={rounded corners=2pt,draw=cSlow,fill=cSlow!9,line width=0.85pt,
                 align=center,font=\sffamily\scriptsize,minimum height=7mm},
+  rq/.style={circle,inner sep=0pt,minimum size=2.3mm,line width=0.55pt},
   oldstep/.style={rounded corners=1pt,draw=cOld,fill=cOld!35,line width=0.5pt,
                   minimum width=2.8mm,minimum height=4.6mm,inner sep=0pt},
-  newstep/.style={rounded corners=1pt,draw=cCache,fill=cCache!35,line width=0.5pt,
+  newstep/.style={rounded corners=1pt,draw=cSlow,fill=cSlow!30,line width=0.5pt,
                   minimum width=2.8mm,minimum height=4.6mm,inner sep=0pt},
-  pendstep/.style={rounded corners=1pt,draw=cCache,dashed,dash pattern=on 0.6pt off 0.6pt,
+  % Executed after $\bar t_k$ (blue dashed edge) but still bound to $k-1$ (grey fill).
+  pendstep/.style={rounded corners=1pt,draw=cSlow,dashed,dash pattern=on 0.7pt off 0.7pt,
                    fill=cOld!35,line width=0.5pt,
                    minimum width=2.8mm,minimum height=4.6mm,inner sep=0pt},
   lane/.style={font=\sffamily\scriptsize\bfseries,anchor=east},
@@ -25,45 +26,51 @@
 
 \begin{document}
 \begin{tikzpicture}[x=1cm,y=1cm]
-  % Reference-query lane: one query occupies the interval from start to availability.
-  \node[lane,text=cSlow] at (1.65,2.05) {REFERENCE QUERY};
-  \draw[axis,draw=cSlow!65] (1.75,2.05) -- (8.45,2.05);
-  \node[query,anchor=west,minimum width=2.02cm] (qk) at (2.15,2.05)
-    {reference query $k$};
-  \node[query,anchor=west,minimum width=2.05cm] (qnext) at (5.57,2.05)
-    {query $k{+}1$};
-  \node[note,anchor=south] at (2.15,2.47) {start $t_k$};
-  \node[note,anchor=south] at (5.57,2.47) {start $t_{k+1}$};
 
-  % Publication boundary, placed in the gap between two command steps.
-  \draw[dashed,draw=cInk!65,line width=0.7pt] (4.31,2.55) -- (4.31,0.50);
-  \node[note,anchor=west,inner sep=1pt] at (4.38,1.45)
+  % ---- Reference worker: each query spans its start and its availability.
+  \node[lane,text=cSlow] at (1.65,2.75) {REFERENCE QUERY};
+  \draw[axis,draw=cSlow!65] (1.75,2.75) -- (8.05,2.75);
+  \node[query,anchor=west,minimum width=2.49cm] at (2.30,2.75) {reference query $k$};
+  \node[query,anchor=west,minimum width=2.49cm] at (5.32,2.75) {query $k{+}1$};
+  \node[note,anchor=south] at (2.30,3.14) {start $t_k$};
+  \node[note,anchor=south] at (5.32,3.14) {start $t_{k+1}$};
+
+  % Availability of reference $k$; it falls inside the chunk queried before it.
+  \draw[dashed,draw=cInk!65,line width=0.7pt] (4.79,3.12) -- (4.79,0.44);
+  \node[note,anchor=west,inner sep=1pt] at (4.86,2.10)
     {reference $k$ available at $\bar t_k$};
 
-  % Fast command lane: steps precede $t_k$, and fill colour encodes the reference used.
-  \node[lane,text=cFast] at (1.65,0.75) {FAST COMMAND STEPS};
-  \draw[axis,draw=cFast!65] (1.75,0.75) -- (8.45,0.75);
-  \foreach \i in {0,...,17} {
-    \pgfmathsetmacro{\x}{1.97+0.36*\i}
-    \ifnum\i<7
-      \node[oldstep] at (\x,0.75) {};
-    \else\ifnum\i=7
-      \node[pendstep] at (\x,0.75) {};
+  % ---- Residual worker: one query per chunk, coloured by the reference it reads.
+  \node[lane,text=cFast] at (1.65,1.75) {RESIDUAL QUERY};
+  \draw[axis,draw=cFast!65] (1.75,1.75) -- (8.05,1.75);
+  \foreach \x/\c in {1.95/cOld,3.75/cOld,5.55/cSlow} {
+    \node[rq,draw=\c,fill=\c!55] at (\x,1.75) {};
+    \draw[draw=\c,line width=0.5pt,dotted] (\x,1.62) -- (\x,1.10);
+  }
+
+  % ---- Command steps: fill colour is inherited from the chunk above.
+  \node[lane,text=cFast] at (1.65,0.72) {FAST COMMAND STEPS};
+  \draw[axis,draw=cFast!65] (1.75,0.72) -- (8.05,0.72);
+  \foreach \i in {0,...,14} {
+    \pgfmathsetmacro{\x}{2.09+0.36*\i}
+    \ifnum\i<8
+      \node[oldstep] at (\x,0.72) {};
+    \else\ifnum\i<10
+      \node[pendstep] at (\x,0.72) {};
     \else
-      \node[newstep] at (\x,0.75) {};
+      \node[newstep] at (\x,0.72) {};
     \fi\fi
   }
-  \node[note,text=cOld] at (3.05,1.10) {reference $k{-}1$};
-  \node[note,text=cCache] at (6.65,1.10) {reference $k$};
 
-  % Chunk extents: the chunk straddling the boundary and the first chunk after it.
-  \draw[draw=cOld,line width=0.55pt] (2.91,0.45) -- (4.63,0.45);
-  \draw[draw=cOld,line width=0.55pt] (2.91,0.45) -- (2.91,0.53);
-  \draw[draw=cOld,line width=0.55pt] (4.63,0.45) -- (4.63,0.53);
-  \node[note,anchor=north,text=cOld] at (3.77,0.42) {$K$-step chunk};
-  \draw[draw=cCache,line width=0.55pt] (4.71,0.45) -- (6.43,0.45);
-  \draw[draw=cCache,line width=0.55pt] (4.71,0.45) -- (4.71,0.53);
-  \draw[draw=cCache,line width=0.55pt] (6.43,0.45) -- (6.43,0.53);
-  \node[note,anchor=north,text=cCache] at (5.57,0.42) {next chunk};
+  % ---- Chunk extents, hung from the residual query that produced them.
+  \foreach \l/\r/\c in {1.95/3.67/cOld,3.75/5.47/cOld,5.55/7.27/cSlow} {
+    \draw[draw=\c,line width=0.55pt] (\l,1.10) -- (\r,1.10);
+    \draw[draw=\c,line width=0.55pt] (\l,1.10) -- (\l,1.02);
+    \draw[draw=\c,line width=0.55pt] (\r,1.10) -- (\r,1.02);
+  }
+  \node[note,anchor=south east,text=cOld] at (4.72,1.14) {reference $k{-}1$};
+  \node[note,anchor=south west,text=cSlow] at (5.62,1.14) {reference $k$};
+  \node[note,anchor=north,text=cOld] at (2.81,0.42) {$K$-step chunk};
+
 \end{tikzpicture}
 \end{document}

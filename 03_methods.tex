@@ -188,10 +188,10 @@ The coefficient $\lambda_{\mathrm{stale}}$ balances force-conditioning and stale
 
 The reference and residual workers execute independently (Fig.~\ref{fig:async_deployment}). Each residual query reads the active reference update with the current state and $\mathcal F_t$. Its $K$-step correction chunk stays bound to that update, so a newly available reference is used only by later residual queries.
 
-\begin{figure}[!h]
+\begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{figures/fig03_async_deployment.pdf}
-    \caption{Two-lane timeline of independent residual execution. Fill color denotes the reference bound to each $K$-step correction chunk. The dashed post-availability step remains in the preceding chunk, so reference $k$ is adopted by the next chunk.}
+    \caption{Three-lane timeline of independent residual execution. A reference query spans its start $t_k$ and its availability $\bar t_k$. Each residual query binds to the reference available at that instant and emits one $K$-step correction chunk, and fill color carries that binding to the command steps. The chunk queried before $\bar t_k$ keeps reference $k{-}1$ for all of its steps, including the two executed after $\bar t_k$ (dashed), so reference $k$ is first used by the following chunk.}
     \label{fig:async_deployment}
 \end{figure}
 
