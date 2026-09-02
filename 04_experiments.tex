@@ -2,9 +2,23 @@
 \label{sec:exp_protocol}
 
 \noindent\textbf{Hardware, tasks, and data collection.}
-The evaluation includes $5$ single-arm and $4$ bimanual tasks on two platforms (Table~\ref{tab:tasks}). The single-arm platform is a 7-DoF Franka Emika Panda with wrist-mounted and external Intel RealSense D405 cameras. Demonstrations are collected using a 3Dconnexion SpaceMouse. The bimanual platform is an X Square Robot with one wrist-mounted camera per arm and one shared external camera. Demonstrations are collected through leader--follower teleoperation. Following ForceVLA~\cite{yu2025forcevlaenhancingvlamodels}, both platforms use robot-provided joint-torque-based wrench estimates without additional wrist force/torque sensors.
+The evaluation includes $5$ single-arm and $4$ bimanual tasks on two platforms (Fig.~\ref{fig:robot_platforms} and Table~\ref{tab:tasks}). The single-arm platform is a 7-DoF Franka Emika Panda with wrist-mounted and external Intel RealSense D405 cameras. Demonstrations are collected using a 3Dconnexion SpaceMouse. The bimanual platform is an X Square Robot with one wrist-mounted camera per arm and one shared external camera. Demonstrations are collected through leader--follower teleoperation. Following ForceVLA~\cite{yu2025forcevlaenhancingvlamodels}, both platforms use robot-provided joint-torque-based wrench estimates without additional wrist force/torque sensors.
 
 For each task, we collect $200$ demonstrations. Multi-view images, robot states, and commanded actions are recorded at $30$~Hz, and timestamped wrench estimates at $100$~Hz.
+
+\begin{figure}[t]
+    \centering
+    \begin{minipage}[t]{0.49\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/setup_franka.png}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.49\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/setup_XR.png}
+    \end{minipage}
+    \caption{Real-robot platforms used in the experiments. \emph{Left:} single-arm Franka Emika Panda. \emph{Right:} bimanual X Square Robot.}
+    \label{fig:robot_platforms}
+\end{figure}
 
 \begin{table}[t]
     \centering
@@ -206,13 +220,9 @@ The supervision ablations favor the proposed target construction and output deco
 
 \begin{table}[!t]
     \centering
-    \IfFileExists{figures/physical_generalization_objects.pdf}{%
-        \includegraphics[width=\columnwidth]{figures/physical_generalization_objects.pdf}%
-    }{%
-        \fbox{\parbox[c][0.045\textheight][c]{0.94\columnwidth}{\centering\textcolor{red}{TBD: one unseen whiteboard and three unseen erasers}}}%
-    }
+    \includegraphics[width=\columnwidth]{figures/generalization.png}
     \begingroup
-    \captionof{figure}{One unseen whiteboard and three unseen erasers used for physical generalization.}
+    \captionof{figure}{Unseen physical conditions for bimanual whiteboard wiping: one unseen whiteboard paired with three unseen erasers.}
     \label{fig:physical_generalization_objects}
     \endgroup
 
