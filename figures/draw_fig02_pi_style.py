@@ -49,6 +49,10 @@ def pill(x, y, w, h, label, fill, size=17, weight="normal"):
     rect(x, y, w, h, fill=fill, radius=h/2)
     text(x+w/2, y+h/2+size*.34, label, size, "middle", weight)
 
+def darken(hex_color, factor=0.90):
+    rgb = [int(hex_color[i:i+2], 16) for i in (1, 3, 5)]
+    return "#" + "".join(f"{round(v*factor):02X}" for v in rgb)
+
 def subscript_pill(x, y, w, h, subscript, fill, size=18):
     """Draw z_{subscript} with a real typographic subscript."""
     rect(x, y, w, h, fill=fill, radius=h/2)
@@ -84,7 +88,9 @@ def rich_pill(x, y, w, h, parts, fill, size=18):
     rich_text(x+w/2, y+h/2+size*.25, parts, size)
 
 def small_tokens(x, y, count, color, token_w=23, gap=7):
-    for i in range(count): rect(x+i*(token_w+gap), y, token_w, 11, color, radius=5, width=1.0)
+    token_fill = darken(color)
+    for i in range(count):
+        rect(x+i*(token_w+gap), y, token_w, 11, token_fill, radius=5, width=1.0)
 
 def token_column(x, y, w, h, color, count=2, masked=False):
     rect(x, y, w, h, color, radius=6)
