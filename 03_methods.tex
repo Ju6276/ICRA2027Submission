@@ -37,7 +37,7 @@ Training proceeds in three stages (Fig.~\ref{fig:network_structure}). First, we 
 
 \subsubsection{Temporal force-conditioned teacher}
 
-We build $T_\theta$ on ForceVLA~\cite{yu2025forcevlaenhancingvlamodels} and replace its instantaneous force embedding with the causal temporal encoding
+We build $T_\theta$ on ForceVLA~\cite{yu2025forcevlaenhancingvlamodels} and replace its instantaneous force embedding with a FAVLA-style causal temporal convolutional network (TCN)~\cite{li2026favlaforceadaptivefastslowvla} that encodes the wrench history,
 \begin{equation}
     z_t^F=E_T^F(\mathcal F_t).
     \label{eq:teacher_tcn}
@@ -119,7 +119,7 @@ Let $\mathcal R(S,a)$ convert a relative action $a$ based at state $S$ into an a
 \end{aligned}
     \label{eq:absolute_command_equivalence}
 \end{equation}
-Substitution leaves the force-conditioned chunk rebased by $\Gamma$. Translational rebasing is exact in normalized Euclidean coordinates up to $\varepsilon$; rotational rebasing uses an additive approximation in the teacher's 6D representation followed by Gram--Schmidt projection. Equation~\eqref{eq:absolute_command_equivalence} therefore describes the unclipped composition and remains approximate for rotation.
+Before clipping, substitution recovers the force-conditioned chunk rebased by $\Gamma$. Translational rebasing is exact in normalized Euclidean coordinates up to $\varepsilon$; rotational rebasing is approximate because it adds corrections in 6D coordinates before Gram--Schmidt projection.
 
 \subsubsection{Residual policy}
 \label{sec:residual_policy}
@@ -147,7 +147,7 @@ where $c$ is an age scale and $\alpha_{t,k}$ is the position of $t$ between adja
     &P_A(A_k^{\mathrm{ref}}(t));P_\xi(\xi_{t,k})].
     \label{eq:conditioning_set}
 \end{align}
-Here $P_Z,P_A,P_S$, and $P_\xi$ project to the shared token width. There is no positional encoding: a learned type embedding identifies each condition, so $\Phi$ is invariant to the order of $\mathcal C_t$. $\Gamma(S_t,S_k)$ is computed outside the policy and is omitted from $\mathcal C_t$. Let $\mathcal C_t^{\mathrm{maskF}}=\operatorname{Mask}_F(\mathcal C_t)$ be the same set with the force token masked.
+Here $P_Z,P_A,P_S$, and $P_\xi$ project to the shared token width. There is no positional encoding: a learned type embedding identifies each condition, so the residual-query output is invariant to permutations of the condition tokens together with their type embeddings. $\Gamma(S_t,S_k)$ is computed outside the policy and is omitted from $\mathcal C_t$. Let $\mathcal C_t^{\mathrm{maskF}}=\operatorname{Mask}_F(\mathcal C_t)$ be the same set with the force token masked.
 
 An attention block $\Phi$ and learned query $q_{\mathrm{res}}$ predict two $K$-step corrections,
 \begin{align}
@@ -186,12 +186,12 @@ The coefficient $\lambda_{\mathrm{stale}}$ balances force-conditioning and stale
 \subsection{Independent Residual Execution}
 \label{sec:execution}
 
-The reference and residual workers execute independently (Fig.~\ref{fig:async_deployment}). Each residual query reads the active reference update with the current state and $\mathcal F_t$. Its $K$-step correction chunk stays bound to that update, so a newly available reference is used only by later residual queries.
+The reference and residual workers execute independently (Fig.~\ref{fig:async_deployment}). Each residual query reads the latest completed reference update available at its start, together with the current state and $\mathcal F_t$. The resulting $K$-step correction chunk remains bound to that update; a newly completed reference is adopted by the next residual query.
 
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{figures/fig03_async_deployment.pdf}
-    \caption{Three-lane timeline of independent residual execution. Fill color denotes the reference bound to each correction chunk at residual-query start. Reference $k$ becomes available while a $K$-step chunk bound to $k{-}1$ is executing; the dashed post-availability steps retain that binding, and the next residual query binds its chunk to $k$.}
+    \caption{Reference binding during asynchronous execution. Fill colors identify the bound reference; dashed command steps remain bound to $k{-}1$ after reference $k$ becomes available.}
     \label{fig:async_deployment}
 \end{figure}
 

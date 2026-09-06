@@ -1,3 +1,6 @@
+# macOS metadata
+.DS_Store
+
 # Local LaTeX build products
 *.aux
 *.bbl

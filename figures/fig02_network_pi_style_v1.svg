@@ -1,0 +1,205 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1100" viewBox="0 0 1800 1100">
+<rect width="100%" height="100%" fill="white"/>
+<text x="30" y="36" font-family="Helvetica,Arial,sans-serif" font-size="25" font-weight="bold" fill="#263238" text-anchor="start">(a) Teacher and reference learning</text>
+<text x="650" y="36" font-family="Helvetica,Arial,sans-serif" font-size="25" font-weight="bold" fill="#263238" text-anchor="start">(b) Paired residual supervision</text>
+<line x1="620" y1="57" x2="620" y2="454" stroke="#D8DFE3" stroke-width="1"/>
+<rect x="30" y="62" width="270" height="48" rx="6" fill="#F4F7F8" stroke="#72818A" stroke-width="1.3"/>
+<text x="165.0" y="93.0" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#263238" text-anchor="middle">1  Fine-tune teacher</text>
+<polyline points="305,86 320,86" fill="none" stroke="#72818A" stroke-width="1.7" stroke-linejoin="round"/>
+<polygon points="320,86 311.0,82.0 311.0,90.0" fill="#72818A"/>
+<rect x="325" y="62" width="265" height="48" rx="6" fill="#F4F7F8" stroke="#72818A" stroke-width="1.3"/>
+<text x="457.5" y="93.0" font-family="Helvetica,Arial,sans-serif" font-size="18" font-weight="normal" fill="#263238" text-anchor="middle">2  Learn missing-force mode</text>
+<text x="165" y="134" font-family="Helvetica,Arial,sans-serif" font-size="17" font-weight="normal" fill="#263238" text-anchor="middle">Then freeze teacher weights</text>
+<text x="458" y="134" font-family="Helvetica,Arial,sans-serif" font-size="17" font-weight="normal" fill="#263238" text-anchor="middle">Train token + adapter only</text>
+<rect x="38" y="176" width="92" height="109" rx="6" fill="#B9DCE7" stroke="#72818A" stroke-width="1.3"/>
+<rect x="47" y="187" width="22" height="12" rx="5" fill="#B9DCE7" stroke="#72818A" stroke-width="1.3"/>
+<rect x="76" y="187" width="22" height="12" rx="5" fill="#B9DCE7" stroke="#72818A" stroke-width="1.3"/>
+<rect x="47" y="259" width="22" height="12" rx="5" fill="#B9DCE7" stroke="#72818A" stroke-width="1.3"/>
+<rect x="76" y="259" width="22" height="12" rx="5" fill="#B9DCE7" stroke="#72818A" stroke-width="1.3"/>
+<rect x="139" y="176" width="92" height="109" rx="6" fill="#B9DCE7" stroke="#72818A" stroke-width="1.3"/>
+<rect x="148" y="187" width="22" height="12" rx="5" fill="#B9DCE7" stroke="#72818A" stroke-width="1.3"/>
+<rect x="177" y="187" width="22" height="12" rx="5" fill="#B9DCE7" stroke="#72818A" stroke-width="1.3"/>
+<rect x="148" y="259" width="22" height="12" rx="5" fill="#B9DCE7" stroke="#72818A" stroke-width="1.3"/>
+<rect x="177" y="259" width="22" height="12" rx="5" fill="#B9DCE7" stroke="#72818A" stroke-width="1.3"/>
+<rect x="240" y="176" width="110" height="109" rx="6" fill="#EFD4D9" stroke="#72818A" stroke-width="1.3"/>
+<rect x="249" y="187" width="22" height="12" rx="5" fill="#EFD4D9" stroke="#72818A" stroke-width="1.3"/>
+<rect x="278" y="187" width="22" height="12" rx="5" fill="#EFD4D9" stroke="#72818A" stroke-width="1.3"/>
+<rect x="307" y="187" width="22" height="12" rx="5" fill="#EFD4D9" stroke="#72818A" stroke-width="1.3"/>
+<rect x="249" y="259" width="22" height="12" rx="5" fill="#EFD4D9" stroke="#72818A" stroke-width="1.3"/>
+<rect x="278" y="259" width="22" height="12" rx="5" fill="#EFD4D9" stroke="#72818A" stroke-width="1.3"/>
+<rect x="307" y="259" width="22" height="12" rx="5" fill="#EFD4D9" stroke="#72818A" stroke-width="1.3"/>
+<rect x="368" y="176" width="218" height="109" rx="6" fill="#CFE0BD" stroke="#72818A" stroke-width="1.3"/>
+<rect x="377" y="187" width="22" height="12" rx="5" fill="#CFE0BD" stroke="#72818A" stroke-width="1.3"/>
+<rect x="406" y="187" width="22" height="12" rx="5" fill="#CFE0BD" stroke="#72818A" stroke-width="1.3"/>
+<rect x="435" y="187" width="22" height="12" rx="5" fill="#CFE0BD" stroke="#72818A" stroke-width="1.3"/>
+<rect x="464" y="187" width="22" height="12" rx="5" fill="#CFE0BD" stroke="#72818A" stroke-width="1.3"/>
+<rect x="493" y="187" width="22" height="12" rx="5" fill="#CFE0BD" stroke="#72818A" stroke-width="1.3"/>
+<rect x="522" y="187" width="22" height="12" rx="5" fill="#CFE0BD" stroke="#72818A" stroke-width="1.3"/>
+<rect x="377" y="259" width="22" height="12" rx="5" fill="#CFE0BD" stroke="#72818A" stroke-width="1.3"/>
+<rect x="406" y="259" width="22" height="12" rx="5" fill="#CFE0BD" stroke="#72818A" stroke-width="1.3"/>
+<rect x="435" y="259" width="22" height="12" rx="5" fill="#CFE0BD" stroke="#72818A" stroke-width="1.3"/>
+<rect x="464" y="259" width="22" height="12" rx="5" fill="#CFE0BD" stroke="#72818A" stroke-width="1.3"/>
+<rect x="493" y="259" width="22" height="12" rx="5" fill="#CFE0BD" stroke="#72818A" stroke-width="1.3"/>
+<rect x="522" y="259" width="22" height="12" rx="5" fill="#CFE0BD" stroke="#72818A" stroke-width="1.3"/>
+<rect x="30" y="211" width="330" height="42" rx="6" fill="white" stroke="#72818A" stroke-width="1.3"/>
+<text x="195.0" y="239.0" font-family="Helvetica,Arial,sans-serif" font-size="21" font-weight="normal" fill="#263238" text-anchor="middle">Vision–language backbone</text>
+<rect x="360" y="211" width="230" height="42" rx="6" fill="white" stroke="#72818A" stroke-width="1.3"/>
+<text x="475.0" y="239.0" font-family="Helvetica,Arial,sans-serif" font-size="22" font-weight="normal" fill="#263238" text-anchor="middle">Action expert</text>
+<polygon points="43,331 123,331 110,302 56,302" fill="#B9DCE7" stroke="#72818A" stroke-width="1.3"/>
+<text x="83" y="323" font-family="Helvetica,Arial,sans-serif" font-size="18" font-weight="normal" fill="#263238" text-anchor="middle">ViT</text>
+<polyline points="83,301 83,287" fill="none" stroke="#72818A" stroke-width="1.7" stroke-linejoin="round"/>
+<polygon points="83,287 79.0,296.0 87.0,296.0" fill="#72818A"/>
+<polygon points="144,331 224,331 211,302 157,302" fill="#B9DCE7" stroke="#72818A" stroke-width="1.3"/>
+<text x="184" y="323" font-family="Helvetica,Arial,sans-serif" font-size="18" font-weight="normal" fill="#263238" text-anchor="middle">ViT</text>
+<polyline points="184,301 184,287" fill="none" stroke="#72818A" stroke-width="1.7" stroke-linejoin="round"/>
+<polygon points="184,287 180.0,296.0 188.0,296.0" fill="#72818A"/>
+<rect x="37" y="346" width="194" height="43" rx="6" fill="#F1F7F9" stroke="#72818A" stroke-width="1.3"/>
+<text x="134.0" y="374.5" font-family="Helvetica,Arial,sans-serif" font-size="19" font-weight="normal" fill="#263238" text-anchor="middle">Multi-view images</text>
+<polyline points="84,346 84,332" fill="none" stroke="#72818A" stroke-width="1.7" stroke-linejoin="round"/>
+<polygon points="84,332 80.0,341.0 88.0,341.0" fill="#72818A"/>
+<polyline points="184,346 184,332" fill="none" stroke="#72818A" stroke-width="1.7" stroke-linejoin="round"/>
+<polygon points="184,332 180.0,341.0 188.0,341.0" fill="#72818A"/>
+<rect x="244" y="322" width="106" height="59" rx="6" fill="#EFD4D9" stroke="#72818A" stroke-width="1.3"/>
+<text x="297.0" y="351.5" font-family="Helvetica,Arial,sans-serif" font-size="18" font-weight="normal" fill="#263238" text-anchor="middle">Instruction</text>
+<text x="297.0" y="376.5" font-family="Helvetica,Arial,sans-serif" font-size="18" font-weight="normal" fill="#263238" text-anchor="middle">L</text>
+<polyline points="297,321 297,287" fill="none" stroke="#72818A" stroke-width="1.7" stroke-linejoin="round"/>
+<polygon points="297,287 293.0,296.0 301.0,296.0" fill="#72818A"/>
+<rect x="370" y="316" width="99" height="46" rx="6" fill="#DCCFE8" stroke="#72818A" stroke-width="1.3"/>
+<text x="419.5" y="346.0" font-family="Helvetica,Arial,sans-serif" font-size="19" font-weight="normal" fill="#263238" text-anchor="middle">State</text>
+<polyline points="419,315 419,287" fill="none" stroke="#72818A" stroke-width="1.7" stroke-linejoin="round"/>
+<polygon points="419,287 415.0,296.0 423.0,296.0" fill="#72818A"/>
+<rect x="480" y="316" width="107" height="46" rx="6" fill="#F4D3AB" stroke="#72818A" stroke-width="1.3"/>
+<text x="533.5" y="346.0" font-family="Helvetica,Arial,sans-serif" font-size="17" font-weight="normal" fill="#263238" text-anchor="middle">Force mode</text>
+<polyline points="533,315 533,287" fill="none" stroke="#72818A" stroke-width="1.7" stroke-linejoin="round"/>
+<polygon points="533,287 529.0,296.0 537.0,296.0" fill="#72818A"/>
+<text x="478" y="390" font-family="Helvetica,Arial,sans-serif" font-size="17" font-weight="normal" fill="#263238" text-anchor="middle">TCN(history) / missing token</text>
+<text x="478" y="412" font-family="Helvetica,Arial,sans-serif" font-size="18" font-weight="normal" fill="#263238" text-anchor="middle">Flow noise → action expert</text>
+<text x="30" y="438" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#263238" text-anchor="start">Cache: context, reference action, query state</text>
+<rect x="650" y="62" width="1118" height="58" rx="6" fill="#F4F7F8" stroke="#72818A" stroke-width="1.3"/>
+<text x="1209.0" y="91.0" font-family="Helvetica,Arial,sans-serif" font-size="22" font-weight="normal" fill="#263238" text-anchor="middle">3  Schedule replay selects current time t and cached reference k</text>
+<text x="1209.0" y="116.0" font-family="Helvetica,Arial,sans-serif" font-size="18" font-weight="normal" fill="#263238" text-anchor="middle">Paired teacher queries share cached context Eₖ and flow noise εₖ</text>
+<rect x="650" y="162" width="354" height="90" rx="6" fill="#F4D3AB" stroke="#72818A" stroke-width="1.3"/>
+<text x="827.0" y="207.0" font-family="Helvetica,Arial,sans-serif" font-size="21" font-weight="normal" fill="#263238" text-anchor="middle">Force-conditioned teacher</text>
+<text x="827.0" y="232.0" font-family="Helvetica,Arial,sans-serif" font-size="18" font-weight="normal" fill="#263238" text-anchor="middle">Current state + wrench history</text>
+<rect x="1032" y="162" width="354" height="90" rx="6" fill="#CFE0BD" stroke="#72818A" stroke-width="1.3"/>
+<text x="1209.0" y="207.0" font-family="Helvetica,Arial,sans-serif" font-size="21" font-weight="normal" fill="#263238" text-anchor="middle">Missing-force teacher</text>
+<text x="1209.0" y="232.0" font-family="Helvetica,Arial,sans-serif" font-size="18" font-weight="normal" fill="#263238" text-anchor="middle">Current state + missing token</text>
+<rect x="1414" y="162" width="354" height="90" rx="6" fill="#B9DCE7" stroke="#72818A" stroke-width="1.3"/>
+<text x="1591.0" y="207.0" font-family="Helvetica,Arial,sans-serif" font-size="21" font-weight="normal" fill="#263238" text-anchor="middle">Cached reference</text>
+<text x="1591.0" y="232.0" font-family="Helvetica,Arial,sans-serif" font-size="18" font-weight="normal" fill="#263238" text-anchor="middle">Interpolated at target timestamps</text>
+<text x="827" y="287" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#263238" text-anchor="middle">Conditioned pose</text>
+<text x="1209" y="287" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#263238" text-anchor="middle">Missing-force pose</text>
+<text x="1591" y="287" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#263238" text-anchor="middle">Reference pose</text>
+<polyline points="827,295 827,316 970,316 970,340" fill="none" stroke="#72818A" stroke-width="1.7" stroke-linejoin="round"/>
+<polygon points="970,340 974.0,331.0 966.0,331.0" fill="#72818A"/>
+<polyline points="1209,295 1209,316 1090,316 1090,340" fill="none" stroke="#72818A" stroke-width="1.7" stroke-linejoin="round"/>
+<polygon points="1090,340 1094.0,331.0 1086.0,331.0" fill="#72818A"/>
+<polyline points="1209,295 1209,327 1390,327 1390,340" fill="none" stroke="#72818A" stroke-width="1.7" stroke-linejoin="round"/>
+<polygon points="1390,340 1394.0,331.0 1386.0,331.0" fill="#72818A"/>
+<polyline points="1591,295 1591,316 1510,316 1510,340" fill="none" stroke="#72818A" stroke-width="1.7" stroke-linejoin="round"/>
+<polygon points="1510,340 1514.0,331.0 1506.0,331.0" fill="#72818A"/>
+<rect x="845" y="341" width="370" height="76" rx="6" fill="#F4D3AB" stroke="#72818A" stroke-width="1.3"/>
+<text x="1030.0" y="379.0" font-family="Helvetica,Arial,sans-serif" font-size="23" font-weight="normal" fill="#263238" text-anchor="middle">Force residual target</text>
+<text x="1030.0" y="404.0" font-family="Helvetica,Arial,sans-serif" font-size="18" font-weight="normal" fill="#263238" text-anchor="middle">Conditioned pose − missing-force pose</text>
+<rect x="1270" y="341" width="370" height="76" rx="6" fill="#DCCFE8" stroke="#72818A" stroke-width="1.3"/>
+<text x="1455.0" y="379.0" font-family="Helvetica,Arial,sans-serif" font-size="23" font-weight="normal" fill="#263238" text-anchor="middle">Staleness residual target</text>
+<text x="1455.0" y="404.0" font-family="Helvetica,Arial,sans-serif" font-size="18" font-weight="normal" fill="#263238" text-anchor="middle">Missing-force pose − reference pose</text>
+<text x="1209" y="452" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#263238" text-anchor="middle">Distillation supervises the two residual outputs below.</text>
+<line x1="30" y1="480" x2="1770" y2="480" stroke="#CBD5DA" stroke-width="1.2"/>
+<text x="30" y="524" font-family="Helvetica,Arial,sans-serif" font-size="25" font-weight="bold" fill="#263238" text-anchor="start">(c) Residual policy</text>
+<text x="1300" y="524" font-family="Helvetica,Arial,sans-serif" font-size="25" font-weight="bold" fill="#263238" text-anchor="start">(d) Command composition</text>
+<text x="116" y="567" font-family="Helvetica,Arial,sans-serif" font-size="18" font-weight="normal" fill="#263238" text-anchor="middle">Cached intent</text>
+<text x="116" y="590" font-family="Helvetica,Arial,sans-serif" font-size="16" font-weight="normal" fill="#263238" text-anchor="middle">Zₖ</text>
+<text x="254" y="567" font-family="Helvetica,Arial,sans-serif" font-size="18" font-weight="normal" fill="#263238" text-anchor="middle">Force embedding</text>
+<text x="254" y="590" font-family="Helvetica,Arial,sans-serif" font-size="16" font-weight="normal" fill="#263238" text-anchor="middle">Causal TCN</text>
+<text x="392" y="567" font-family="Helvetica,Arial,sans-serif" font-size="18" font-weight="normal" fill="#263238" text-anchor="middle">Current state</text>
+<text x="392" y="590" font-family="Helvetica,Arial,sans-serif" font-size="16" font-weight="normal" fill="#263238" text-anchor="middle">Sₜ</text>
+<text x="530" y="567" font-family="Helvetica,Arial,sans-serif" font-size="18" font-weight="normal" fill="#263238" text-anchor="middle">Reference action</text>
+<text x="530" y="590" font-family="Helvetica,Arial,sans-serif" font-size="16" font-weight="normal" fill="#263238" text-anchor="middle">Aʳᵉᶠ(t)</text>
+<text x="668" y="567" font-family="Helvetica,Arial,sans-serif" font-size="18" font-weight="normal" fill="#263238" text-anchor="middle">Age / phase</text>
+<text x="668" y="590" font-family="Helvetica,Arial,sans-serif" font-size="16" font-weight="normal" fill="#263238" text-anchor="middle">ξₜ,ₖ</text>
+<text x="806" y="567" font-family="Helvetica,Arial,sans-serif" font-size="18" font-weight="normal" fill="#263238" text-anchor="middle">Learned query</text>
+<text x="806" y="590" font-family="Helvetica,Arial,sans-serif" font-size="16" font-weight="normal" fill="#263238" text-anchor="middle">qᵣₑₛ</text>
+<rect x="55" y="625" width="122" height="120" rx="6" fill="#B9DCE7" stroke="#72818A" stroke-width="1.3"/>
+<rect x="82.0" y="638" width="30" height="12" rx="5" fill="#B9DCE7" stroke="#72818A" stroke-width="1.3"/>
+<rect x="120.0" y="638" width="30" height="12" rx="5" fill="#B9DCE7" stroke="#72818A" stroke-width="1.3"/>
+<rect x="82.0" y="720" width="30" height="12" rx="5" fill="#B9DCE7" stroke="#72818A" stroke-width="1.3"/>
+<rect x="120.0" y="720" width="30" height="12" rx="5" fill="#B9DCE7" stroke="#72818A" stroke-width="1.3"/>
+<rect x="193" y="625" width="122" height="120" rx="6" fill="#F4D3AB" stroke="#72818A" stroke-width="1.3"/>
+<rect x="239.0" y="638" width="30" height="12" rx="5" fill="#F4D3AB" stroke="#72818A" stroke-width="1.3"/>
+<rect x="239.0" y="720" width="30" height="12" rx="5" fill="#F4D3AB" stroke="#72818A" stroke-width="1.3"/>
+<rect x="331" y="625" width="122" height="120" rx="6" fill="#DCCFE8" stroke="#72818A" stroke-width="1.3"/>
+<rect x="377.0" y="638" width="30" height="12" rx="5" fill="#DCCFE8" stroke="#72818A" stroke-width="1.3"/>
+<rect x="377.0" y="720" width="30" height="12" rx="5" fill="#DCCFE8" stroke="#72818A" stroke-width="1.3"/>
+<rect x="469" y="625" width="122" height="120" rx="6" fill="#CFE0BD" stroke="#72818A" stroke-width="1.3"/>
+<rect x="515.0" y="638" width="30" height="12" rx="5" fill="#CFE0BD" stroke="#72818A" stroke-width="1.3"/>
+<rect x="515.0" y="720" width="30" height="12" rx="5" fill="#CFE0BD" stroke="#72818A" stroke-width="1.3"/>
+<rect x="607" y="625" width="122" height="120" rx="6" fill="#E1E6E9" stroke="#72818A" stroke-width="1.3"/>
+<rect x="653.0" y="638" width="30" height="12" rx="5" fill="#E1E6E9" stroke="#72818A" stroke-width="1.3"/>
+<rect x="653.0" y="720" width="30" height="12" rx="5" fill="#E1E6E9" stroke="#72818A" stroke-width="1.3"/>
+<rect x="745" y="625" width="122" height="120" rx="6" fill="#F7E5AA" stroke="#72818A" stroke-width="1.3"/>
+<rect x="791.0" y="638" width="30" height="12" rx="5" fill="#F7E5AA" stroke="#72818A" stroke-width="1.3"/>
+<rect x="791.0" y="720" width="30" height="12" rx="5" fill="#F7E5AA" stroke="#72818A" stroke-width="1.3"/>
+<rect x="43" y="665" width="838" height="43" rx="6" fill="white" stroke="#72818A" stroke-width="1.3"/>
+<text x="462.0" y="693.5" font-family="Helvetica,Arial,sans-serif" font-size="23" font-weight="normal" fill="#263238" text-anchor="middle">Shared attention Φ</text>
+<text x="55" y="772" font-family="Helvetica,Arial,sans-serif" font-size="19" font-weight="normal" fill="#263238" text-anchor="start">Force token present</text>
+<polyline points="883,686 942,686" fill="none" stroke="#72818A" stroke-width="1.7" stroke-linejoin="round"/>
+<polygon points="942,686 933.0,682.0 933.0,690.0" fill="#72818A"/>
+<rect x="944" y="657" width="270" height="58" rx="6" fill="#F4D3AB" stroke="#72818A" stroke-width="1.3"/>
+<text x="1079.0" y="693.0" font-family="Helvetica,Arial,sans-serif" font-size="22" font-weight="normal" fill="#263238" text-anchor="middle">Force head</text>
+<rect x="55" y="820" width="122" height="120" rx="6" fill="#B9DCE7" stroke="#72818A" stroke-width="1.3"/>
+<rect x="82.0" y="833" width="30" height="12" rx="5" fill="#B9DCE7" stroke="#72818A" stroke-width="1.3"/>
+<rect x="120.0" y="833" width="30" height="12" rx="5" fill="#B9DCE7" stroke="#72818A" stroke-width="1.3"/>
+<rect x="82.0" y="915" width="30" height="12" rx="5" fill="#B9DCE7" stroke="#72818A" stroke-width="1.3"/>
+<rect x="120.0" y="915" width="30" height="12" rx="5" fill="#B9DCE7" stroke="#72818A" stroke-width="1.3"/>
+<rect x="193" y="820" width="122" height="120" rx="6" fill="#E1E6E9" stroke="#72818A" stroke-width="1.3"/>
+<rect x="239.0" y="833" width="30" height="12" rx="5" fill="#E1E6E9" stroke="#72818A" stroke-width="1.3"/>
+<rect x="239.0" y="915" width="30" height="12" rx="5" fill="#E1E6E9" stroke="#72818A" stroke-width="1.3"/>
+<line x1="237" y1="831" x2="271" y2="847" stroke="#263238" stroke-width="1.6"/>
+<line x1="237" y1="847" x2="271" y2="831" stroke="#263238" stroke-width="1.6"/>
+<line x1="237" y1="913" x2="271" y2="929" stroke="#263238" stroke-width="1.6"/>
+<line x1="237" y1="929" x2="271" y2="913" stroke="#263238" stroke-width="1.6"/>
+<rect x="331" y="820" width="122" height="120" rx="6" fill="#DCCFE8" stroke="#72818A" stroke-width="1.3"/>
+<rect x="377.0" y="833" width="30" height="12" rx="5" fill="#DCCFE8" stroke="#72818A" stroke-width="1.3"/>
+<rect x="377.0" y="915" width="30" height="12" rx="5" fill="#DCCFE8" stroke="#72818A" stroke-width="1.3"/>
+<rect x="469" y="820" width="122" height="120" rx="6" fill="#CFE0BD" stroke="#72818A" stroke-width="1.3"/>
+<rect x="515.0" y="833" width="30" height="12" rx="5" fill="#CFE0BD" stroke="#72818A" stroke-width="1.3"/>
+<rect x="515.0" y="915" width="30" height="12" rx="5" fill="#CFE0BD" stroke="#72818A" stroke-width="1.3"/>
+<rect x="607" y="820" width="122" height="120" rx="6" fill="#E1E6E9" stroke="#72818A" stroke-width="1.3"/>
+<rect x="653.0" y="833" width="30" height="12" rx="5" fill="#E1E6E9" stroke="#72818A" stroke-width="1.3"/>
+<rect x="653.0" y="915" width="30" height="12" rx="5" fill="#E1E6E9" stroke="#72818A" stroke-width="1.3"/>
+<rect x="745" y="820" width="122" height="120" rx="6" fill="#F7E5AA" stroke="#72818A" stroke-width="1.3"/>
+<rect x="791.0" y="833" width="30" height="12" rx="5" fill="#F7E5AA" stroke="#72818A" stroke-width="1.3"/>
+<rect x="791.0" y="915" width="30" height="12" rx="5" fill="#F7E5AA" stroke="#72818A" stroke-width="1.3"/>
+<rect x="43" y="860" width="838" height="43" rx="6" fill="white" stroke="#72818A" stroke-width="1.3"/>
+<text x="462.0" y="888.5" font-family="Helvetica,Arial,sans-serif" font-size="23" font-weight="normal" fill="#263238" text-anchor="middle">Shared attention Φ</text>
+<text x="55" y="967" font-family="Helvetica,Arial,sans-serif" font-size="19" font-weight="normal" fill="#263238" text-anchor="start">Force token masked</text>
+<polyline points="883,881 942,881" fill="none" stroke="#72818A" stroke-width="1.7" stroke-linejoin="round"/>
+<polygon points="942,881 933.0,877.0 933.0,885.0" fill="#72818A"/>
+<rect x="944" y="852" width="270" height="58" rx="6" fill="#DCCFE8" stroke="#72818A" stroke-width="1.3"/>
+<text x="1079.0" y="888.0" font-family="Helvetica,Arial,sans-serif" font-size="22" font-weight="normal" fill="#263238" text-anchor="middle">Staleness head</text>
+<text x="450" y="1032" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#263238" text-anchor="middle">Both passes share Φ; the output projections are separate.</text>
+<rect x="1300" y="565" width="430" height="58" rx="6" fill="#B9DCE7" stroke="#72818A" stroke-width="1.3"/>
+<text x="1515.0" y="601.0" font-family="Helvetica,Arial,sans-serif" font-size="23" font-weight="normal" fill="#263238" text-anchor="middle">Cached reference action</text>
+<rect x="1300" y="657" width="430" height="58" rx="6" fill="#F4D3AB" stroke="#72818A" stroke-width="1.3"/>
+<text x="1515.0" y="693.0" font-family="Helvetica,Arial,sans-serif" font-size="23" font-weight="normal" fill="#263238" text-anchor="middle">Force correction</text>
+<rect x="1300" y="769" width="430" height="58" rx="6" fill="#DCCFE8" stroke="#72818A" stroke-width="1.3"/>
+<text x="1515.0" y="805.0" font-family="Helvetica,Arial,sans-serif" font-size="22" font-weight="normal" fill="#263238" text-anchor="middle">Learned staleness correction</text>
+<rect x="1300" y="881" width="430" height="66" rx="6" fill="#E1E6E9" stroke="#72818A" stroke-width="1.3"/>
+<text x="1515.0" y="914.0" font-family="Helvetica,Arial,sans-serif" font-size="21" font-weight="normal" fill="#263238" text-anchor="middle">Deterministic rebasing Γ(Sₜ, Sₖ)</text>
+<text x="1515.0" y="939.0" font-family="Helvetica,Arial,sans-serif" font-size="18" font-weight="normal" fill="#263238" text-anchor="middle">Current state + cached query state</text>
+<polyline points="1214,686 1298,686" fill="none" stroke="#72818A" stroke-width="1.7" stroke-linejoin="round"/>
+<polygon points="1298,686 1289.0,682.0 1289.0,690.0" fill="#72818A"/>
+<polyline points="1214,881 1250,881 1250,798 1298,798" fill="none" stroke="#72818A" stroke-width="1.7" stroke-linejoin="round"/>
+<polygon points="1298,798 1289.0,794.0 1289.0,802.0" fill="#72818A"/>
+<polyline points="1730,594 1752,594" fill="none" stroke="#72818A" stroke-width="1.7" stroke-linejoin="round"/>
+<polyline points="1730,686 1752,686" fill="none" stroke="#72818A" stroke-width="1.7" stroke-linejoin="round"/>
+<polyline points="1730,798 1752,798" fill="none" stroke="#72818A" stroke-width="1.7" stroke-linejoin="round"/>
+<polyline points="1730,914 1752,914" fill="none" stroke="#72818A" stroke-width="1.7" stroke-linejoin="round"/>
+<line x1="1752" y1="594" x2="1752" y2="985" stroke="#72818A" stroke-width="1.6"/>
+<polyline points="1752,985 1515,985 1515,1004" fill="none" stroke="#72818A" stroke-width="1.7" stroke-linejoin="round"/>
+<polygon points="1515,1004 1519.0,995.0 1511.0,995.0" fill="#72818A"/>
+<rect x="1300" y="1006" width="430" height="65" rx="6" fill="#F4F7F8" stroke="#72818A" stroke-width="1.3"/>
+<text x="1515.0" y="1038.5" font-family="Helvetica,Arial,sans-serif" font-size="21" font-weight="normal" fill="#263238" text-anchor="middle">Bound corrections; compose pose</text>
+<text x="1515.0" y="1063.5" font-family="Helvetica,Arial,sans-serif" font-size="18" font-weight="normal" fill="#263238" text-anchor="middle">Convert to absolute command using Sₖ</text>
+</svg>
