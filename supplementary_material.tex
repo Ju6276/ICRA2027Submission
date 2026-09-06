@@ -19,7 +19,7 @@
 
 \assumed{The teacher is trained for $50{,}000$ steps with AdamW at a peak learning rate of $2\times10^{-5}$. It predicts $H{=}50$ actions at $30$~Hz from the latest $100$~ms of the $100$~Hz wrench stream, and flow-matching inference uses $N_{\mathrm{flow}}{=}10$ steps.}
 
-After freezing the teacher, \assumed{we train the rank-$32$ force-null adapter for $10{,}000$ steps at a learning rate of $10^{-4}$. The visual--language prefix is pooled into $M{=}16$ intent tokens. The residual policy comprises a causal force encoder and one pre-norm attention block with separate zero-initialized force and staleness output projections. It predicts $K{=}5$ corrections and is trained for $30{,}000$ steps at a learning rate of $3\times10^{-4}$ under replayed asynchronous schedules. The final implementation record will specify the intent-token pooling rule and the embedding used to mask the force token for the staleness head.}
+After freezing the teacher, \assumed{we train the rank-$32$ missing-force adapter for $10{,}000$ steps at a learning rate of $10^{-4}$. The visual--language prefix is pooled into $M{=}16$ positional bins and projected to $Q{=}2$ intent tokens. The residual policy comprises a causal force encoder and one pre-norm set-attention block with separate zero-initialized force and staleness output projections. It predicts $K{=}5$ corrections and is trained for $30{,}000$ steps at a learning rate of $3\times10^{-4}$ under the sampled asynchronous schedule. The staleness pass masks the force-token position in the attention-validity mask.}
 
 The action representation and rotational residual composition are defined in Sec.~III-A of the main paper. Let $\widetilde S^p$ be the first nine pose coordinates of the normalized robot state, obtained after converting orientation to the continuous 6D representation, and let $\sigma_S^p$ and $\sigma_A^p$ be the corresponding training-set state and action standard deviations. The implementation computes
 \begin{equation}
@@ -29,26 +29,26 @@ The action representation and rotational residual composition are defined in Sec
     \qquad \varepsilon=10^{-6}.
     \label{eq:supp_gamma}
 \end{equation}
-Thus, the rotational block is a scale-corrected componentwise difference in continuous 6D rotation coordinates, rather than an exact relative rotation on $\mathrm{SO}(3)$. The composed normalized action is de-normalized, applied relative to the reference-query state $S_k$, and projected to a valid rotation by Gram--Schmidt orthogonalization.
+This scale-corrected componentwise difference is included in the learned staleness target, placing the current missing-force prediction and cached reference in the same normalized delta-action coordinate system. The composed normalized action is de-normalized, applied relative to the reference-query state $S_k$, and projected to a valid rotation by Gram--Schmidt orthogonalization.
 
-The residual policy observes only the reference sample aligned with its query time. The remaining $K-1$ aligned reference samples are used for per-step target construction and command composition, but are not provided as student inputs.
+The residual policy observes the complete $K$-step reference segment aligned with its output timestamps. The segment is flattened and projected to one typed reference token, so each predicted correction is conditioned on the corresponding future reference waypoint without increasing the attention-sequence length.
 
 At deployment, force-conditioned and staleness corrections are clipped separately and element-wise before composition. The implementation accepts either nine-dimensional nonnegative bounds $b_F,b_S\in\mathbb R_{\geq0}^{9}$ or scalar values broadcast over the pose coordinates; bimanual clipping is applied independently per arm. \assumed{The final robot configuration must specify the values used for $b_F$ and $b_S$.}
 
-\assumed{Residual-policy training examples are anchored at the $30$~Hz state/action timestamps while retaining every $100$~Hz wrench sample in $\mathcal F_t$. Residual queries may start more frequently at deployment; the realized correction-update rate is measured directly rather than inferred from the action-sample rate within a chunk.}
+Residual-policy training examples are anchored at the $30$~Hz state/action timestamps while retaining every $100$~Hz wrench sample in $\mathcal F_t$. The sampled schedule uses inter-query periods $T_i\sim\mathcal U(1/15,1/5)$~s and reference-query latencies $L_i\sim\mathcal U(0.05,0.30)$~s. Query rows are first selected on the recorded grid, after which query timestamps receive $J_i\sim\mathcal U(-0.01,0.01)$~s jitter to exercise off-grid reference interpolation. Residual queries may start more frequently at deployment; the realized correction-update rate is measured directly rather than inferred from the action-sample rate within a chunk.
 
-\subsection{Force-Null Mode Optimization}
+\subsection{Missing-Force Mode Optimization}
 
-The learned force-null token and force-null-specific adapter are active only for force-null queries. With the force-conditioned teacher parameters $\theta$ fixed, the force-null parameters $\phi$ are optimized using the teacher's original flow-matching objective,
+The learned missing-force token and mode-specific adapter are active only for missing-force queries. With the force-conditioned teacher parameters $\theta$ fixed, the missing-force parameters $\phi$ are optimized using the teacher's original flow-matching objective,
 \begin{equation}
-    \mathcal L_{\mathrm{null}}
+    \mathcal L_{\mathrm{miss}}
     =\mathbb E_{\mathcal D,\eta,\epsilon}
       \!\left[\ell_{\mathrm{FM}}\!\left(
-      T_{\theta,\phi}^{\mathrm{null}},
+      T_{\theta,\phi}^{\mathrm{miss}},
       A_{t:t+H-1}^*;\eta,\epsilon\right)\right],
-    \label{eq:supp_null_training}
+    \label{eq:supp_missing_training}
 \end{equation}
-where $\eta$ is flow time and $\epsilon$ is the initial flow noise. Full-force and force-null predictions used to construct a residual target share the same $\epsilon$.
+where $\eta$ is flow time and $\epsilon$ is the initial flow noise. Force-conditioned and missing-force predictions used to construct a residual target share the same $\epsilon$.
 
 \subsection{Residual-Loss Weighting}
 
@@ -64,7 +64,7 @@ Thus, $\beta<1$ emphasizes near-term corrections, $\beta=1$ weights all steps eq
 
 \subsection{Reference Updates}
 
-A reference query $k$, started at $t_k$ from state $S_k$, publishes the immutable reference update $(A_{T,k,1:H}^{\mathrm{null}},Z_k^{\mathrm{intent}},S_k,t_k,\bar t_k)$ when its result becomes available at $\bar t_k$. Its samples carry intended execution times
+A reference query $k$, started at $t_k$ from state $S_k$, publishes the immutable reference update $(A_{T,k,1:H}^{\mathrm{miss}},Z_k^{\mathrm{intent}},S_k,t_k,\bar t_k)$ when its result becomes available at $\bar t_k$. Its samples carry intended execution times
 \begin{equation}
     t_{k,n}^{\mathrm{ref}}=t_k+(n-1)/f_A,
     \qquad n=1,\ldots,H.

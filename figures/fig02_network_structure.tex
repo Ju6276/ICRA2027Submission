@@ -103,7 +103,7 @@
   \node[small,draw=cTeacher,fill=cTeacher!8,text width=24mm] (tgtF) at (16.95,6.925)
     {force residual target\\$\Delta A_{T,t|k}^{\mathrm{force}}$};
   \node[small,draw=cTeacher,fill=cTeacher!8,text width=24mm] (tgtS) at (16.95,5.675)
-    {staleness target\\$\Delta A_{T,k\to t}^{\mathrm{stale}}$};
+    {staleness target\\$\Delta A_{T,k\to t}^{\mathrm{stale}}=(A^{\mathrm{miss}}-A^{\mathrm{ref}})+\Gamma$};
   \draw[flow,draw=cTeacher] (subF.east) -- (tgtF.west);
   \draw[flow,draw=cTeacher] (subS.east) -- (tgtS.west);
 
@@ -126,7 +126,8 @@
   \node[small,draw=cFast!70,text width=26mm] (k2) at (1.55,2.78)
     {$u_t^F=E_T^F(\mathcal F_t)$};
   \node[small,text width=26mm] (k3) at (1.55,2.10) {$S_t$};
-  \node[small,draw=cSlow,text width=26mm] (k4) at (1.55,1.42) {$A_k^{\mathrm{ref}}(t)$};
+  \node[small,draw=cSlow,text width=26mm] (k4) at (1.55,1.42)
+    {$\operatorname{vec}(A_k^{\mathrm{ref}}(t_{1:K}))$};
   \node[small,text width=26mm] (k5) at (1.55,0.74) {$\xi_{t,k}$};
 
   \draw[decorate,decoration={brace,amplitude=4pt},draw=cInk!60,line width=0.65pt]
@@ -162,29 +163,27 @@
   \draw[dashflow] (6.60,0.42)
     -- node[note,pos=0.25,above,inner sep=1.6pt]{Stage-3 targets} (ldist.west);
 
-  % ---- composition: one term of Eq. (1) per row, summed on a single bus
+  % ---- composition: the learned staleness target already contains Gamma
   \node[small,draw=cSlow,fill=cSlow!5,text width=28mm] (c1) at (12.85,3.53)
     {$\mathcal P(A_k^{\mathrm{ref}}(t_j))$};
   \node[small,draw=cFast,fill=cFast!5,text width=28mm] (c2) at (12.85,2.58)
     {$\Delta\hat A^{\mathrm{force}}_{t,j}$};
   \node[small,draw=cFast,fill=cFast!5,text width=28mm] (c3) at (12.85,1.63)
     {$\Delta\hat A^{\mathrm{stale}}_{t,j}$};
-  \node[small,text width=28mm] (c4) at (12.85,0.85) {$\Gamma(S_t,S_k)$};
 
   \draw[flow,draw=cFast] (hF.east) -- (c2.west);
   \draw[flow,draw=cFast] (hS.east) -- (c3.west);
 
-  % The four terms meet on one bus and are summed at a single junction.
-  \draw[plain] (c1.east) -- (14.70,3.53) -- (14.70,0.85) -- (c4.east);
+  % The three terms meet on one bus and are summed at a single junction.
+  \draw[plain] (c1.east) -- (14.70,3.53) -- (14.70,1.63);
 
-  % The reference and rebasing terms come from the packet, not from the policy.
+  % The reference comes from the packet.  The learned staleness correction
+  % includes the supervised reference-state gap Gamma(S_t,S_k).
   \draw[flow,draw=cSlow!85] (10.30,3.53) -- (c1.west);
   \node[note,anchor=north east] at (11.25,3.46) {cached action from update $k$};
-  \draw[flow,draw=cSlow!85] (12.85,0.28) -- (c4.south);
-  \node[note,anchor=south] at (12.85,0.02) {current $S_t$, cached $S_k$};
   \draw[plain] (c2.east) -- (14.70,2.58);
   \draw[plain] (c3.east) -- (14.70,1.63);
-  \foreach \y in {3.53,2.58,1.63,0.85} \fill[cInk!75] (14.70,\y) circle (0.55pt);
+  \foreach \y in {3.53,2.58,1.63} \fill[cInk!75] (14.70,\y) circle (0.55pt);
 
   \node[opf,minimum size=4mm] (sum) at (15.22,2.105) {$+$};
   \draw[plain] (14.70,2.105) -- (sum.west);

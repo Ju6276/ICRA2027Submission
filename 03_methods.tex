@@ -1,7 +1,7 @@
 \begin{figure*}[!t]
     \centering
     \includegraphics[width=0.98\textwidth]{figures/fig02_network_structure.pdf}
-    \caption{Overview of ForceDelta-VLA. \emph{Top:} three-stage training of the temporal teacher, learned missing-force mode, and cached-context residual targets. Schedule replay selects $(t,k)$; cached-context teacher predictions and the active reference form the force and staleness targets. \emph{Bottom:} force-present and force-masked passes through a shared attention block predict two residuals, which compose with the interpolated reference and deterministic rebasing term $\Gamma(S_t,S_k)$.}
+    \caption{Overview of ForceDelta-VLA. \emph{Top:} three-stage training of the temporal teacher, learned missing-force mode, and cached-context residual targets. Schedule replay selects $(t,k)$; cached-context teacher predictions and the aligned reference segment form force and reference-state-consistent staleness targets. \emph{Bottom:} force-present and force-masked passes through a shared attention block predict two residual chunks, which compose with the interpolated reference.}
     \label{fig:network_structure}
 \end{figure*}
 
@@ -14,18 +14,17 @@ We consider an offline dataset $\mathcal D$ of teleoperated manipulation traject
 \end{equation*}
 where $T_F$ is the history duration and $\mathbf w(s)=[\mathbf f(s);\boldsymbol\tau(s)]\in\mathbb R^6$ is the per-arm external end-effector wrench. Pose actions and wrench measurements use the corresponding robot-base frame. A force-conditioned teacher $T_\theta$ maps $(V_t,L,S_t,\mathcal F_t)$ to an $H$-step action chunk relative to $S_t$. Pose actions and residuals below use its normalized pose-action coordinates, with differences scaled by the action standard deviations.
 
-Let $\mathcal P(\cdot)$ extract the pose component of an action. We decompose the commanded pose into a reference, two learned corrections, and a deterministic rebasing term,
+Let $\mathcal P(\cdot)$ extract the pose component of an action. We decompose the commanded pose into a reference and two learned corrections,
 \begin{equation}
     \mathcal P(A^{\mathrm{cmd}})
     =\mathcal P(A^{\mathrm{ref}})
       +\Delta\hat A^{\mathrm{force}}
-      +\Delta\hat A^{\mathrm{stale}}
-      +\Gamma(S_t,S_k).
+      +\Delta\hat A^{\mathrm{stale}}.
     \label{eq:action_comp}
 \end{equation}
-The force residual models the teacher's force-conditioning deviation, the learned staleness residual models the remaining cached-reference discrepancy, and $\Gamma$ rebases the reference query state $S_k$ to the current state $S_t$. All three terms modify only pose; the gripper command is inherited from the reference.
+The force residual models the teacher's force-conditioning deviation. The learned staleness residual models the remaining cached-reference discrepancy after placing the current missing-force prediction and cached reference in a common reference-state coordinate system. Both terms modify only pose; the gripper command is inherited from the reference.
 
-Here $\mathcal P(A)=[p;r]$ contains translation $p\in\mathbb R^3$ and a continuous 6D rotation representation $r\in\mathbb R^6$~\cite{zhou2020continuityrotationrepresentationsneural}. Translation is added directly; rotational corrections are added in the teacher's 6D action coordinates and mapped to a valid rotation matrix by Gram--Schmidt orthogonalization. On the bimanual platform, $\mathcal P(A)$, $S_t$, and $\mathcal F_t$ concatenate the corresponding per-arm quantities, so the pose-action dimension doubles and a single residual query predicts both arms jointly. All residual operations, including the coordinate rebasing of Sec.~\ref{sec:teacher_differencing} and the deployment bounds of Sec.~\ref{sec:execution}, act component-wise over the concatenated pose vector under a shared bound rather than per-arm bounds.
+Here $\mathcal P(A)=[p;r]$ contains translation $p\in\mathbb R^3$ and a continuous 6D rotation representation $r\in\mathbb R^6$~\cite{zhou2020continuityrotationrepresentationsneural}. Translation is added directly; rotational corrections are added in the teacher's 6D action coordinates and mapped to a valid rotation matrix by Gram--Schmidt orthogonalization. On the bimanual platform, $\mathcal P(A)$, $S_t$, and $\mathcal F_t$ concatenate the corresponding per-arm quantities, so the pose-action dimension doubles and a single residual query predicts both arms jointly. Residual construction is component-wise over the concatenated pose vector; deployment applies the same per-coordinate bound specification independently to each arm.
 
 \subsection{Method Overview}
 \label{sec:method_overview}
@@ -52,7 +51,7 @@ where $\epsilon$ is the initial flow noise. We freeze $\theta$ after training.
 
 \subsubsection{Missing-force reference mode}
 
-We distinguish an unavailable wrench history from a physically measured zero wrench. The learned missing-force mode represents the former and comprises a missing-force token $z_{\varnothing F}$ and a rank-$\rho$ adapter $\phi=\{z_{\varnothing F},W_{\mathrm{in}},W_{\mathrm{out}}\}$. The adapter modifies the pose channels of the action expert,
+We distinguish an unavailable wrench history from a physically measured zero wrench. The learned missing-force mode represents the former and comprises a missing-force token $z_{\varnothing F}$ and a rank-$\rho$ adapter $(W_{\mathrm{in}},W_{\mathrm{out}})$. We collect its trainable parameters as $\phi=\{z_{\varnothing F},W_{\mathrm{in}},W_{\mathrm{out}}\}$. The adapter modifies the pose channels of the action expert,
 \begin{equation}
     v^p\leftarrow v^p+W_{\mathrm{out}}\,
     \sigma(W_{\mathrm{in}}h),
@@ -73,7 +72,7 @@ The resulting reference prediction is
 \subsubsection{Correction targets}
 \label{sec:teacher_differencing}
 
-For a schedule-replay sample $(t,k)$, let $E_k$ be the visual--language prefix produced when reference query $k$ starts at $t_k$ from $(V_k,L,S_k)$ with flow noise $\epsilon_k$. Its missing-force action chunk defines the timestamped reference, $A_k^{\mathrm{ref}}=A_{T,k}^{\mathrm{miss}}$. To match the information available to the deployed residual pathway, target generation reuses $E_k$ while updating the robot state and force history to time $t$:
+For a schedule-replay sample $(t,k)$, let $E_k$ be the visual--language prefix produced from $(V_k,L)$ when reference query $k$ starts at $t_k$ from state $S_k$ with flow noise $\epsilon_k$. Its missing-force action chunk defines the timestamped reference, $A_k^{\mathrm{ref}}=A_{T,k}^{\mathrm{miss}}$. To match the information available to the deployed residual pathway, target generation reuses $E_k$ while updating the robot state and force history to time $t$:
 \begin{align}
     A_{T,t|k,1:K}^{\mathrm{cond}}
     &=T_\theta(E_k,S_t,z_t^F;\epsilon_k)_{1:K},
@@ -104,7 +103,8 @@ The learned staleness target is
 \begin{equation}
     \Delta A_{T,k\rightarrow t,j}^{\mathrm{stale}}
     =\mathcal P\!\left(A_{T,t|k,j}^{\mathrm{miss}}\right)
-      -\mathcal P\!\left(A_k^{\mathrm{ref}}(t_j)\right).
+      -\mathcal P\!\left(A_k^{\mathrm{ref}}(t_j)\right)
+      +\Gamma(S_t,S_k).
     \label{eq:staleness_target}
 \end{equation}
 Let $\mathcal R(S,a)$ convert a relative action $a$ based at state $S$ into an absolute robot command. The paired targets align the two coordinate bases stepwise:
@@ -112,19 +112,18 @@ Let $\mathcal R(S,a)$ convert a relative action $a$ based at state $S$ into an a
 \begin{aligned}
     &\mathcal R\!\left(S_k,\mathcal P(A_k^{\mathrm{ref}}(t_j))
       +\Delta A_{T,t|k,j}^{\mathrm{force}}
-      +\Delta A_{T,k\rightarrow t,j}^{\mathrm{stale}}
-      +\Gamma(S_t,S_k)\right)\\[-2pt]
+      +\Delta A_{T,k\rightarrow t,j}^{\mathrm{stale}}\right)\\[-2pt]
     &\qquad\approx\mathcal R\!\left(S_t,
       \mathcal P(A_{T,t|k,j}^{\mathrm{cond}})\right).
 \end{aligned}
     \label{eq:absolute_command_equivalence}
 \end{equation}
-Before clipping, substitution recovers the force-conditioned chunk rebased by $\Gamma$. Translational rebasing is exact in normalized Euclidean coordinates up to $\varepsilon$; rotational rebasing is approximate because it adds corrections in 6D coordinates before Gram--Schmidt projection.
+Before clipping, substitution recovers the force-conditioned chunk expressed relative to $S_k$. Since state and action are converted to the same translation-plus-6D representation before component-wise delta construction, the rebasing identity is exact in that representation up to $\varepsilon$; Gram--Schmidt projection is applied after restoring the action delta.
 
 \subsubsection{Residual policy}
 \label{sec:residual_policy}
 
-Each reference query caches a compact representation of its visual--language context. Let $m_k$ denote the validity mask over tokens in $E_k$ from available image views and non-padding language positions; state, force, and action tokens are excluded from $E_k$. We compress the prefix in two stages,
+Each reference query caches a compact representation of its visual--language context. Let $m_k$ denote the validity mask over tokens in $E_k$ from available image views and non-padding language positions; state, force, and action tokens are excluded from $E_k$. Masked mean pooling produces the cached context $(\bar E_k,\bar m_k)$, and the residual policy applies a learned query projector,
 \begin{align}
     (\bar E_k,\bar m_k)
     &=\operatorname{Pool}_{M}(E_k,m_k),\nonumber\\
@@ -133,21 +132,20 @@ Each reference query caches a compact representation of its visual--language con
     \label{eq:intent_projection}
 \end{align}
 Here $\operatorname{Pool}_{M}$ partitions the padded prefix into contiguous, approximately equal-width positional bins and applies masked mean pooling within each bin, retaining the bin-validity mask $\bar m_k$. The projector $P_{\mathrm{intent}}$ uses $Q$ learned queries to aggregate the valid pooled tokens. We use $M=16$ bins and $Q=2$ learned queries.
-The intent tokens represent the visual--language task context available when reference query $k$ starts.
-Together, $A_k^{\mathrm{ref}}$, $Z_k^{\mathrm{intent}}$, and $S_k$ form the timestamped reference update for query $k$; the latest available update is cached for the fast pathway. The residual treats this context as locally valid within a reference interval. Timestamp-based interpolation provides $A_k^{\mathrm{ref}}(t)$. A causal encoder maps $\mathcal F_t$ to $u_t^F$. Cache age and interpolation phase are encoded as
+The intent tokens represent the visual--language task context available when reference query $k$ starts. Together, $A_k^{\mathrm{ref}}$, $(\bar E_k,\bar m_k)$, and $S_k$ form the timestamped reference update for query $k$; the latest available update is cached for the fast pathway. The residual treats this context as locally valid within a reference interval. Timestamp-based interpolation provides the aligned segment $A_k^{\mathrm{ref}}(t_{1:K})$. A causal encoder maps $\mathcal F_t$ to $u_t^F$. Cache age and interpolation phase are encoded as
 \begin{equation}
     \xi_{t,k}=
     \left[\min\!\left(\frac{t-t_k}{c},1\right);\alpha_{t,k}\right],
     \label{eq:time_features}
 \end{equation}
-where $c$ is an age scale and $\alpha_{t,k}$ is the position of $t$ between adjacent reference samples. The conditioning set is
+where $c=0.6$~s is the age scale and $\alpha_{t,k}$ is the position of $t$ between adjacent reference samples. The conditioning set is
 \begin{align}
     \mathcal C_t=[&P_Z(Z_k^{\mathrm{intent}});u_t^F;P_S(S_t);
     \nonumber\\[-2pt]
-    &P_A(A_k^{\mathrm{ref}}(t));P_\xi(\xi_{t,k})].
+    &P_A(\operatorname{vec}(A_k^{\mathrm{ref}}(t_{1:K})));P_\xi(\xi_{t,k})].
     \label{eq:conditioning_set}
 \end{align}
-Here $P_Z,P_A,P_S$, and $P_\xi$ project to the shared token width. There is no positional encoding: a learned type embedding identifies each condition, so the residual-query output is invariant to permutations of the condition tokens together with their type embeddings. $\Gamma(S_t,S_k)$ is computed outside the policy and is omitted from $\mathcal C_t$. Let $\mathcal C_t^{\mathrm{maskF}}=\operatorname{Mask}_F(\mathcal C_t)$ be the same set with the force token masked.
+Here $P_Z,P_A,P_S$, and $P_\xi$ project to the shared token width; $P_A$ maps the flattened aligned segment to one reference token. There is no positional encoding: a learned type embedding identifies each condition, so the residual-query output is invariant to permutations of the condition tokens together with their type embeddings. Let $\mathcal C_t^{\mathrm{maskF}}=\operatorname{Mask}_F(\mathcal C_t)$ be the same set with the force token masked.
 
 An attention block $\Phi$ and learned query $q_{\mathrm{res}}$ predict two $K$-step corrections,
 \begin{align}
@@ -164,11 +162,11 @@ The mask prevents direct dependence of the staleness output on the force token. 
 \subsubsection{Asynchronous schedule replay}
 \label{sec:async_training}
 
-We sample an asynchronous schedule before cached-context target extraction and replay the resulting fixed schedule during residual-policy optimization. The schedule specifies inter-query periods and reference-query latencies. Training instants follow the recorded state--action timestamps, while $\mathcal F_t$ retains all wrench samples in the causal window. If $t_i$ and $\bar t_i$ are the start and availability times of query $i$, the active reference index is
+We sample an asynchronous schedule before cached-context target extraction and replay the resulting fixed schedule during residual-policy optimization. Inter-query periods are sampled independently as $T_i\sim\mathcal U(1/15,1/5)$~s and reference-query latencies as $L_i\sim\mathcal U(0.05,0.30)$~s. Query rows are selected greedily on the recorded $30$~Hz state--action time grid according to $T_i$; the selected query timestamps then receive jitter $J_i\sim\mathcal U(-0.01,0.01)$~s to exercise off-grid reference interpolation. Training instants follow the recorded state--action timestamps, while $\mathcal F_t$ retains all wrench samples in the causal window. If $t_i$ and $\bar t_i=t_i+L_i$ are the start and availability times of query $i$, the active reference index is
 \begin{equation*}
     k(t)=\arg\max_{i:\bar t_i\leq t}t_i.
 \end{equation*}
-The active reference update supplies the cached intent, current reference sample, and timestamps used to compute the temporal features and stepwise targets. The schedule determines the reference age, interpolation phase, and reference-query latency represented during optimization.
+The active reference update supplies the cached pooled context, aligned reference segment, and timestamps used to compute the temporal features and stepwise targets. The schedule determines the reference age, interpolation phase, and reference-query latency represented during optimization.
 
 With normalized temporal weights $w_j\propto\beta^{j-1}$, $0<\beta\leq1$, and normalized-coordinate mean-squared loss $\ell_{\mathrm{pose}}$, the distillation objective is
 \begin{align}
@@ -195,4 +193,4 @@ The reference and residual workers execute independently (Fig.~\ref{fig:async_de
     \label{fig:async_deployment}
 \end{figure}
 
-Expired correction steps are skipped, and the remaining steps execute sequentially without interpolation. The reference pose is interpolated by timestamp. At each residual query, $\Gamma(S_t,S_k)$ is computed from the current state $S_t$ and the state $S_k$ cached with the bound reference update. The force residual is bounded independently; the sum $\Delta\hat A^{\mathrm{stale}}+\Gamma(S_t,S_k)$ is bounded as the staleness correction. Both are composed with the reference in normalized delta-action coordinates and converted to an absolute command using the reference query state.
+Expired correction steps are skipped, and the remaining steps execute sequentially without interpolation. The reference pose is interpolated by timestamp. The force and reference-state-consistent staleness residuals are bounded independently, composed with the reference in normalized delta-action coordinates, and converted to an absolute command using the reference query state. The supervised staleness target already includes $\Gamma(S_t,S_k)$.
