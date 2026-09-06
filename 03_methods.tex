@@ -184,12 +184,12 @@ The coefficient $\lambda_{\mathrm{stale}}$ balances force-conditioning and stale
 \subsection{Independent Residual Execution}
 \label{sec:execution}
 
-The reference and residual workers execute independently (Fig.~\ref{fig:async_deployment}). Each residual query reads the latest completed reference update available at its start, together with the current state and $\mathcal F_t$. The resulting $K$-step correction chunk remains bound to that update; a newly completed reference is adopted by the next residual query.
+The reference and residual workers execute independently (Fig.~\ref{fig:async_deployment}). Each residual query reads the latest completed reference update available at its start, together with the current state and $\mathcal F_t$. The resulting $K$-step correction chunk continues using that same cached update throughout its execution; a newly completed reference is adopted by the next residual query.
 
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{figures/fig03_async_deployment.pdf}
-    \caption{Reference binding during asynchronous execution. Fill colors identify the bound reference; dashed command steps remain bound to $k{-}1$ after reference $k$ becomes available.}
+    \caption{Cached-packet consistency during asynchronous execution. Fill colors identify the cached packet used to generate each residual chunk; dashed correction steps were generated from $C_{k-1}$ even though they execute after $C_k$ becomes available.}
     \label{fig:async_deployment}
 \end{figure}
 
