@@ -67,9 +67,9 @@ ForceDelta-VLA: Distilling Force-Conditioned Action\\Corrections for Contact-Ric
     \let\@oldmaketitle\@maketitle
     \renewcommand{\@maketitle}{\@oldmaketitle
       \centering
-      \includegraphics[width=0.98\linewidth,height=0.28\textheight,keepaspectratio]{figures/fig01_teaser_visual_draft_v1.png}
+      \includegraphics[width=0.98\linewidth,height=0.28\textheight,keepaspectratio]{figures/fig01_teaser_pi_style_v2.pdf}
       % \vspace{-0.2in}
-      \captionof{figure}{ForceDelta-VLA distills force-responsive corrections from matched force-conditioned and learned missing-force teacher predictions. During asynchronous execution, a compact residual policy updates pose commands from recent wrench history and current robot state while reusing a cached missing-force reference.}
+      \captionof{figure}{A conventional force-aware VLA couples contact feedback to slow full-action inference, which can lag transient contact. ForceDelta-VLA instead distills paired cached-context force and staleness corrections and executes them through a compact residual policy over a cached reference.}
       \label{fig:teaser}
       \vspace{-0.1in}
       \bigskip}
