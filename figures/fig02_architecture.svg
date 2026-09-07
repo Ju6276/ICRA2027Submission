@@ -1,128 +1,110 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1900" height="720" viewBox="0 0 1900 720">
-<rect width="1900" height="720" fill="white"/>
-<rect x="18" y="62" width="585" height="630" rx="14" fill="#FBF4E3" stroke="#FBF4E3" stroke-width="0"/>
-<rect x="648" y="62" width="1234" height="630" rx="14" fill="#F4F7F7" stroke="#F4F7F7" stroke-width="0"/>
-<line x1="625" y1="25" x2="625" y2="695" stroke="#B9C5CA" stroke-width="1.1"/>
-<text x="30" y="42" font-family="Helvetica,Arial,sans-serif" font-size="38.75" font-weight="bold" fill="#26343B" text-anchor="start">(a)</text>
-<text x="88" y="42" font-family="Helvetica,Arial,sans-serif" font-size="38.75" font-weight="bold" fill="#26343B" text-anchor="start">Paired teacher targets</text>
-<rect x="58" y="88" width="175" height="36" rx="18.0" fill="#A9D8E7" stroke="#647983" stroke-width="1.4"/>
-<text x="145.5" y="110.76" font-family="Helvetica,Arial,sans-serif" font-size="21.7" font-weight="normal" fill="#26343B" text-anchor="middle">prefix Eₖ</text>
-<rect x="246" y="88" width="135" height="36" rx="18.0" fill="#DEE5E8" stroke="#647983" stroke-width="1.4"/>
-<text x="313.5" y="110.08" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">state Sₜ</text>
-<rect x="394" y="88" width="174" height="36" rx="18.0" fill="#DEE5E8" stroke="#647983" stroke-width="1.4"/>
-<text x="481.0" y="110.08" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">noise εₖ</text>
-<rect x="92" y="158" width="438" height="68" rx="9" fill="#A9D8E7" stroke="#647983" stroke-width="1.4"/>
-<text x="311" y="188" font-family="Helvetica,Arial,sans-serif" font-size="31.0" font-weight="bold" fill="#26343B" text-anchor="middle">frozen VLA teacher</text>
-<text x="311" y="211" font-family="Helvetica,Arial,sans-serif" font-size="20.150000000000002" font-weight="normal" fill="#26343B" text-anchor="middle">shared backbone and action expert</text>
-<polyline points="145,126 145,155" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
-<polygon points="145,155 149.0,147.0 141.0,147.0" fill="#647983"/>
-<polyline points="311,126 311,155" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
-<polygon points="311,155 315.0,147.0 307.0,147.0" fill="#647983"/>
-<polyline points="477,126 477,155" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
-<polygon points="477,155 481.0,147.0 473.0,147.0" fill="#647983"/>
-<rect x="48" y="270" width="185" height="42" rx="21.0" fill="#F5CFA2" stroke="#647983" stroke-width="1.4"/>
-<text x="140.5" y="295.42" font-family="Helvetica,Arial,sans-serif" font-size="20.150000000000002" font-weight="normal" fill="#26343B" text-anchor="middle">force history -&gt; TCN</text>
-<rect x="369" y="270" width="186" height="42" rx="21.0" fill="#E6F1F4" stroke="#647983" stroke-width="1.4"/>
-<text x="462.0" y="295.42" font-family="Helvetica,Arial,sans-serif" font-size="20.150000000000002" font-weight="normal" fill="#26343B" text-anchor="middle">missing-force token</text>
-<rect x="48" y="342" width="235" height="70" rx="8" fill="#F5CFA2" stroke="#647983" stroke-width="1.4"/>
-<text x="165" y="370" font-family="Helvetica,Arial,sans-serif" font-size="23.25" font-weight="bold" fill="#26343B" text-anchor="middle">force-conditioned</text>
-<text x="165" y="395" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">current prediction</text>
-<rect x="320" y="342" width="235" height="70" rx="8" fill="#E6F1F4" stroke="#647983" stroke-width="1.4"/>
-<text x="437" y="370" font-family="Helvetica,Arial,sans-serif" font-size="23.25" font-weight="bold" fill="#26343B" text-anchor="middle">missing-force</text>
-<text x="437" y="395" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">current prediction</text>
-<polyline points="141,315 141,339" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
-<polygon points="141,339 145.0,331.0 137.0,331.0" fill="#647983"/>
-<polyline points="462,315 462,339" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
-<polygon points="462,339 466.0,331.0 458.0,331.0" fill="#647983"/>
-<polyline points="260,226 260,326 165,326 165,339" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
-<polygon points="165,339 169.0,331.0 161.0,331.0" fill="#647983"/>
-<polyline points="350,226 350,326 437,326 437,339" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
-<polygon points="437,339 441.0,331.0 433.0,331.0" fill="#647983"/>
-<rect x="48" y="486" width="238" height="68" rx="8" fill="#F5CFA2" stroke="#647983" stroke-width="1.4"/>
-<text x="167" y="514" font-family="Helvetica,Arial,sans-serif" font-size="24.8" font-weight="bold" fill="#26343B" text-anchor="middle">force target</text>
-<text x="167" y="538" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">conditioned - missing</text>
-<rect x="316" y="486" width="239" height="68" rx="8" fill="#DCCBE8" stroke="#647983" stroke-width="1.4"/>
-<text x="435" y="511" font-family="Helvetica,Arial,sans-serif" font-size="24.8" font-weight="bold" fill="#26343B" text-anchor="middle">staleness target</text>
-<text x="435" y="532" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">missing - reference</text>
-<text x="435" y="547" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">+ rebasing</text>
-<polyline points="165,415 165,483" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
-<polygon points="165,483 169.0,475.0 161.0,475.0" fill="#647983"/>
-<polyline points="437,415 437,483" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
-<polygon points="437,483 441.0,475.0 433.0,475.0" fill="#647983"/>
-<polyline points="437,430 437,454 245,454 245,483" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
-<polygon points="245,483 249.0,475.0 241.0,475.0" fill="#647983"/>
-<rect x="316" y="606" width="238" height="36" rx="18.0" fill="#A9D8E7" stroke="#647983" stroke-width="1.4"/>
-<text x="435.0" y="627.74" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">cached reference (query k)</text>
-<text x="435" y="671" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">aligned at tⱼ</text>
-<polyline points="435,606 435,557" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
-<polygon points="435,557 431.0,565.0 439.0,565.0" fill="#647983"/>
-<text x="660" y="42" font-family="Helvetica,Arial,sans-serif" font-size="38.75" font-weight="bold" fill="#26343B" text-anchor="start">(b)</text>
-<text x="718" y="42" font-family="Helvetica,Arial,sans-serif" font-size="38.75" font-weight="bold" fill="#26343B" text-anchor="start">Residual policy and execution</text>
-<text x="1030" y="92" font-family="Helvetica,Arial,sans-serif" font-size="23.25" font-weight="normal" fill="#26343B" text-anchor="middle">same typed conditioning set</text>
-<rect x="755" y="120" width="94" height="72" rx="7" fill="#A9D8E7" stroke="#647983" stroke-width="1.4"/>
-<rect x="778" y="139" width="20" height="12" rx="6" fill="#A9D8E7" stroke="#647983" stroke-width="1.0"/>
-<rect x="806" y="139" width="20" height="12" rx="6" fill="#A9D8E7" stroke="#647983" stroke-width="1.0"/>
-<text x="802" y="181" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">intent</text>
-<rect x="864" y="120" width="94" height="72" rx="7" fill="#F5CFA2" stroke="#647983" stroke-width="1.4"/>
-<rect x="887" y="139" width="20" height="12" rx="6" fill="#F5CFA2" stroke="#647983" stroke-width="1.0"/>
-<text x="911" y="181" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">force</text>
-<rect x="973" y="120" width="94" height="72" rx="7" fill="#DEE5E8" stroke="#647983" stroke-width="1.4"/>
-<rect x="996" y="139" width="20" height="12" rx="6" fill="#DEE5E8" stroke="#647983" stroke-width="1.0"/>
-<text x="1020" y="181" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">state</text>
-<rect x="1082" y="120" width="94" height="72" rx="7" fill="#A9D8E7" stroke="#647983" stroke-width="1.4"/>
-<rect x="1105" y="139" width="20" height="12" rx="6" fill="#A9D8E7" stroke="#647983" stroke-width="1.0"/>
-<text x="1129" y="181" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">reference</text>
-<rect x="1191" y="120" width="94" height="72" rx="7" fill="#DEE5E8" stroke="#647983" stroke-width="1.4"/>
-<rect x="1214" y="139" width="20" height="12" rx="6" fill="#DEE5E8" stroke="#647983" stroke-width="1.0"/>
-<text x="1238" y="181" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">time</text>
-<rect x="684" y="225" width="225" height="38" rx="19.0" fill="#F5CFA2" stroke="#647983" stroke-width="1.4"/>
-<text x="796.5" y="248.42" font-family="Helvetica,Arial,sans-serif" font-size="20.150000000000002" font-weight="normal" fill="#26343B" text-anchor="middle">force token present</text>
-<rect x="1151" y="225" width="225" height="38" rx="19.0" fill="#DEE5E8" stroke="#647983" stroke-width="1.4"/>
-<text x="1263.5" y="248.42" font-family="Helvetica,Arial,sans-serif" font-size="20.150000000000002" font-weight="normal" fill="#26343B" text-anchor="middle">force token masked</text>
-<line x1="802" y1="205" x2="1238" y2="205" stroke="#647983" stroke-width="1.5"/>
-<line x1="802" y1="192" x2="802" y2="205" stroke="#647983" stroke-width="1.5"/>
-<line x1="911" y1="192" x2="911" y2="205" stroke="#647983" stroke-width="1.5"/>
-<line x1="1020" y1="192" x2="1020" y2="205" stroke="#647983" stroke-width="1.5"/>
-<line x1="1129" y1="192" x2="1129" y2="205" stroke="#647983" stroke-width="1.5"/>
-<line x1="1238" y1="192" x2="1238" y2="205" stroke="#647983" stroke-width="1.5"/>
-<polyline points="797,205 797,222" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
-<polygon points="797,222 801.0,214.0 793.0,214.0" fill="#647983"/>
-<polyline points="1264,205 1264,222" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
-<polygon points="1264,222 1268.0,214.0 1260.0,214.0" fill="#647983"/>
-<rect x="714" y="305" width="634" height="72" rx="9" fill="white" stroke="#647983" stroke-width="1.4"/>
-<text x="1031" y="337" font-family="Helvetica,Arial,sans-serif" font-size="31.0" font-weight="bold" fill="#26343B" text-anchor="middle">shared set attention Φ</text>
-<text x="1031" y="361" font-family="Helvetica,Arial,sans-serif" font-size="20.150000000000002" font-weight="normal" fill="#26343B" text-anchor="middle">evaluated twice with residual query</text>
-<polyline points="797,266 797,302" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
-<polygon points="797,302 801.0,294.0 793.0,294.0" fill="#647983"/>
-<polyline points="1264,266 1264,302" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
-<polygon points="1264,302 1268.0,294.0 1260.0,294.0" fill="#647983"/>
-<rect x="684" y="420" width="225" height="64" rx="28" fill="#F5CFA2" stroke="#647983" stroke-width="1.4"/>
-<text x="796" y="448" font-family="Helvetica,Arial,sans-serif" font-size="26.35" font-weight="bold" fill="#26343B" text-anchor="middle">force head</text>
-<text x="796" y="471" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">K-step correction</text>
-<rect x="1151" y="420" width="225" height="64" rx="28" fill="#DCCBE8" stroke="#647983" stroke-width="1.4"/>
-<text x="1263" y="448" font-family="Helvetica,Arial,sans-serif" font-size="26.35" font-weight="bold" fill="#26343B" text-anchor="middle">staleness head</text>
-<text x="1263" y="471" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">K-step correction</text>
-<polyline points="797,380 797,417" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
-<polygon points="797,417 801.0,409.0 793.0,409.0" fill="#647983"/>
-<polyline points="1264,380 1264,417" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
-<polygon points="1264,417 1268.0,409.0 1260.0,409.0" fill="#647983"/>
-<rect x="680" y="582" width="205" height="50" rx="8" fill="#A9D8E7" stroke="#647983" stroke-width="1.4"/>
-<text x="782" y="613" font-family="Helvetica,Arial,sans-serif" font-size="20.150000000000002" font-weight="normal" fill="#26343B" text-anchor="middle">cached reference</text>
-<text x="905" y="615" font-family="Helvetica,Arial,sans-serif" font-size="34.1" font-weight="bold" fill="#26343B" text-anchor="middle">+</text>
-<rect x="928" y="582" width="205" height="50" rx="8" fill="#F5CFA2" stroke="#647983" stroke-width="1.4"/>
-<text x="1030" y="613" font-family="Helvetica,Arial,sans-serif" font-size="20.150000000000002" font-weight="normal" fill="#26343B" text-anchor="middle">force correction</text>
-<text x="1153" y="615" font-family="Helvetica,Arial,sans-serif" font-size="34.1" font-weight="bold" fill="#26343B" text-anchor="middle">+</text>
-<rect x="1176" y="582" width="220" height="50" rx="8" fill="#DCCBE8" stroke="#647983" stroke-width="1.4"/>
-<text x="1286" y="613" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">staleness correction</text>
-<polyline points="1402,607 1450,607" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
-<polygon points="1450,607 1442.0,603.0 1442.0,611.0" fill="#647983"/>
-<rect x="1456" y="574" width="270" height="66" rx="9" fill="white" stroke="#647983" stroke-width="1.4"/>
-<text x="1591" y="604" font-family="Helvetica,Arial,sans-serif" font-size="26.35" font-weight="bold" fill="#26343B" text-anchor="middle">commanded pose</text>
-<text x="1591" y="626" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">based at cached state Sₖ</text>
-<rect x="1464" y="657" width="254" height="28" rx="14.0" fill="#E6F1F4" stroke="#647983" stroke-width="1.4"/>
-<text x="1591.0" y="674.74" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">gripper from reference</text>
-<polyline points="796,487 796,560 1030,560 1030,579" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
-<polygon points="1030,579 1034.0,571.0 1026.0,571.0" fill="#647983"/>
-<polyline points="1263,487 1263,560 1286,560 1286,579" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
-<polygon points="1286,579 1290.0,571.0 1282.0,571.0" fill="#647983"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1900" height="760" viewBox="0 0 1900 760">
+<rect width="1900" height="760" fill="white"/>
+<rect x="24" y="20" width="1852" height="286" rx="14" fill="#E9F3F7" stroke="#E9F3F7" stroke-width="0"/>
+<text x="42" y="51" font-family="Arial,Helvetica,sans-serif" font-size="23" font-style="normal" font-weight="bold" fill="#202A30" text-anchor="start">OFFLINE  ·  PAIRED TEACHER TARGET CONSTRUCTION</text>
+<rect x="650" y="65" width="430" height="38" rx="19" fill="#BFDDEB" stroke="#586B74" stroke-width="1.2"/>
+<text x="865.0" y="91" font-family="Arial,Helvetica,sans-serif" font-size="19" font-style="normal" font-weight="normal" fill="#202A30" text-anchor="middle">Eₖ  ·  Sₜ  ·  shared noise εₖ</text>
+<rect x="52" y="132" width="250" height="38" rx="19" fill="#F2C99D" stroke="#586B74" stroke-width="1.2"/>
+<text x="177.0" y="158" font-family="Arial,Helvetica,sans-serif" font-size="19" font-style="normal" font-weight="normal" fill="#202A30" text-anchor="middle">Wrench history  ℱₜ</text>
+<rect x="52" y="240" width="250" height="38" rx="19" fill="#DDE4E7" stroke="#586B74" stroke-width="1.2"/>
+<text x="177.0" y="266" font-family="Arial,Helvetica,sans-serif" font-size="19" font-style="normal" font-weight="normal" fill="#202A30" text-anchor="middle">Force-agnostic input</text>
+<rect x="340" y="112" width="250" height="78" rx="8" fill="#F2C99D" stroke="#586B74" stroke-width="1.5"/>
+<text x="465.0" y="144.0" font-family="Arial,Helvetica,sans-serif" font-size="23" font-style="normal" font-weight="bold" fill="#202A30" text-anchor="middle">Causal TCN</text>
+<text x="465.0" y="171.0" font-family="Arial,Helvetica,sans-serif" font-size="18" font-style="normal" font-weight="normal" fill="#202A30" text-anchor="middle">force encoding</text>
+<rect x="340" y="220" width="250" height="78" rx="8" fill="#DDE4E7" stroke="#586B74" stroke-width="1.5"/>
+<text x="465.0" y="252.0" font-family="Arial,Helvetica,sans-serif" font-size="21" font-style="normal" font-weight="bold" fill="#202A30" text-anchor="middle">Learned token + adapter</text>
+<text x="465.0" y="279.0" font-family="Arial,Helvetica,sans-serif" font-size="18" font-style="normal" font-weight="normal" fill="#202A30" text-anchor="middle">token + low-rank adapter</text>
+<polyline points="302,151 336,151" fill="none" stroke="#586B74" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="336,151 326.0,146.0 326.0,156.0" fill="#586B74"/>
+<polyline points="302,259 336,259" fill="none" stroke="#586B74" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="336,259 326.0,254.0 326.0,264.0" fill="#586B74"/>
+<rect x="650" y="112" width="430" height="186" rx="8" fill="#BFDDEB" stroke="#586B74" stroke-width="1.5"/>
+<text x="865.0" y="198.0" font-family="Arial,Helvetica,sans-serif" font-size="23" font-style="normal" font-weight="bold" fill="#202A30" text-anchor="middle">Frozen VLA teacher</text>
+<text x="865.0" y="225.0" font-family="Arial,Helvetica,sans-serif" font-size="18" font-style="normal" font-weight="normal" fill="#202A30" text-anchor="middle">paired force-conditioned and force-agnostic queries</text>
+<polyline points="590,151 646,151" fill="none" stroke="#586B74" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="646,151 636.0,146.0 636.0,156.0" fill="#586B74"/>
+<polyline points="590,259 646,259" fill="none" stroke="#586B74" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="646,259 636.0,254.0 636.0,264.0" fill="#586B74"/>
+<polyline points="865,103 865,108" fill="none" stroke="#586B74" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="865,108 870.0,98.0 860.0,98.0" fill="#586B74"/>
+<rect x="1130" y="66" width="330" height="90" rx="8" fill="#F2C99D" stroke="#586B74" stroke-width="1.5"/>
+<text x="1295.0" y="104.0" font-family="Arial,Helvetica,sans-serif" font-size="23" font-style="normal" font-weight="bold" fill="#202A30" text-anchor="middle">Force-conditioned</text>
+<text x="1295.0" y="131.0" font-family="Arial,Helvetica,sans-serif" font-size="18" font-style="normal" font-weight="normal" fill="#202A30" text-anchor="middle">current action chunk</text>
+<rect x="1130" y="192" width="330" height="90" rx="8" fill="#DDE4E7" stroke="#586B74" stroke-width="1.5"/>
+<text x="1295.0" y="230.0" font-family="Arial,Helvetica,sans-serif" font-size="23" font-style="normal" font-weight="bold" fill="#202A30" text-anchor="middle">Base action</text>
+<text x="1295.0" y="257.0" font-family="Arial,Helvetica,sans-serif" font-size="18" font-style="normal" font-weight="normal" fill="#202A30" text-anchor="middle">current prediction</text>
+<polyline points="1080,158 1105,158 1105,111 1126,111" fill="none" stroke="#586B74" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="1126,111 1116.0,106.0 1116.0,116.0" fill="#586B74"/>
+<polyline points="1080,252 1105,252 1105,237 1126,237" fill="none" stroke="#586B74" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="1126,237 1116.0,232.0 1116.0,242.0" fill="#586B74"/>
+<rect x="1550" y="66" width="296" height="90" rx="8" fill="#F2C99D" stroke="#586B74" stroke-width="1.5"/>
+<text x="1698.0" y="104.0" font-family="Arial,Helvetica,sans-serif" font-size="23" font-style="normal" font-weight="bold" fill="#202A30" text-anchor="middle">Force target</text>
+<text x="1698.0" y="131.0" font-family="Arial,Helvetica,sans-serif" font-size="18" font-style="normal" font-weight="normal" fill="#202A30" text-anchor="middle">force-conditioned − base</text>
+<rect x="1550" y="192" width="296" height="90" rx="8" fill="#D8C9E5" stroke="#586B74" stroke-width="1.5"/>
+<text x="1698.0" y="230.0" font-family="Arial,Helvetica,sans-serif" font-size="21" font-style="normal" font-weight="bold" fill="#202A30" text-anchor="middle">Delay target</text>
+<text x="1698.0" y="257.0" font-family="Arial,Helvetica,sans-serif" font-size="15" font-style="normal" font-weight="normal" fill="#202A30" text-anchor="middle">current base − cached base + Γ(Sₜ,Sₖ)</text>
+<polyline points="1460,111 1546,111" fill="none" stroke="#586B74" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="1546,111 1536.0,106.0 1536.0,116.0" fill="#586B74"/>
+<polyline points="1460,237 1546,237" fill="none" stroke="#586B74" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="1546,237 1536.0,232.0 1536.0,242.0" fill="#586B74"/>
+<rect x="24" y="326" width="1852" height="266" rx="14" fill="#EDF6E9" stroke="#EDF6E9" stroke-width="0"/>
+<text x="42" y="357" font-family="Arial,Helvetica,sans-serif" font-size="23" font-style="normal" font-weight="bold" fill="#202A30" text-anchor="start">ONLINE  ·  SHARED CORRECTION POLICY</text>
+<rect x="55" y="380" width="250" height="78" rx="8" fill="#BFDDEB" stroke="#586B74" stroke-width="1.5"/>
+<text x="180.0" y="412.0" font-family="Arial,Helvetica,sans-serif" font-size="20" font-style="normal" font-weight="bold" fill="#202A30" text-anchor="middle">Cached task context</text>
+<text x="180.0" y="439.0" font-family="Arial,Helvetica,sans-serif" font-size="17" font-style="normal" font-weight="normal" fill="#202A30" text-anchor="middle">from Eₖ</text>
+<rect x="325" y="380" width="250" height="78" rx="8" fill="#F2C99D" stroke="#586B74" stroke-width="1.5"/>
+<text x="450.0" y="412.0" font-family="Arial,Helvetica,sans-serif" font-size="20" font-style="normal" font-weight="bold" fill="#202A30" text-anchor="middle">Current wrench history</text>
+<text x="450.0" y="439.0" font-family="Arial,Helvetica,sans-serif" font-size="17" font-style="normal" font-weight="normal" fill="#202A30" text-anchor="middle">causal TCN</text>
+<rect x="595" y="380" width="210" height="78" rx="8" fill="#DDE4E7" stroke="#586B74" stroke-width="1.5"/>
+<text x="700.0" y="412.0" font-family="Arial,Helvetica,sans-serif" font-size="20" font-style="normal" font-weight="bold" fill="#202A30" text-anchor="middle">Current state</text>
+<text x="700.0" y="439.0" font-family="Arial,Helvetica,sans-serif" font-size="17" font-style="normal" font-weight="normal" fill="#202A30" text-anchor="middle">Sₜ</text>
+<rect x="825" y="380" width="280" height="78" rx="8" fill="#BFDDEB" stroke="#586B74" stroke-width="1.5"/>
+<text x="965.0" y="412.0" font-family="Arial,Helvetica,sans-serif" font-size="20" font-style="normal" font-weight="bold" fill="#202A30" text-anchor="middle">Base-action segment</text>
+<text x="965.0" y="439.0" font-family="Arial,Helvetica,sans-serif" font-size="17" font-style="normal" font-weight="normal" fill="#202A30" text-anchor="middle">aligned to t₁ … tₖ</text>
+<rect x="1125" y="380" width="210" height="78" rx="8" fill="#DDE4E7" stroke="#586B74" stroke-width="1.5"/>
+<text x="1230.0" y="412.0" font-family="Arial,Helvetica,sans-serif" font-size="20" font-style="normal" font-weight="bold" fill="#202A30" text-anchor="middle">Timing</text>
+<text x="1230.0" y="439.0" font-family="Arial,Helvetica,sans-serif" font-size="17" font-style="normal" font-weight="normal" fill="#202A30" text-anchor="middle">age + phase</text>
+<rect x="55" y="492" width="1280" height="70" rx="8" fill="#CBE4BE" stroke="#586B74" stroke-width="1.5"/>
+<text x="695.0" y="520.0" font-family="Arial,Helvetica,sans-serif" font-size="24" font-style="normal" font-weight="bold" fill="#202A30" text-anchor="middle">Shared set-attention backbone  Φ</text>
+<text x="695.0" y="547.0" font-family="Arial,Helvetica,sans-serif" font-size="18" font-style="normal" font-weight="normal" fill="#202A30" text-anchor="middle">typed condition tokens + learned correction query</text>
+<polyline points="180,458 180,488" fill="none" stroke="#586B74" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="180,488 185.0,478.0 175.0,478.0" fill="#586B74"/>
+<polyline points="450,458 450,488" fill="none" stroke="#586B74" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="450,488 455.0,478.0 445.0,478.0" fill="#586B74"/>
+<polyline points="700,458 700,488" fill="none" stroke="#586B74" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="700,488 705.0,478.0 695.0,478.0" fill="#586B74"/>
+<polyline points="965,458 965,488" fill="none" stroke="#586B74" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="965,488 970.0,478.0 960.0,478.0" fill="#586B74"/>
+<polyline points="1230,458 1230,488" fill="none" stroke="#586B74" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="1230,488 1235.0,478.0 1225.0,478.0" fill="#586B74"/>
+<rect x="1390" y="354" width="440" height="92" rx="8" fill="#F2C99D" stroke="#586B74" stroke-width="1.5"/>
+<text x="1610.0" y="393.0" font-family="Arial,Helvetica,sans-serif" font-size="23" font-style="normal" font-weight="bold" fill="#202A30" text-anchor="middle">Force correction</text>
+<text x="1610.0" y="420.0" font-family="Arial,Helvetica,sans-serif" font-size="18" font-style="normal" font-weight="normal" fill="#202A30" text-anchor="middle">force token present  ·  K steps</text>
+<rect x="1390" y="474" width="440" height="92" rx="8" fill="#D8C9E5" stroke="#586B74" stroke-width="1.5"/>
+<text x="1610.0" y="513.0" font-family="Arial,Helvetica,sans-serif" font-size="23" font-style="normal" font-weight="bold" fill="#202A30" text-anchor="middle">Delay correction</text>
+<text x="1610.0" y="540.0" font-family="Arial,Helvetica,sans-serif" font-size="18" font-style="normal" font-weight="normal" fill="#202A30" text-anchor="middle">force token masked  ·  K steps</text>
+<polyline points="1335,515 1360,515 1360,400 1386,400" fill="none" stroke="#586B74" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="1386,400 1376.0,395.0 1376.0,405.0" fill="#586B74"/>
+<polyline points="1335,539 1360,539 1360,520 1386,520" fill="none" stroke="#586B74" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="1386,520 1376.0,515.0 1376.0,525.0" fill="#586B74"/>
+<rect x="24" y="612" width="1852" height="124" rx="14" fill="#F5F7F8" stroke="#F5F7F8" stroke-width="0"/>
+<text x="42" y="643" font-family="Arial,Helvetica,sans-serif" font-size="23" font-style="normal" font-weight="bold" fill="#202A30" text-anchor="start">ASYNCHRONOUS ACTION COMPOSITION</text>
+<rect x="282" y="660" width="300" height="52" rx="8" fill="#BFDDEB" stroke="#586B74" stroke-width="1.5"/>
+<text x="432.0" y="693.0" font-family="Arial,Helvetica,sans-serif" font-size="20" font-style="normal" font-weight="bold" fill="#202A30" text-anchor="middle">Cached base pose</text>
+<text x="610" y="696" font-family="Arial,Helvetica,sans-serif" font-size="30" font-style="normal" font-weight="bold" fill="#202A30" text-anchor="middle">+</text>
+<rect x="642" y="660" width="330" height="52" rx="8" fill="#F2C99D" stroke="#586B74" stroke-width="1.5"/>
+<text x="807.0" y="693.0" font-family="Arial,Helvetica,sans-serif" font-size="19" font-style="normal" font-weight="bold" fill="#202A30" text-anchor="middle">Force correction</text>
+<text x="1000" y="696" font-family="Arial,Helvetica,sans-serif" font-size="30" font-style="normal" font-weight="bold" fill="#202A30" text-anchor="middle">+</text>
+<rect x="1032" y="660" width="350" height="52" rx="8" fill="#D8C9E5" stroke="#586B74" stroke-width="1.5"/>
+<text x="1207.0" y="693.0" font-family="Arial,Helvetica,sans-serif" font-size="18" font-style="normal" font-weight="bold" fill="#202A30" text-anchor="middle">Delay correction</text>
+<polyline points="1394,686 1470,686" fill="none" stroke="#586B74" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+<polygon points="1470,686 1460.0,681.0 1460.0,691.0" fill="#586B74"/>
+<rect x="1482" y="651" width="310" height="70" rx="8" fill="#CBE4BE" stroke="#586B74" stroke-width="1.5"/>
+<text x="1637.0" y="679.0" font-family="Arial,Helvetica,sans-serif" font-size="23" font-style="normal" font-weight="bold" fill="#202A30" text-anchor="middle">Commanded pose</text>
+<text x="1637.0" y="706.0" font-family="Arial,Helvetica,sans-serif" font-size="17" font-style="normal" font-weight="normal" fill="#202A30" text-anchor="middle">gripper follows base action</text>
+<polyline points="1698,282 1698,320 1610,320 1610,350" fill="none" stroke="#A56C2A" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 6"/>
+<polygon points="1610,350 1615.0,340.0 1605.0,340.0" fill="#A56C2A"/>
+<polyline points="1742,282 1742,462 1610,462 1610,470" fill="none" stroke="#81649A" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 6"/>
+<polygon points="1610,470 1615.0,460.0 1605.0,460.0" fill="#81649A"/>
+<text x="1748" y="320" font-family="Arial,Helvetica,sans-serif" font-size="17" font-style="italic" font-weight="normal" fill="#6D7377" text-anchor="start">distill</text>
 </svg>

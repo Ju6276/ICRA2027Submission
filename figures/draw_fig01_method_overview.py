@@ -16,9 +16,7 @@ ROOT = Path(__file__).resolve().parent
 OUTPUT_PDF = ROOT / "fig01_method_overview.pdf"
 OUTPUT_PNG = ROOT / "fig01_method_overview.png"
 
-FAILURE_IMAGES = [None, None, None, None]
-FAILURE_LABELS = ["Reference error", "Stale reference", "Jamming", "Nonlocal recovery"]
-SETUP_IMAGES = ["fig04a_franka_platform.png", "fig04b_bimanual_platform.png"]
+COMPARISON_IMAGES = [None, None]
 
 INK = "#121212"
 SUBTLE = "#58616A"
@@ -131,65 +129,85 @@ def setup_card(ax, x, y, w, h, title, image_path):
 
 
 def main():
-    # Match the final double-column print width so font sizes are not reduced
-    # again by nearly one half when LaTeX includes the figure.
     fig, ax = plt.subplots(figsize=(8.5, 3.66))
     fig.subplots_adjust(left=0, right=1, top=1, bottom=0)
-    ax.set(xlim=(0, 1), ylim=(0, 1)); ax.axis('off')
-    panel(ax, .012, .045, .295, .865, face=CREAM_2, edge=CREAM_2,
-          lw=0, radius=.014, z=0)
-    panel(ax, .738, .045, .247, .865, face=CREAM_2, edge=CREAM_2,
-          lw=0, radius=.014, z=0)
-    panel(ax, .31, .175, .425, .41, face="#F4F7F7", edge="#F4F7F7",
-          lw=0, radius=.014, z=0)
-    label(ax, .16, .95, 'Conventional force-aware VLA', size=11.5, weight='bold')
-    panel(ax, .035, .70, .25, .17, face=PALE_BLUE)
-    label(ax, .16, .83, 'Vision / language / state / force', size=8.3)
-    label(ax, .16, .775, 'Full-action prediction', size=10, weight='bold')
-    label(ax, .16, .73, 'task motion + contact adjustment', size=7.8)
-    label(ax, .16, .646, 'Contact changes can outpace\naction updates', size=8, color=ACCENT_RED)
-    for (x,y), title, path in zip([(.025,.34),(.17,.34),(.025,.07),(.17,.07)], FAILURE_LABELS, FAILURE_IMAGES):
-        image_card(ax, x, y, .125, .23, title, path)
-    label(ax, .53, .95, 'ForceDelta-VLA', size=13, weight='bold')
-    panel(ax, .315, .585, .42, .31, face=POLICY_BLUE)
-    label(ax,.5325,.855,'Teacher-defined force residual',size=10.0,weight='bold')
-    panel(ax,.34,.785,.37,.05,face=CREAM)
-    label(ax,.5325,.8075,'Frozen teacher · matched context/noise',size=8.8,weight='bold')
-    panel(ax,.33,.69,.165,.065,face=FORCE_PALE)
-    label(ax,.4125,.7225,'Force-conditioned\nprediction',size=9.0,weight='bold')
-    panel(ax,.555,.69,.165,.065,face=PALE_BLUE)
-    label(ax,.6375,.7225,'Learned missing-force\nprediction',size=8.4,weight='bold')
-    label(ax,.5275,.725,'-',size=12,weight='bold')
-    arrow(ax,(.46,.78),(.4125,.76))
-    arrow(ax,(.605,.78),(.6375,.76))
-    panel(ax,.43,.60,.205,.065,face='white')
-    label(ax,.5325,.6325,'Force-responsive\nresidual target',size=9.0,weight='bold')
-    arrow(ax,(.4125,.685),(.49,.67))
-    arrow(ax,(.6375,.685),(.575,.67))
-    # The paired prediction difference supervises the online residual policy.
-    arrow(ax,(.615,.60),(.615,.53),color=STALE_PURPLE,lw=1,dashed=True)
-    label(ax,.657,.565,'Distill',size=8.2,color=STALE_PURPLE)
-    label(ax, .5325, .545, 'Fast residual execution', size=9.5, weight='bold')
-    panel(ax,.335,.435,.14,.075,face=FORCE_PALE)
-    label(ax,.405,.4725,'Force / state',size=8.4,weight='bold')
-    panel(ax,.515,.415,.20,.105,face=STALE_PALE)
-    label(ax,.615,.4675,'Fast residual policy',size=8.8,weight='bold')
-    arrow(ax,(.48,.4725),(.51,.4725))
-    panel(ax,.335,.275,.145,.08,face=PALE_BLUE)
-    label(ax,.4075,.315,'Cached reference',size=8.2,weight='bold')
-    ax.add_patch(Circle((.525,.315),.017,facecolor='white',edgecolor=INK,lw=.8,zorder=4))
-    label(ax,.525,.315,'+',size=9.5,weight='bold')
-    panel(ax,.565,.275,.15,.08,face=ACTION_GREEN)
-    label(ax,.64,.315,'Commanded action',size=8.3,weight='bold')
-    arrow(ax,(.485,.315),(.505,.315))
-    arrow(ax,(.615,.41),(.545,.33))
-    arrow(ax,(.545,.315),(.56,.315))
+    ax.set(xlim=(0, 1), ylim=(0, 1)); ax.axis("off")
+    panel(ax,.012,.045,.642,.88,face="#F4F7F7",edge="#F4F7F7",lw=0,radius=.014,z=0)
+    panel(ax,.67,.045,.318,.88,face=CREAM_2,edge=CREAM_2,lw=0,radius=.014,z=0)
+    label(ax,.333,.96,"ForceDelta-VLA",size=13,weight="bold")
+    label(ax,.829,.96,"Real-robot outcome",size=11.5,weight="bold")
 
-    label(ax, .85, .95, 'Robot platforms', size=11, weight='bold')
-    setup_card(ax, .75, .54, .22, .31, 'Single-arm setup', SETUP_IMAGES[0])
-    setup_card(ax, .75, .10, .22, .31, 'Bimanual setup', SETUP_IMAGES[1])
-    for out in (OUTPUT_PDF, OUTPUT_PNG):
-        fig.savefig(out,dpi=240,bbox_inches='tight',pad_inches=0,facecolor='white')
+    # Training: four left-to-right groups with one connector between groups.
+    label(ax,.032,.89,"Training",size=10.5,weight="bold",ha="left")
+    panel(ax,.03,.55,.605,.30,face=POLICY_BLUE)
+    label(ax,.092,.818,"Inputs",size=8.1,weight="bold")
+    for ix,iy,name,color in [(.043,.75,"Image",PALE_BLUE),(.101,.75,"Language",CREAM),
+                             (.043,.675,"State",ACTION_GREEN),(.101,.675,"Force",FORCE_PALE)]:
+        panel(ax,ix,iy,.05,.052,face=color,radius=.006)
+        label(ax,ix+.025,iy+.026,name,size=6.4,weight="bold")
+
+    panel(ax,.18,.68,.125,.105,face=CREAM)
+    label(ax,.2425,.748,"Frozen teacher",size=8.2,weight="bold")
+    label(ax,.2425,.712,"matched context/noise",size=6.1)
+    arrow(ax,(.156,.738),(.175,.738),scale=7)
+
+    panel(ax,.335,.635,.14,.165,face="white",edge="#7D9099")
+    label(ax,.405,.778,"Paired predictions",size=7.5,weight="bold")
+    panel(ax,.347,.712,.116,.043,face=FORCE_PALE,radius=.005)
+    label(ax,.405,.7335,"Force-conditioned",size=6.1,weight="bold")
+    panel(ax,.347,.654,.116,.043,face=PALE_BLUE,radius=.005)
+    label(ax,.405,.6755,"Force-agnostic base",size=5.9,weight="bold")
+    arrow(ax,(.31,.738),(.33,.718),scale=7)
+
+    panel(ax,.505,.635,.115,.165,face="white",edge="#7D9099")
+    label(ax,.5625,.778,"Training targets",size=7.4,weight="bold")
+    panel(ax,.517,.712,.091,.043,face=FORCE_PALE,radius=.005)
+    label(ax,.5625,.7335,"Force correction",size=5.9,weight="bold")
+    panel(ax,.517,.654,.091,.043,face=STALE_PALE,radius=.005)
+    label(ax,.5625,.6755,"Delay correction",size=5.9,weight="bold")
+    arrow(ax,(.48,.718),(.50,.718),scale=7)
+    label(ax,.49,.744,"Δ",size=6.7,weight="bold",color=FORCE_ORANGE)
+    label(ax,.332,.585,"paired teacher targets from offline demonstrations",size=7.2,weight="bold",color=SUBTLE)
+
+    # Deployment: no crossing connectors; cached base action occupies its own lower lane.
+    label(ax,.032,.505,"Deployment",size=10.5,weight="bold",ha="left")
+    panel(ax,.03,.12,.605,.345,face="white",edge="#C8D0D4")
+    label(ax,.092,.425,"Live inputs",size=7.5,weight="bold")
+    panel(ax,.043,.352,.05,.052,face=ACTION_GREEN,radius=.006); label(ax,.068,.378,"State",size=6.4,weight="bold")
+    panel(ax,.101,.352,.05,.052,face=FORCE_PALE,radius=.006); label(ax,.126,.378,"Force",size=6.4,weight="bold")
+    panel(ax,.043,.278,.108,.048,face=PALE_BLUE,radius=.006); label(ax,.097,.302,"Task context",size=6.2,weight="bold")
+
+    panel(ax,.185,.29,.15,.105,face=STALE_PALE)
+    label(ax,.26,.356,"Distilled correction policy",size=7.3,weight="bold")
+    label(ax,.26,.32,"2.43-ms forward pass",size=6.3,color=SUBTLE)
+    arrow(ax,(.156,.354),(.18,.347),scale=7); arrow(ax,(.156,.302),(.18,.322),scale=7)
+
+    panel(ax,.37,.315,.12,.062,face=FORCE_PALE); label(ax,.43,.346,"Force correction",size=6.5,weight="bold")
+    panel(ax,.37,.232,.12,.062,face=STALE_PALE); label(ax,.43,.263,"Delay correction",size=6.5,weight="bold")
+    arrow(ax,(.34,.35),(.365,.346),scale=7); arrow(ax,(.34,.327),(.365,.263),scale=7)
+
+    panel(ax,.185,.16,.15,.062,face=PALE_BLUE); label(ax,.26,.191,"Cached base action",size=6.8,weight="bold")
+    ax.add_patch(Circle((.535,.255),.016,facecolor="white",edgecolor=INK,lw=.8,zorder=4)); label(ax,.535,.255,"+",size=9,weight="bold")
+    arrow(ax,(.495,.346),(.525,.272),scale=7); arrow(ax,(.495,.263),(.515,.257),scale=7)
+    ax.plot([.34,.515],[.191,.191],color=INK,lw=.9,zorder=3)
+    arrow(ax,(.515,.191),(.525,.241),scale=7)
+    panel(ax,.57,.215,.052,.08,face=ACTION_GREEN); label(ax,.596,.264,"Action",size=6.7,weight="bold"); label(ax,.596,.238,"100 Hz",size=5.8,color=SUBTLE)
+    arrow(ax,(.552,.255),(.565,.255),scale=7)
+
+    label(ax,.332,.14,"cached base action + independent high-rate corrections",size=7.2,weight="bold",color=SUBTLE)
+
+    for y,title,color,path in [(.52,"ForceVLA failure",ACCENT_RED,COMPARISON_IMAGES[0]),(.105,"ForceDelta-VLA success","#4E8A45",COMPARISON_IMAGES[1])]:
+        panel(ax,.695,y,.268,.335,face="white",edge=color,lw=1.1,radius=.009)
+        if path:
+            source=Image.open(ROOT/path).convert("RGB")
+            fitted=ImageOps.fit(source,(720,420),method=Image.Resampling.LANCZOS)
+            ax.imshow(fitted,extent=[.708,.95,y+.045,y+.31],aspect="auto",zorder=3)
+        else:
+            ax.add_patch(Rectangle((.708,y+.045),.242,.265,facecolor=PLACEHOLDER,edgecolor="#B8B8B0",linewidth=.7,linestyle=(0,(3,2)),zorder=3))
+            label(ax,.829,y+.178,"same task and initial condition",size=7.2,color="#888884")
+        label(ax,.829,y+.022,title,size=9.2,weight="bold",color=color)
+    for out in (OUTPUT_PDF,OUTPUT_PNG):
+        fig.savefig(out,dpi=240,bbox_inches="tight",pad_inches=0,facecolor="white")
     plt.close(fig)
 
 if __name__ == "__main__":

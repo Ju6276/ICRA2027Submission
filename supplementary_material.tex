@@ -19,9 +19,9 @@
 
 \assumed{The teacher is trained for $50{,}000$ steps with AdamW at a peak learning rate of $2\times10^{-5}$. It predicts $H{=}50$ actions at $30$~Hz from the latest $100$~ms of the $100$~Hz wrench stream, and flow-matching inference uses $N_{\mathrm{flow}}{=}10$ steps.}
 
-After freezing the teacher, \assumed{we train the rank-$32$ missing-force adapter for $10{,}000$ steps at a learning rate of $10^{-4}$. The visual--language prefix is pooled into $M{=}16$ positional bins and projected to $Q{=}2$ intent tokens. The residual policy comprises a causal force encoder and one pre-norm set-attention block with separate zero-initialized force and staleness output projections. It predicts $K{=}5$ corrections and is trained for $30{,}000$ steps at a learning rate of $3\times10^{-4}$ under the sampled asynchronous schedule. The staleness pass masks the force-token position in the attention-validity mask.}
+After freezing the teacher, \assumed{we train the rank-$32$ force-agnostic adapter for $10{,}000$ steps at a learning rate of $10^{-4}$. The visual--language prefix is pooled into $M{=}16$ positional bins and projected to $Q{=}2$ task-context tokens. The correction policy comprises a causal force encoder and one pre-norm set-attention block with separate zero-initialized force and delay-correction output projections. It predicts $K{=}5$ corrections and is trained for $30{,}000$ steps at a learning rate of $3\times10^{-4}$ under the sampled asynchronous schedule. The delay-correction pass masks the force-token position in the attention-validity mask.}
 
-The action representation and rotational residual composition are defined in Sec.~III-A of the main paper. Let $\widetilde S^p$ be the first nine pose coordinates of the normalized robot state, obtained after converting orientation to the continuous 6D representation, and let $\sigma_S^p$ and $\sigma_A^p$ be the corresponding training-set state and action standard deviations. The implementation computes
+The action representation and rotational correction composition are defined in Sec.~III-A of the main paper. Let $\widetilde S^p$ be the first nine pose coordinates of the normalized robot state, obtained after converting orientation to the continuous 6D representation, and let $\sigma_S^p$ and $\sigma_A^p$ be the corresponding training-set state and action standard deviations. The implementation computes
 \begin{equation}
     \Gamma(S_t,S_k)=
     \frac{\sigma_S^p+\varepsilon}{\sigma_A^p+\varepsilon}
@@ -29,30 +29,30 @@ The action representation and rotational residual composition are defined in Sec
     \qquad \varepsilon=10^{-6}.
     \label{eq:supp_gamma}
 \end{equation}
-This scale-corrected componentwise difference is included in the learned staleness target, placing the current missing-force prediction and cached reference in the same normalized delta-action coordinate system. The composed normalized action is de-normalized, applied relative to the reference-query state $S_k$, and projected to a valid rotation by Gram--Schmidt orthogonalization.
+This scale-corrected componentwise difference is included in the learned delay-correction target, placing the current force-agnostic prediction and cached base action in the same normalized delta-action coordinate system. The composed normalized action is de-normalized, applied relative to the base-action-query state $S_k$, and projected to a valid rotation by Gram--Schmidt orthogonalization.
 
-The residual policy observes the complete $K$-step reference segment aligned with its output timestamps. The segment is flattened and projected to one typed reference token, so each predicted correction is conditioned on the corresponding future reference waypoint without increasing the attention-sequence length.
+The correction policy observes the complete $K$-step base-action segment aligned with its output timestamps. The segment is flattened and projected to one typed base-action token, so each predicted correction is conditioned on the corresponding future base-action waypoint without increasing the attention-sequence length.
 
-At deployment, force-conditioned and staleness corrections are clipped separately and element-wise before composition. The implementation accepts either nine-dimensional nonnegative bounds $b_F,b_S\in\mathbb R_{\geq0}^{9}$ or scalar values broadcast over the pose coordinates; bimanual clipping is applied independently per arm. \assumed{The final robot configuration must specify the values used for $b_F$ and $b_S$.}
+At deployment, force and delay corrections are clipped separately and element-wise before composition. The implementation accepts either nine-dimensional nonnegative bounds $b_F,b_S\in\mathbb R_{\geq0}^{9}$ or scalar values broadcast over the pose coordinates; bimanual clipping is applied independently per arm. \assumed{The final robot configuration must specify the values used for $b_F$ and $b_S$.}
 
-Residual-policy training examples are anchored at the $30$~Hz state/action timestamps while retaining every $100$~Hz wrench sample in $\mathcal F_t$. The sampled schedule uses inter-query periods $T_i\sim\mathcal U(1/15,1/5)$~s and reference-query latencies $L_i\sim\mathcal U(0.05,0.30)$~s. Query rows are first selected on the recorded grid, after which query timestamps receive $J_i\sim\mathcal U(-0.01,0.01)$~s jitter to exercise off-grid reference interpolation. Residual queries may start more frequently at deployment; the realized correction-update rate is measured directly rather than inferred from the action-sample rate within a chunk.
+Correction-policy training examples are anchored at the $30$~Hz state/action timestamps while retaining every $100$~Hz wrench sample in $\mathcal F_t$. The sampled schedule uses inter-query periods $T_i\sim\mathcal U(1/15,1/5)$~s and base-action-query latencies $L_i\sim\mathcal U(0.05,0.30)$~s. Query rows are first selected on the recorded grid, after which query timestamps receive $J_i\sim\mathcal U(-0.01,0.01)$~s jitter to exercise off-grid base-action interpolation. Correction queries may start more frequently at deployment; the realized correction-update rate is measured directly rather than inferred from the action-sample rate within a chunk.
 
-\subsection{Missing-Force Mode Optimization}
+\subsection{Force-Agnostic Mode Optimization}
 
-The learned missing-force token and mode-specific adapter are active only for missing-force queries. With the force-conditioned teacher parameters $\theta$ fixed, the missing-force parameters $\phi$ are optimized using the teacher's original flow-matching objective,
+The learned force-agnostic token and mode-specific adapter are active only for force-agnostic queries. With the force-conditioned teacher parameters $\theta$ fixed, the base-action parameters $\phi$ are optimized using the teacher's original flow-matching objective,
 \begin{equation}
-    \mathcal L_{\mathrm{miss}}
+    \mathcal L_{\mathrm{base}}
     =\mathbb E_{\mathcal D,\eta,\epsilon}
       \!\left[\ell_{\mathrm{FM}}\!\left(
-      T_{\theta,\phi}^{\mathrm{miss}},
+      T_{\theta,\phi}^{\mathrm{base}},
       A_{t:t+H-1}^*;\eta,\epsilon\right)\right],
-    \label{eq:supp_missing_training}
+    \label{eq:supp_base_training}
 \end{equation}
-where $\eta$ is flow time and $\epsilon$ is the initial flow noise. Force-conditioned and missing-force predictions used to construct a residual target share the same $\epsilon$.
+where $\eta$ is flow time and $\epsilon$ is the initial flow noise. Force-conditioned and force-agnostic predictions used to construct a correction target share the same $\epsilon$.
 
-\subsection{Residual-Loss Weighting}
+\subsection{Correction-Loss Weighting}
 
-For a $K$-step residual chunk, the normalized temporal weights are
+For a $K$-step correction chunk, the normalized temporal weights are
 \begin{equation}
     w_j=\frac{\beta^{j-1}}{\sum_{m=1}^{K}\beta^{m-1}},
     \qquad 0<\beta\leq1.
@@ -60,52 +60,52 @@ For a $K$-step residual chunk, the normalized temporal weights are
 \end{equation}
 Thus, $\beta<1$ emphasizes near-term corrections, $\beta=1$ weights all steps equally, and $\sum_jw_j=1$ keeps the loss scale stable as $K$ changes. The loss is a mean-squared error in normalized pose-action coordinates.
 
-\section{Asynchronous Reference and Correction Execution}
+\section{Asynchronous Base-Action and Correction Execution}
 
-\subsection{Reference Updates}
+\subsection{Base-Action Updates}
 
-A reference query $k$, started at $t_k$ from state $S_k$, publishes the immutable reference update $(A_{T,k,1:H}^{\mathrm{miss}},Z_k^{\mathrm{intent}},S_k,t_k,\bar t_k)$ when its result becomes available at $\bar t_k$. Its samples carry intended execution times
+A base-action query $k$, started at $t_k$ from state $S_k$, publishes the immutable base-action update $(A_{T,k,1:H}^{\mathrm{base}},Z_k^{\mathrm{ctx}},S_k,t_k,\bar t_k)$ when its result becomes available at $\bar t_k$. Its samples carry intended execution times
 \begin{equation}
-    t_{k,n}^{\mathrm{ref}}=t_k+(n-1)/f_A,
+    t_{k,n}^{\mathrm{base}}=t_k+(n-1)/f_A,
     \qquad n=1,\ldots,H.
     \label{eq:supp_reference_timestamps}
 \end{equation}
-At time $t$, the active reference is the freshest completed, non-superseded query,
+At time $t$, the active base action is the freshest completed, non-superseded query,
 \begin{equation}
     k^*(t)=\arg\max_{k:\,\bar t_k\leq t}t_k.
     \label{eq:supp_active_reference}
 \end{equation}
-An older query that completes later therefore cannot replace a newer active reference update. Samples whose intended times precede $\bar t_{k^*}$ are skipped for direct execution; the cached chunk itself is not truncated. For $t\geq\bar t_{k^*}$, the reference pose $A_{k^*}^{\mathrm{ref}}(t)$ is obtained by timestamp-based interpolation over the original timestamped chunk.
+An older query that completes later therefore cannot replace a newer active base-action update. Samples whose intended times precede $\bar t_{k^*}$ are skipped for direct execution; the cached chunk itself is not truncated. For $t\geq\bar t_{k^*}$, the base pose $A_{k^*}^{\mathrm{base}}(t)$ is obtained by timestamp-based interpolation over the original timestamped chunk.
 
 \subsection{Correction Updates}
 
-A residual query $q$, started at $t_q^F$, reads $k_q=k^*(t_q^F)$ together with $(\mathcal F_{t_q^F},S_{t_q^F})$. It completes at $\bar t_q^F$ with force-conditioned and staleness correction chunks. Their samples are timestamped as
+A correction query $q$, started at $t_q^F$, reads $k_q=k^*(t_q^F)$ together with $(\mathcal F_{t_q^F},S_{t_q^F})$. It completes at $\bar t_q^F$ with force-conditioned and delay correction chunks. Their samples are timestamped as
 \begin{equation}
     t^F_{q,j}=t_q^F+(j-1)/f_A,
     \qquad j=1,\ldots,K.
-    \label{eq:supp_residual_timestamps}
+    \label{eq:supp_correction_timestamps}
 \end{equation}
-Here $f_A$ defines the spacing between correction samples within a chunk; residual query start times $t_q^F$ are scheduled independently. Step $j$ is held over $[t^F_{q,j},t^F_{q,j}+1/f_A)$, and correction samples are not interpolated. At control time $t$, the executor selects the most recently started residual query whose result has completed and remains valid, together with its active step:
+Here $f_A$ defines the spacing between correction samples within a chunk; correction query start times $t_q^F$ are scheduled independently. Step $j$ is held over $[t^F_{q,j},t^F_{q,j}+1/f_A)$, and correction samples are not interpolated. At control time $t$, the executor selects the most recently started correction query whose result has completed and remains valid, together with its active step:
 \begin{equation}
 \begin{aligned}
     q^*(t)&=\arg\max_{q:\,\bar t_q^F\leq t<t_q^F+K/f_A}t_q^F,\\
     j(t;q^*)&=1+\left\lfloor(t-t_{q^*}^F)f_A\right\rfloor.
 \end{aligned}
-    \label{eq:supp_active_residual_step}
+    \label{eq:supp_active_correction_step}
 \end{equation}
-Any prefix that expires during inference is therefore skipped, while the remaining valid steps execute sequentially until a newer correction chunk completes. Let $j^*=j(t;q^*)$. Within the selected interval, Eq.~(1) of the main paper is evaluated using the selected residual query time and active step:
+Any prefix that expires during inference is therefore skipped, while the remaining valid steps execute sequentially until a newer correction chunk completes. Let $j^*=j(t;q^*)$. Within the selected interval, Eq.~(1) of the main paper is evaluated using the selected correction query time and active step:
 \begin{equation}
 \begin{aligned}
     \mathcal P(A^{\mathrm{cmd}}(t))
     \equiv{}&\mathcal P(A^{\mathrm{cmd}}_{t_{q^*}^F,j^*})\\
-    ={}&\mathcal P\!\left(A_{k_{q^*}}^{\mathrm{ref}}
+    ={}&\mathcal P\!\left(A_{k_{q^*}}^{\mathrm{base}}
         (t^F_{q^*,j^*})\right)
       +\Delta\hat A^{\mathrm{force}}_{q^*,j^*}
-      +\Delta\hat A^{\mathrm{stale}}_{q^*,j^*}.
+      +\Delta\hat A^{\mathrm{delay}}_{q^*,j^*}.
 \end{aligned}
-    \label{eq:supp_active_residual}
+    \label{eq:supp_active_correction}
 \end{equation}
-The two corrections are clipped independently and element-wise in normalized delta-action coordinates before composition. The composed command remains referenced to $S_{k_{q^*}}$ and is converted to an absolute robot command as described above. A correction chunk that completes after $t_q^F+K/f_A$ is rejected. If no valid correction chunk remains, the executor invokes the platform's safe hold or abort policy. \assumed{The final implementation record will specify gripper sampling and behavior beyond the last valid reference timestamp.}
+The two corrections are clipped independently and element-wise in normalized delta-action coordinates before composition. The composed command remains referenced to $S_{k_{q^*}}$ and is converted to an absolute robot command as described above. A correction chunk that completes after $t_q^F+K/f_A$ is rejected. If no valid correction chunk remains, the executor invokes the platform's safe hold or abort policy. \assumed{The final implementation record will specify gripper sampling and behavior beyond the last valid base-action timestamp.}
 
 \section{Additional Evaluation Protocols}
 
@@ -145,7 +145,7 @@ The task-specific success criteria are summarized in Table~\ref{tab:supp_task_cr
 
 \assumed{The final experiment record will report the successful-trial count for each method and task. Each count is out of twenty evaluation trials and aggregates to the main paper's success-rate table.}
 
-\subsection{Residual-Bound Sensitivity}
+\subsection{Correction-Bound Sensitivity}
 
 After fixing the robot-deployment bounds $(b_F,b_S)$, we jointly scale them by $0.5\times$, $1\times$, and $2\times$ on USB insertion and drawer opening. The two heads remain clipped separately and element-wise, with independent per-arm clipping in the bimanual setting (Table~\ref{tab:supp_bound_sensitivity}).
 
@@ -153,7 +153,7 @@ After fixing the robot-deployment bounds $(b_F,b_S)$, we jointly scale them by $
     \centering
     \scriptsize
     \setlength{\tabcolsep}{2.5pt}
-    \caption{Sensitivity to the residual bound. Red entries are placeholders.}
+    \caption{Sensitivity to the correction bound. Red entries are placeholders.}
     \label{tab:supp_bound_sensitivity}
     \begin{tabular}{lcccc}
         \toprule
