@@ -1,6 +1,6 @@
 \begin{figure*}[!t]
     \centering
-    \includegraphics[width=0.98\textwidth]{figures/fig02_network_structure.pdf}
+    \includegraphics[width=0.98\textwidth]{figures/fig02_architecture.pdf}
     \caption{ForceDelta-VLA architecture. (a) A force-conditioned teacher and learned missing-force mode share the VLA backbone. (b) Cached-context paired queries construct force and reference-state-consistent staleness targets. (c) Force-present and force-masked passes through shared attention predict two $K$-step correction chunks. (d) The corrections compose with the cached reference, while the gripper command remains unchanged.}
     \label{fig:network_structure}
 \end{figure*}
@@ -188,7 +188,7 @@ The reference and residual workers execute independently (Fig.~\ref{fig:async_de
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=\columnwidth]{figures/fig03_async_deployment.pdf}
+    \includegraphics[width=\columnwidth]{figures/fig03_async_execution.pdf}
     \caption{Illustrative asynchronous execution with $K=5$. Residual queries read the latest completed reference at their start and retain it for command composition. A newly published residual chunk replaces the preceding chunk; numbered blocks show its active steps. Colors identify reference updates, and dotted lines mark residual-query completion.}
     \label{fig:async_deployment}
 \end{figure}

@@ -1,0 +1,26 @@
+% Alternative tabular presentation of the task overview.
+% This file is intentionally not included in the current manuscript; the
+% single-column figure in 04_experiments.tex is used instead.
+\begin{table}[t]
+    \centering
+    \small
+    \setlength{\tabcolsep}{3pt}
+    \caption{Real-robot tasks.}
+    \label{tab:tasks}
+    \begin{tabularx}{\columnwidth}{ll>{\raggedright\arraybackslash}X}
+        \toprule
+        \textbf{Platform} & \textbf{Task} & \textbf{Interaction} \\
+        \midrule
+        Single-arm & Object Flipping & Surface-assisted reorientation \\
+        Single-arm & USB Insertion & Precision insertion \\
+        Single-arm & Cabinet Opening & Frictional articulated motion \\
+        Single-arm & Button Pressing & Discrete contact actuation \\
+        Single-arm & Whiteboard Wiping & Sustained surface contact \\
+        \midrule
+        Bimanual & Plug Removal & Coordinated constrained extraction \\
+        Bimanual & Plug Insertion & Coordinated alignment and insertion \\
+        Bimanual & Drawer Opening & Coordinated frictional motion \\
+        Bimanual & Whiteboard Wiping & Board stabilization and wiping \\
+        \bottomrule
+    \end{tabularx}
+\end{table}

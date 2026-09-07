@@ -11,7 +11,6 @@
 \usepackage{xcolor}
 \usepackage{microtype}
 \usepackage[section]{placeins}
-\usepackage{float}
 \usepackage[hidelinks,breaklinks=true,bookmarks=false]{hyperref}
 
 % Values marked with \assumed must be replaced with final experimental results.
@@ -67,7 +66,7 @@ ForceDelta-VLA: Distilling Force-Conditioned Action\\Corrections for Contact-Ric
     \let\@oldmaketitle\@maketitle
     \renewcommand{\@maketitle}{\@oldmaketitle
       \centering
-      \includegraphics[width=0.98\linewidth,height=0.28\textheight,keepaspectratio]{figures/fig01_teaser_pi_style_v2.pdf}
+      \includegraphics[width=0.98\linewidth,height=0.28\textheight,keepaspectratio]{figures/fig01_method_overview.pdf}
       % \vspace{-0.2in}
       \captionof{figure}{A conventional force-aware VLA couples contact feedback to slow full-action inference, which can lag transient contact. ForceDelta-VLA instead distills paired cached-context force and staleness corrections and executes them through a compact residual policy over a cached reference.}
       \label{fig:teaser}
