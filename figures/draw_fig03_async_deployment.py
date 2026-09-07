@@ -44,101 +44,47 @@ def rounded(ax, x, y, w, h, text, face, edge=MUTED, size=8.5):
             fontsize=size, color=INK, zorder=4)
 
 
+
+
 def main():
-    fig = plt.figure(figsize=(7.8, 2.95), dpi=220, facecolor="white")
-    ax = fig.add_axes([0, 0, 1, 1])
-    ax.set_xlim(0, 1)
-    ax.set_ylim(0, 1)
-    ax.axis("off")
-
-    # Shared execution field.
-    ax.add_patch(FancyBboxPatch(
-        (0.235, 0.105), 0.735, 0.805,
-        boxstyle="round,pad=0.004,rounding_size=0.012",
-        facecolor=FIELD, edgecolor="none", zorder=0,
-    ))
-
-    ys = {"reference": 0.785, "residual": 0.485, "steps": 0.205}
-    labels = [
-        ("reference worker", ys["reference"]),
-        ("residual query", ys["residual"]),
-        ("correction steps", ys["steps"]),
-    ]
-    for text, y in labels:
-        ax.text(0.210, y, text, ha="right", va="center",
-                fontsize=8.5, fontweight="bold", color=INK)
-        arrow(ax, 0.238, y, 0.958, y, color=MUTED, width=0.65)
-
-    # Reference queries and completion time.
-    rounded(ax, 0.292, 0.690, 0.253, 0.190, r"query $k$", CREAM, size=10.5)
-    rounded(ax, 0.610, 0.690, 0.253, 0.190, r"query $k{+}1$", CREAM, size=10.5)
-    ax.text(0.292, 0.916, r"request $t_k$", fontsize=7.2,
-            color=MUTED, ha="left", va="bottom")
-    ax.text(0.610, 0.916, r"request $t_{k+1}$", fontsize=7.2,
-            color=MUTED, ha="left", va="bottom")
-
-    publish_x = 0.550
-    ax.plot([publish_x, publish_x], [0.125, 0.900], color=REF,
-            linewidth=0.9, linestyle=(0, (4, 3)), zorder=1)
-    rounded(ax, publish_x + 0.010, 0.596, 0.202, 0.070,
-            r"publish $C_k$ at $\bar t_k$", "white", size=7.2)
-
-    # Residual queries. The middle query starts before C_k is published.
-    query_xs = [0.250, 0.443, 0.636]
-    query_colors = [(OLD_PALE, OLD), (OLD_PALE, OLD), (REF_PALE, REF)]
-    for x, (face, edge) in zip(query_xs, query_colors):
-        ax.add_patch(Circle((x, ys["residual"]), 0.013,
-                            facecolor=face, edgecolor=edge,
-                            linewidth=0.8, zorder=4))
-        ax.plot([x, x], [ys["residual"] - 0.018, 0.345],
-                color=edge, linewidth=0.65, linestyle=(0, (1, 3)), zorder=2)
-
-    # Brackets identify the immutable cached packet used at query time.
-    chunks = [
-        (0.2580, 0.4430, OLD),
-        (0.4505, 0.6355, OLD),
-        (0.6430, 0.8285, REF),
-    ]
-    for left, right, color in chunks:
-        ax.plot([left, right], [0.345, 0.345], color=color, linewidth=0.8)
-        ax.plot([left, left], [0.345, 0.323], color=color, linewidth=0.8)
-        ax.plot([right, right], [0.345, 0.323], color=color, linewidth=0.8)
-    ax.text(0.538, 0.370, r"generated from $C_{k-1}$",
-            ha="right", va="bottom", fontsize=6.7, color=OLD)
-    ax.text(0.656, 0.370, r"generated from $C_k$",
-            ha="left", va="bottom", fontsize=6.7, color=REF)
-
-    # Published K-step correction samples. Two samples execute after C_k is
-    # available but retain old fill because their query read C_{k-1}.
-    start, gap, width, height = 0.258, 0.0385, 0.031, 0.100
-    for idx in range(15):
-        x = start + idx * gap
-        if idx < 8:
-            face, edge, style = OLD_PALE, OLD, "-"
-        elif idx < 10:
-            face, edge, style = OLD_PALE, REF, (0, (2, 2))
-        else:
-            face, edge, style = REF_PALE, REF, "-"
-        ax.add_patch(FancyBboxPatch(
-            (x, ys["steps"] - height / 2), width, height,
-            boxstyle="round,pad=0.001,rounding_size=0.004",
-            facecolor=face, edgecolor=edge, linewidth=0.75,
-            linestyle=style, zorder=4,
-        ))
-
-    ax.text(0.264, 0.105, r"$K$-step residual chunk", ha="left",
-            va="top", fontsize=6.7, color=OLD)
-    ax.text(0.585, 0.105, "new reference affects the next residual query",
-            ha="left", va="top", fontsize=6.5, color=REF)
-
-    fig.savefig(OUTPUT_PDF, bbox_inches="tight", pad_inches=0,
-                facecolor="white")
-    fig.savefig(OUTPUT_PNG, dpi=220, bbox_inches="tight", pad_inches=0,
-                facecolor="white")
+    # Illustrative schedule in action-sample intervals, not measured latency.
+    # Query timestamps, availability and chunk samples share one time axis.
+    fig, ax = plt.subplots(figsize=(8.1,3.8))
+    fig.subplots_adjust(left=.19,right=.99,top=.93,bottom=.16)
+    ax.set(xlim=(-.1,9),ylim=(-.15,3.7)); ax.axis('off')
+    def bar(a,b,y,txt,fill):
+        ax.add_patch(Rectangle((a,y-.17),b-a,.34,facecolor=fill,edgecolor=MUTED,lw=.7,zorder=3))
+        ax.text((a+b)/2,y,txt,ha='center',va='center',fontsize=7,zorder=4)
+    for y,txt in [(3.2,'Reference query'),(2.25,'Residual query'),(1.3,'Active reference'),(.35,'Executed correction')]:
+        ax.text(-.25,y,txt,ha='right',va='center',fontsize=8)
+        ax.plot([0,8.7],[y,y],color=MUTED,lw=.6,zorder=0)
+    bar(.8,3.5,3.2,r'$k$',CREAM); bar(4.2,7.8,3.2,r'$k+1$',CREAM)
+    ax.text(.8,3.5,r'$t_k$',ha='center',fontsize=8)
+    ax.text(3.5,3.5,r'$\bar t_k$: publish',ha='center',fontsize=8)
+    ax.plot([3.5,3.5],[.02,3.38],color=REF,ls='--',lw=.8,zorder=1)
+    bar(0,3.5,1.3,r'$C_{k-1}$',OLD_PALE); bar(3.5,7.8,1.3,r'$C_k$',REF_PALE)
+    bar(7.8,8.7,1.3,r'$C_{k+1}$',CREAM)
+    # Starts before publish retain C_{k-1}; a later query reads C_k.
+    queries=[(0,.35,OLD_PALE,'q'),(2,2.4,OLD_PALE,'q+1'),(4.3,4.7,REF_PALE,'q+2')]
+    for a,b,c,q in queries:
+        bar(a,b,2.25,'',c)
+        ax.text(a,2.59,r'$'+q+'$',fontsize=8,ha='center')
+        ax.plot([b,b],[2.07,.55],color=MUTED,ls=':',lw=.7,zorder=1)
+    # Latest completed query preempts the previous chunk; K=5, delta_t=1.
+    for n,(a,b,c,q) in enumerate(queries):
+        end=queries[n+1][1] if n+1<len(queries) else 8.7
+        for j in range(5):
+            l=max(a+j,b); r=min(a+j+1,end,8.7)
+            if r>l:
+                bar(l,r,.35,str(j+1),c)
+    ax.text(6.45,1.73,'cache update does not replace residual',
+            fontsize=6.7,ha='center',color=MUTED)
+    ax.text(6.45,.87,'fill: reference used for composition',fontsize=6.7,ha='center')
+    ax.text(4.5,-.18,'Time →   |   blocks: active steps of K=5 chunks',fontsize=8,ha='center',va='top')
+    fig.text(.5,.035,'Residual bars: request → publish. Dotted lines: completed query takes over.\nIllustrative timing; step timestamps remain anchored at the query start.',ha='center',fontsize=7)
+    for out in (OUTPUT_PDF,OUTPUT_PNG):
+        fig.savefig(out,dpi=220,bbox_inches='tight',pad_inches=.03)
     plt.close(fig)
-    print(OUTPUT_PDF)
-    print(OUTPUT_PNG)
-
 
 if __name__ == "__main__":
     main()

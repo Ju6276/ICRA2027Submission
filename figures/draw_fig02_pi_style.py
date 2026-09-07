@@ -134,16 +134,22 @@ arrow([(89,337),(89,318)]); arrow([(189,337),(189,318)])
 pill(251,337,76,40,"L",PINK,18); arrow([(289,337),(289,269)])
 rich_pill(352,337,76,40,[("S","base"),("t","sub")],PURPLE,18)
 arrow([(390,337),(390,269)])
-subscript_pill(440,326,70,38,"F",ORANGE,18)
+rich_pill(440,326,70,38,[("z","base"),("F","super"),("t","sub")],ORANGE,18)
 subscript_pill(540,326,70,38,"∅F",GREEN,18)
 text(475,379,"Force-conditioned",9.5,"middle")
 text(475,391,"TCN(history)",9.5,"middle",family="Courier New,monospace")
 text(575,379,"Missing-force mode",9.5,"middle")
-text(575,391,"token + adapter",9.5,"middle",family="Courier New,monospace")
+text(575,391,"missing token",9.5,"middle",family="Courier New,monospace")
+rect(345,113,170,40,CREAM,radius=3)
+text(430,130,"missing-mode adapter",11,"middle")
+text(430,145,"on pose flow output",11,"middle")
+arrow([(515,133),(529,133)],width=1.0)
 # Either force condition enters the same robotics pathway.  The branches join
 # before touching the model boundary so no line is drawn through the box edge.
 line(475,326,475,294); line(575,326,575,294); line(475,294,575,294)
-arrow([(525,294),(525,269)])
+rect(501,281,48,22,"white",radius=3)
+text(525,296,"OR",11,"middle")
+arrow([(525,281),(525,269)])
 action_strip(466,82,128,18,YELLOW)
 arrow([(530,167),(530,102)])
 text(530,59,"H-step action chunk",12,"middle",family="Courier New,monospace")
@@ -186,7 +192,7 @@ arrow([(1240,304),(1395,345)]); arrow([(1640,304),(1485,345)])
 # (c) Same token slots and shared block in two passes.
 panel_title(28,499,"c","Fast residual policy")
 text(618,530,"same typed-token set; two passes share Φ",15,"middle",family="Courier New,monospace")
-labels=[("context",[("Z","base"),("k","sub")],BLUE),
+labels=[("context",[("Z","base"),("intent","super"),("k","sub")],BLUE),
         ("force history",[("u","base"),("F","super"),("t","sub"),(" = TCN(F[t−w:t])","base")],ORANGE),
         ("state",[("S","base"),("t","sub")],PURPLE),
         ("reference",[("A","base"),("ref","super"),("k","sub"),("(t","base"),("1:K","sub"),(")","base")],GREEN),
@@ -206,12 +212,16 @@ def residual_pass(y, masked, head_title, head_color):
     action_strip(1170,y+42,120,22,head_color)
     text(1230,y+82,"K-step correction chunk",12,"middle",family="Courier New,monospace")
     arrow([(1150,y+53),(1167,y+53)])
+    rect(925,y-18,205,26,"white",radius=3,dash="4 3")
+    text(1027,y,"force target from (b)" if not masked else "staleness target from (b)",12,"middle")
+    arrow([(1027,y+8),(1027,y+28)],dash="4 3")
 
 residual_pass(592,False,"force head",ORANGE); residual_pass(786,True,"staleness head",PURPLE)
 
 # (d) Three terms, one junction. Gamma is not added a second time.
 panel_title(1325,499,"d","Command composition")
 text(1604,531,"per correction step j",14,"middle",family="Courier New,monospace")
+text(1525,553,"reference from missing-force query (a)",12,"middle")
 rows=[(568,BLUE,"cached reference",[("A","base"),("ref","super"),("k","sub"),("(t","base"),("j","sub"),(")","base")]),
       (650,ORANGE,"force correction",[("ΔÂ","base"),("force","super"),("t,j","sub")]),
       (732,PURPLE,"learned staleness",[("ΔÂ","base"),("stale","super"),("t,j","sub")])]

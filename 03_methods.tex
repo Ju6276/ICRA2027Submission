@@ -189,7 +189,7 @@ The reference and residual workers execute independently (Fig.~\ref{fig:async_de
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{figures/fig03_async_deployment.pdf}
-    \caption{Cached-packet consistency during asynchronous execution. Fill colors identify the cached packet used to generate each residual chunk; dashed correction steps were generated from $C_{k-1}$ even though they execute after $C_k$ becomes available.}
+    \caption{Illustrative asynchronous execution with $K=5$. Residual queries read the latest completed reference at their start and retain it for command composition. A newly published residual chunk replaces the preceding chunk; numbered blocks show its active steps. Colors identify reference updates, and dotted lines mark residual-query completion.}
     \label{fig:async_deployment}
 \end{figure}
 
