@@ -1,7 +1,7 @@
 \begin{figure*}[!t]
     \centering
     \includegraphics[width=0.98\textwidth]{figures/fig02_architecture.pdf}
-    \caption{ForceDelta-VLA architecture. (a) A force-conditioned teacher and learned missing-force mode share the VLA backbone. (b) Cached-context paired queries construct force and reference-state-consistent staleness targets. (c) Force-present and force-masked passes through shared attention predict two $K$-step correction chunks. (d) The corrections compose with the cached reference, while the gripper command remains unchanged.}
+    \caption{ForceDelta-VLA architecture. (a) Paired force-conditioned and missing-force teacher queries construct force and reference-state-consistent staleness targets. (b) Force-present and force-masked queries of one shared residual policy predict two $K$-step correction chunks, which compose with the cached reference pose at execution; the reference gripper command remains unchanged.}
     \label{fig:network_structure}
 \end{figure*}
 

@@ -22,7 +22,7 @@ FIELD = "#EAF1F3"
 
 
 plt.rcParams.update({
-    "font.family": "DejaVu Sans Mono",
+    "font.family": "Courier New",
     "mathtext.fontset": "dejavusans",
 })
 
@@ -55,25 +55,25 @@ def main():
     def bar(a,b,y,txt,fill):
         ax.add_patch(Rectangle((a,y-.17),b-a,.34,facecolor=fill,edgecolor=MUTED,lw=.7,zorder=3))
         ax.text((a+b)/2,y,txt,ha='center',va='center',fontsize=7,zorder=4)
-    for y,txt in [(3.2,'Reference query'),(2.25,'Residual query'),(1.3,'Active reference'),(.35,'Residual steps')]:
+    for y,txt in [(3.2,'Reference query'),(2.25,'Residual query'),(1.3,'Latest completed reference'),(.35,'Residual steps')]:
         ax.text(-.25,y,txt,ha='right',va='center',fontsize=8)
         ax.plot([0,8.7],[y,y],color=MUTED,lw=.6,zorder=0)
     bar(.8,3.5,3.2,r'$k$',CREAM); bar(4.2,7.8,3.2,r'$k+1$',CREAM)
     ax.text(.8,3.5,r'$t_k$',ha='center',fontsize=8)
     ax.text(3.5,3.5,r'$\bar t_k$: publish',ha='center',fontsize=8)
     ax.plot([3.5,3.5],[.02,3.38],color=REF,ls='--',lw=.8,zorder=1)
-    bar(0,3.5,1.3,r'$C_{k-1}$',OLD_PALE); bar(3.5,7.8,1.3,r'$C_k$',REF_PALE)
-    bar(7.8,8.7,1.3,r'$C_{k+1}$',CREAM)
-    # Starts before publish retain C_{k-1}; a later query reads C_k.
-    queries=[(0,.35,OLD_PALE,'q'),(2,2.4,OLD_PALE,'q+1'),(4.3,4.7,REF_PALE,'q+2')]
+    bar(0,3.5,1.3,r'Reference $k-1$',OLD_PALE); bar(3.5,7.8,1.3,r'Reference $k$',REF_PALE)
+    bar(7.8,8.7,1.3,r'$k+1$',CREAM)
+    # Starts before publication retain reference k-1; a later query reads k.
+    queries=[(0,.35,OLD_PALE,'query 1'),(2,2.4,OLD_PALE,'query 2'),(4.3,4.7,REF_PALE,'query 3')]
     for a,b,c,q in queries:
         bar(a,b,2.25,'',c)
-        ax.text(a,2.59,r'$'+q+'$',fontsize=8,ha='center')
+        ax.text(a,2.59,q,fontsize=7.5,ha='center')
         ax.plot([b,b],[2.07,.55],color=MUTED,ls=':',lw=.7,zorder=1)
     # Latest completed query preempts the previous chunk; K=5, delta_t=1.
     for n,(a,b,c,q) in enumerate(queries):
         end=queries[n+1][1] if n+1<len(queries) else 8.7
-        ax.text(b+.20,.80,r'$'+q+'$',fontsize=8,ha='left')
+        ax.text(b+.20,.80,q,fontsize=7.5,ha='left')
         ax.plot([b+.05,end-.05],[.65,.65],color=MUTED,lw=.7)
         for j in range(5):
             l=max(a+j,b); r=min(a+j+1,end,8.7)

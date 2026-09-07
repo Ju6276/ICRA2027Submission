@@ -2,23 +2,9 @@
 \label{sec:exp_protocol}
 
 \noindent\textbf{Hardware, tasks, and data collection.}
-The evaluation includes $5$ single-arm and $4$ bimanual tasks on two platforms (Figs.~\ref{fig:robot_platforms} and~\ref{fig:task_overview}). The single-arm platform is a 7-DoF Franka Emika Panda with wrist-mounted and external Intel RealSense D405 cameras. Demonstrations are collected using a 3Dconnexion SpaceMouse. The bimanual platform is an X Square Robot with one wrist-mounted camera per arm and one shared external camera. Demonstrations are collected through leader--follower teleoperation. Following ForceVLA~\cite{yu2025forcevlaenhancingvlamodels}, both platforms use robot-provided joint-torque-based wrench estimates without additional wrist force/torque sensors.
+The evaluation includes $5$ single-arm and $4$ bimanual tasks on the two platforms shown in Fig.~\ref{fig:teaser}; the tasks are summarized in Fig.~\ref{fig:task_overview}. The single-arm platform is a 7-DoF Franka Emika Panda with wrist-mounted and external Intel RealSense D405 cameras. Demonstrations are collected using a 3Dconnexion SpaceMouse. The bimanual platform is an X Square Robot with one wrist-mounted camera per arm and one shared external camera. Demonstrations are collected through leader--follower teleoperation. Following ForceVLA~\cite{yu2025forcevlaenhancingvlamodels}, both platforms use robot-provided joint-torque-based wrench estimates without additional wrist force/torque sensors.
 
 For each task, we collect $200$ demonstrations. Multi-view images, robot states, and commanded actions are recorded at $30$~Hz, and timestamped wrench estimates at $100$~Hz.
-
-\begin{figure}[t]
-    \centering
-    \begin{minipage}[t]{0.43\linewidth}
-        \centering
-        \includegraphics[width=\linewidth]{figures/fig04a_franka_platform.pdf}
-    \end{minipage}\hspace{0.03\linewidth}
-    \begin{minipage}[t]{0.43\linewidth}
-        \centering
-        \includegraphics[width=\linewidth]{figures/fig04b_bimanual_platform.pdf}
-    \end{minipage}
-    \caption{Real-robot platforms used in the experiments. \emph{Left:} single-arm Franka Emika Panda. \emph{Right:} bimanual X Square Robot.}
-    \label{fig:robot_platforms}
-\end{figure}
 
 \begin{figure}[t]
     \centering
@@ -76,7 +62,7 @@ Figure~\ref{fig:qualitative_button} highlights how the learned translational cor
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{figures/fig06_button_pressing_rollout.pdf}
-    \caption{Representative rollout of Button Pressing. Front- and wrist-camera observations at four interaction phases are aligned with robot-estimated end-effector force components and translational correction magnitude; vertical lines mark the displayed frames.}
+    \caption{Representative rollout of Button Pressing. The observations show four interaction phases. The traces plot robot-estimated end-effector force components and translational correction magnitude over the contact interval; vertical lines mark the three displayed contact transitions, while the earlier free-space frame precedes the axis break.}
     \label{fig:qualitative_button}
 \end{figure}
 

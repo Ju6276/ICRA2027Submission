@@ -17,7 +17,8 @@ OUTPUT_PDF = ROOT / "fig01_method_overview.pdf"
 OUTPUT_PNG = ROOT / "fig01_method_overview.png"
 
 FAILURE_IMAGES = [None, None, None, None]
-FAILURE_LABELS = ["Impact", "Jamming", "Stick--slip", "Delayed recovery"]
+FAILURE_LABELS = ["Reference error", "Stale reference", "Jamming", "Nonlocal recovery"]
+SETUP_IMAGES = ["fig04a_franka_platform.png", "fig04b_bimanual_platform.png"]
 
 INK = "#121212"
 SUBTLE = "#58616A"
@@ -36,7 +37,7 @@ PLACEHOLDER = "#ECECE8"
 
 
 plt.rcParams.update({
-    "font.family": "DejaVu Sans Mono",
+    "font.family": "Courier New",
     "mathtext.fontset": "dejavusans",
     "axes.linewidth": 0.8,
 })
@@ -105,13 +106,41 @@ def image_card(ax, x, y, w, h, title, image_path=None):
     label(ax, x + w / 2, y + 0.015, title, size=7.8, weight="bold")
 
 
+def setup_card(ax, x, y, w, h, title, image_path):
+    pad = 0.0
+    title_h = 0.0
+    source = Image.open(ROOT / image_path).convert("RGB")
+    image_x0, image_x1 = x + pad, x + w - pad
+    image_y0, image_y1 = y + title_h, y + h - pad
+    available_w, available_h = image_x1 - image_x0, image_y1 - image_y0
+    figure_aspect = 12.2 / 5.25
+    source_aspect = source.width / source.height
+    fitted_h = available_w * figure_aspect / source_aspect
+    if fitted_h <= available_h:
+        draw_w, draw_h = available_w, fitted_h
+    else:
+        draw_h = available_h
+        draw_w = available_h * source_aspect / figure_aspect
+    cx, cy = (image_x0 + image_x1) / 2, (image_y0 + image_y1) / 2
+    ax.imshow(source, extent=[cx - draw_w / 2, cx + draw_w / 2,
+                             cy - draw_h / 2, cy + draw_h / 2],
+              aspect="auto", zorder=3)
+    label(ax, x + w / 2, y + h + 0.018, title, size=7.2, weight="bold")
+
+
 
 
 def main():
-    fig, ax = plt.subplots(figsize=(12.2, 4.65))
+    fig, ax = plt.subplots(figsize=(12.2, 5.25))
     fig.subplots_adjust(left=0, right=1, top=1, bottom=0)
     ax.set(xlim=(0, 1), ylim=(0, 1)); ax.axis('off')
-    label(ax, .16, .95, 'Unified force-aware VLA', size=12, weight='bold')
+    panel(ax, .012, .045, .295, .865, face=CREAM_2, edge=CREAM_2,
+          lw=0, radius=.014, z=0)
+    panel(ax, .738, .045, .247, .865, face=CREAM_2, edge=CREAM_2,
+          lw=0, radius=.014, z=0)
+    panel(ax, .32, .185, .408, .39, face="#F4F7F7", edge="#F4F7F7",
+          lw=0, radius=.014, z=0)
+    label(ax, .16, .95, 'Conventional force-aware VLA', size=11.5, weight='bold')
     panel(ax, .035, .70, .25, .17, face=PALE_BLUE)
     label(ax, .16, .83, 'Vision / language / state / force', size=7.2)
     label(ax, .16, .775, 'Full-action prediction', size=10, weight='bold')
@@ -119,32 +148,35 @@ def main():
     label(ax, .16, .646, 'Contact changes can outpace\naction updates', size=8, color=ACCENT_RED)
     for (x,y), title, path in zip([(.025,.34),(.17,.34),(.025,.07),(.17,.07)], FAILURE_LABELS, FAILURE_IMAGES):
         image_card(ax, x, y, .125, .23, title, path)
-    ax.plot([.32,.32],[.06,.97],color=HAIRLINE,lw=.7)
-    label(ax, .66, .95, 'ForceDelta-VLA', size=13, weight='bold')
-    panel(ax, .345, .63, .62, .25, face=POLICY_BLUE)
-    label(ax,.655,.836,'Missing-force residual distillation',size=10,weight='bold')
-    panel(ax,.365,.655,.165,.135,face=CREAM)
-    label(ax,.4475,.748,'Frozen teacher',size=9,weight='bold')
-    label(ax,.4475,.699,'force-conditioned\n+ learned missing-force mode',size=6.7)
-    panel(ax,.59,.65,.19,.095,face='white')
-    label(ax,.685,.697,'Paired correction targets',size=8.2,weight='bold')
-    arrow(ax,(.535,.698),(.585,.698))
+    label(ax, .53, .95, 'ForceDelta-VLA', size=13, weight='bold')
+    panel(ax, .345, .61, .375, .27, face=POLICY_BLUE)
+    label(ax,.5325,.842,'Missing-force residual distillation',size=9.2,weight='bold')
+    panel(ax,.365,.675,.145,.105,face=CREAM)
+    label(ax,.4375,.745,'Frozen teacher',size=8.1,weight='bold')
+    label(ax,.4375,.705,'force / missing-force modes',size=5.8)
+    panel(ax,.55,.685,.15,.085,face='white')
+    label(ax,.625,.7275,'Paired correction\ntargets',size=7.2,weight='bold')
+    arrow(ax,(.515,.727),(.545,.727))
     # Supervision terminates on the same policy used online.
-    arrow(ax,(.685,.645),(.685,.54),color=STALE_PURPLE,lw=1,dashed=True)
-    label(ax,.73,.587,'Distill',size=8,color=STALE_PURPLE)
-    panel(ax,.355,.30,.20,.10,face=PALE_BLUE)
-    label(ax,.455,.35,'Missing-force reference',size=8,weight='bold')
-    panel(ax,.59,.43,.19,.105,face=STALE_PALE)
-    label(ax,.685,.4825,'Residual policy',size=9,weight='bold')
-    label(ax,.455,.54,'Current force / state',size=7.3)
-    arrow(ax,(.51,.515),(.585,.49))
-    arrow(ax,(.55,.40),(.585,.447))
-    label(ax,.465,.435,'Reference + context',size=6.7)
-    panel(ax,.825,.30,.14,.105,face=ACTION_GREEN)
-    label(ax,.895,.3525,'Reference\n+ corrections',size=8.5,weight='bold')
-    arrow(ax,(.56,.34),(.82,.34))
-    ax.plot([.785,.895],[.483,.483],color=INK,lw=1)
-    arrow(ax,(.895,.483),(.895,.41))
+    arrow(ax,(.625,.68),(.625,.565),color=STALE_PURPLE,lw=1,dashed=True)
+    label(ax,.654,.625,'Distill',size=7.5,color=STALE_PURPLE)
+    label(ax, .5325, .545, 'Fast residual execution', size=9.0, weight='bold')
+    label(ax,.375,.495,'Current force / state',size=6.4,ha='left')
+    label(ax,.375,.445,'Reference + context',size=6.0,ha='left')
+    panel(ax,.535,.425,.16,.10,face=STALE_PALE)
+    label(ax,.615,.475,'Residual policy',size=8.0,weight='bold')
+    arrow(ax,(.475,.49),(.53,.49))
+    arrow(ax,(.475,.445),(.53,.455))
+    panel(ax,.36,.275,.135,.09,face=PALE_BLUE)
+    label(ax,.4275,.32,'Missing-force\nreference',size=6.8,weight='bold')
+    panel(ax,.535,.275,.16,.09,face=ACTION_GREEN)
+    label(ax,.615,.32,'Corrected action',size=7.2,weight='bold')
+    arrow(ax,(.50,.32),(.53,.32))
+    arrow(ax,(.615,.42),(.615,.37))
+
+    label(ax, .85, .95, 'Robot platforms', size=11, weight='bold')
+    setup_card(ax, .75, .54, .22, .31, 'Single-arm setup', SETUP_IMAGES[0])
+    setup_card(ax, .75, .10, .22, .31, 'Bimanual setup', SETUP_IMAGES[1])
     for out in (OUTPUT_PDF, OUTPUT_PNG):
         fig.savefig(out,dpi=240,bbox_inches='tight',pad_inches=0,facecolor='white')
     plt.close(fig)
