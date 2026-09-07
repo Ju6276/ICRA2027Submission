@@ -37,7 +37,7 @@ PLACEHOLDER = "#ECECE8"
 
 
 plt.rcParams.update({
-    "font.family": "Courier New",
+    "font.family": "Arial",
     "mathtext.fontset": "dejavusans",
     "axes.linewidth": 0.8,
 })
@@ -113,7 +113,7 @@ def setup_card(ax, x, y, w, h, title, image_path):
     image_x0, image_x1 = x + pad, x + w - pad
     image_y0, image_y1 = y + title_h, y + h - pad
     available_w, available_h = image_x1 - image_x0, image_y1 - image_y0
-    figure_aspect = 12.2 / 5.25
+    figure_aspect = 8.5 / 3.66
     source_aspect = source.width / source.height
     fitted_h = available_w * figure_aspect / source_aspect
     if fitted_h <= available_h:
@@ -131,48 +131,59 @@ def setup_card(ax, x, y, w, h, title, image_path):
 
 
 def main():
-    fig, ax = plt.subplots(figsize=(12.2, 5.25))
+    # Match the final double-column print width so font sizes are not reduced
+    # again by nearly one half when LaTeX includes the figure.
+    fig, ax = plt.subplots(figsize=(8.5, 3.66))
     fig.subplots_adjust(left=0, right=1, top=1, bottom=0)
     ax.set(xlim=(0, 1), ylim=(0, 1)); ax.axis('off')
     panel(ax, .012, .045, .295, .865, face=CREAM_2, edge=CREAM_2,
           lw=0, radius=.014, z=0)
     panel(ax, .738, .045, .247, .865, face=CREAM_2, edge=CREAM_2,
           lw=0, radius=.014, z=0)
-    panel(ax, .32, .185, .408, .39, face="#F4F7F7", edge="#F4F7F7",
+    panel(ax, .31, .175, .425, .41, face="#F4F7F7", edge="#F4F7F7",
           lw=0, radius=.014, z=0)
     label(ax, .16, .95, 'Conventional force-aware VLA', size=11.5, weight='bold')
     panel(ax, .035, .70, .25, .17, face=PALE_BLUE)
-    label(ax, .16, .83, 'Vision / language / state / force', size=7.2)
+    label(ax, .16, .83, 'Vision / language / state / force', size=8.3)
     label(ax, .16, .775, 'Full-action prediction', size=10, weight='bold')
-    label(ax, .16, .73, 'task-level motion + contact adjustment', size=6.8)
+    label(ax, .16, .73, 'task motion + contact adjustment', size=7.8)
     label(ax, .16, .646, 'Contact changes can outpace\naction updates', size=8, color=ACCENT_RED)
     for (x,y), title, path in zip([(.025,.34),(.17,.34),(.025,.07),(.17,.07)], FAILURE_LABELS, FAILURE_IMAGES):
         image_card(ax, x, y, .125, .23, title, path)
     label(ax, .53, .95, 'ForceDelta-VLA', size=13, weight='bold')
-    panel(ax, .345, .61, .375, .27, face=POLICY_BLUE)
-    label(ax,.5325,.842,'Missing-force residual distillation',size=9.2,weight='bold')
-    panel(ax,.365,.675,.145,.105,face=CREAM)
-    label(ax,.4375,.745,'Frozen teacher',size=8.1,weight='bold')
-    label(ax,.4375,.705,'force / missing-force modes',size=5.8)
-    panel(ax,.55,.685,.15,.085,face='white')
-    label(ax,.625,.7275,'Paired correction\ntargets',size=7.2,weight='bold')
-    arrow(ax,(.515,.727),(.545,.727))
-    # Supervision terminates on the same policy used online.
-    arrow(ax,(.625,.68),(.625,.565),color=STALE_PURPLE,lw=1,dashed=True)
-    label(ax,.654,.625,'Distill',size=7.5,color=STALE_PURPLE)
-    label(ax, .5325, .545, 'Fast residual execution', size=9.0, weight='bold')
-    label(ax,.375,.495,'Current force / state',size=6.4,ha='left')
-    label(ax,.375,.445,'Reference + context',size=6.0,ha='left')
-    panel(ax,.535,.425,.16,.10,face=STALE_PALE)
-    label(ax,.615,.475,'Residual policy',size=8.0,weight='bold')
-    arrow(ax,(.475,.49),(.53,.49))
-    arrow(ax,(.475,.445),(.53,.455))
-    panel(ax,.36,.275,.135,.09,face=PALE_BLUE)
-    label(ax,.4275,.32,'Missing-force\nreference',size=6.8,weight='bold')
-    panel(ax,.535,.275,.16,.09,face=ACTION_GREEN)
-    label(ax,.615,.32,'Corrected action',size=7.2,weight='bold')
-    arrow(ax,(.50,.32),(.53,.32))
-    arrow(ax,(.615,.42),(.615,.37))
+    panel(ax, .315, .585, .42, .31, face=POLICY_BLUE)
+    label(ax,.5325,.855,'Teacher-defined force residual',size=10.0,weight='bold')
+    panel(ax,.34,.785,.37,.05,face=CREAM)
+    label(ax,.5325,.8075,'Frozen teacher · matched context/noise',size=8.8,weight='bold')
+    panel(ax,.33,.69,.165,.065,face=FORCE_PALE)
+    label(ax,.4125,.7225,'Force-conditioned\nprediction',size=9.0,weight='bold')
+    panel(ax,.555,.69,.165,.065,face=PALE_BLUE)
+    label(ax,.6375,.7225,'Learned missing-force\nprediction',size=8.4,weight='bold')
+    label(ax,.5275,.725,'-',size=12,weight='bold')
+    arrow(ax,(.46,.78),(.4125,.76))
+    arrow(ax,(.605,.78),(.6375,.76))
+    panel(ax,.43,.60,.205,.065,face='white')
+    label(ax,.5325,.6325,'Force-responsive\nresidual target',size=9.0,weight='bold')
+    arrow(ax,(.4125,.685),(.49,.67))
+    arrow(ax,(.6375,.685),(.575,.67))
+    # The paired prediction difference supervises the online residual policy.
+    arrow(ax,(.615,.60),(.615,.53),color=STALE_PURPLE,lw=1,dashed=True)
+    label(ax,.657,.565,'Distill',size=8.2,color=STALE_PURPLE)
+    label(ax, .5325, .545, 'Fast residual execution', size=9.5, weight='bold')
+    panel(ax,.335,.435,.14,.075,face=FORCE_PALE)
+    label(ax,.405,.4725,'Force / state',size=8.4,weight='bold')
+    panel(ax,.515,.415,.20,.105,face=STALE_PALE)
+    label(ax,.615,.4675,'Fast residual policy',size=8.8,weight='bold')
+    arrow(ax,(.48,.4725),(.51,.4725))
+    panel(ax,.335,.275,.145,.08,face=PALE_BLUE)
+    label(ax,.4075,.315,'Cached reference',size=8.2,weight='bold')
+    ax.add_patch(Circle((.525,.315),.017,facecolor='white',edgecolor=INK,lw=.8,zorder=4))
+    label(ax,.525,.315,'+',size=9.5,weight='bold')
+    panel(ax,.565,.275,.15,.08,face=ACTION_GREEN)
+    label(ax,.64,.315,'Commanded action',size=8.3,weight='bold')
+    arrow(ax,(.485,.315),(.505,.315))
+    arrow(ax,(.615,.41),(.545,.33))
+    arrow(ax,(.545,.315),(.56,.315))
 
     label(ax, .85, .95, 'Robot platforms', size=11, weight='bold')
     setup_card(ax, .75, .54, .22, .31, 'Single-arm setup', SETUP_IMAGES[0])

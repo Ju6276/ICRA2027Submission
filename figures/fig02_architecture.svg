@@ -3,17 +3,17 @@
 <rect x="18" y="62" width="585" height="630" rx="14" fill="#FBF4E3" stroke="#FBF4E3" stroke-width="0"/>
 <rect x="648" y="62" width="1234" height="630" rx="14" fill="#F4F7F7" stroke="#F4F7F7" stroke-width="0"/>
 <line x1="625" y1="25" x2="625" y2="695" stroke="#B9C5CA" stroke-width="1.1"/>
-<text x="30" y="42" font-family="Courier New,monospace" font-size="25" font-weight="bold" fill="#26343B" text-anchor="start">(a)</text>
-<text x="75" y="42" font-family="Courier New,monospace" font-size="25" font-weight="bold" fill="#26343B" text-anchor="start">Paired teacher targets</text>
+<text x="30" y="42" font-family="Helvetica,Arial,sans-serif" font-size="38.75" font-weight="bold" fill="#26343B" text-anchor="start">(a)</text>
+<text x="88" y="42" font-family="Helvetica,Arial,sans-serif" font-size="38.75" font-weight="bold" fill="#26343B" text-anchor="start">Paired teacher targets</text>
 <rect x="58" y="88" width="175" height="36" rx="18.0" fill="#A9D8E7" stroke="#647983" stroke-width="1.4"/>
-<text x="145.5" y="110.76" font-family="Courier New,monospace" font-size="14" font-weight="normal" fill="#26343B" text-anchor="middle">cached prefix Eₖ</text>
+<text x="145.5" y="110.76" font-family="Helvetica,Arial,sans-serif" font-size="21.7" font-weight="normal" fill="#26343B" text-anchor="middle">prefix Eₖ</text>
 <rect x="246" y="88" width="135" height="36" rx="18.0" fill="#DEE5E8" stroke="#647983" stroke-width="1.4"/>
-<text x="313.5" y="110.08" font-family="Courier New,monospace" font-size="12" font-weight="normal" fill="#26343B" text-anchor="middle">current state Sₜ</text>
+<text x="313.5" y="110.08" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">state Sₜ</text>
 <rect x="394" y="88" width="174" height="36" rx="18.0" fill="#DEE5E8" stroke="#647983" stroke-width="1.4"/>
-<text x="481.0" y="110.08" font-family="Courier New,monospace" font-size="12" font-weight="normal" fill="#26343B" text-anchor="middle">shared flow noise εₖ</text>
+<text x="481.0" y="110.08" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">noise εₖ</text>
 <rect x="92" y="158" width="438" height="68" rx="9" fill="#A9D8E7" stroke="#647983" stroke-width="1.4"/>
-<text x="311" y="188" font-family="Courier New,monospace" font-size="20" font-weight="bold" fill="#26343B" text-anchor="middle">frozen VLA teacher</text>
-<text x="311" y="211" font-family="Courier New,monospace" font-size="13" font-weight="normal" fill="#26343B" text-anchor="middle">shared backbone and action expert</text>
+<text x="311" y="188" font-family="Helvetica,Arial,sans-serif" font-size="31.0" font-weight="bold" fill="#26343B" text-anchor="middle">frozen VLA teacher</text>
+<text x="311" y="211" font-family="Helvetica,Arial,sans-serif" font-size="20.150000000000002" font-weight="normal" fill="#26343B" text-anchor="middle">shared backbone and action expert</text>
 <polyline points="145,126 145,155" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
 <polygon points="145,155 149.0,147.0 141.0,147.0" fill="#647983"/>
 <polyline points="311,126 311,155" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
@@ -21,15 +21,15 @@
 <polyline points="477,126 477,155" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
 <polygon points="477,155 481.0,147.0 473.0,147.0" fill="#647983"/>
 <rect x="48" y="270" width="185" height="42" rx="21.0" fill="#F5CFA2" stroke="#647983" stroke-width="1.4"/>
-<text x="140.5" y="295.42" font-family="Courier New,monospace" font-size="13" font-weight="normal" fill="#26343B" text-anchor="middle">force history -&gt; TCN</text>
+<text x="140.5" y="295.42" font-family="Helvetica,Arial,sans-serif" font-size="20.150000000000002" font-weight="normal" fill="#26343B" text-anchor="middle">force history -&gt; TCN</text>
 <rect x="369" y="270" width="186" height="42" rx="21.0" fill="#E6F1F4" stroke="#647983" stroke-width="1.4"/>
-<text x="462.0" y="295.42" font-family="Courier New,monospace" font-size="13" font-weight="normal" fill="#26343B" text-anchor="middle">missing-force token</text>
+<text x="462.0" y="295.42" font-family="Helvetica,Arial,sans-serif" font-size="20.150000000000002" font-weight="normal" fill="#26343B" text-anchor="middle">missing-force token</text>
 <rect x="48" y="342" width="235" height="70" rx="8" fill="#F5CFA2" stroke="#647983" stroke-width="1.4"/>
-<text x="165" y="370" font-family="Courier New,monospace" font-size="15" font-weight="bold" fill="#26343B" text-anchor="middle">force-conditioned query</text>
-<text x="165" y="395" font-family="Courier New,monospace" font-size="12" font-weight="normal" fill="#26343B" text-anchor="middle">current prediction</text>
+<text x="165" y="370" font-family="Helvetica,Arial,sans-serif" font-size="23.25" font-weight="bold" fill="#26343B" text-anchor="middle">force-conditioned</text>
+<text x="165" y="395" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">current prediction</text>
 <rect x="320" y="342" width="235" height="70" rx="8" fill="#E6F1F4" stroke="#647983" stroke-width="1.4"/>
-<text x="437" y="370" font-family="Courier New,monospace" font-size="15" font-weight="bold" fill="#26343B" text-anchor="middle">missing-force query</text>
-<text x="437" y="395" font-family="Courier New,monospace" font-size="12" font-weight="normal" fill="#26343B" text-anchor="middle">current prediction</text>
+<text x="437" y="370" font-family="Helvetica,Arial,sans-serif" font-size="23.25" font-weight="bold" fill="#26343B" text-anchor="middle">missing-force</text>
+<text x="437" y="395" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">current prediction</text>
 <polyline points="141,315 141,339" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
 <polygon points="141,339 145.0,331.0 137.0,331.0" fill="#647983"/>
 <polyline points="462,315 462,339" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
@@ -39,12 +39,12 @@
 <polyline points="350,226 350,326 437,326 437,339" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
 <polygon points="437,339 441.0,331.0 433.0,331.0" fill="#647983"/>
 <rect x="48" y="486" width="238" height="68" rx="8" fill="#F5CFA2" stroke="#647983" stroke-width="1.4"/>
-<text x="167" y="514" font-family="Courier New,monospace" font-size="16" font-weight="bold" fill="#26343B" text-anchor="middle">force target</text>
-<text x="167" y="538" font-family="Courier New,monospace" font-size="11" font-weight="normal" fill="#26343B" text-anchor="middle">conditioned - missing</text>
+<text x="167" y="514" font-family="Helvetica,Arial,sans-serif" font-size="24.8" font-weight="bold" fill="#26343B" text-anchor="middle">force target</text>
+<text x="167" y="538" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">conditioned - missing</text>
 <rect x="316" y="486" width="239" height="68" rx="8" fill="#DCCBE8" stroke="#647983" stroke-width="1.4"/>
-<text x="435" y="511" font-family="Courier New,monospace" font-size="16" font-weight="bold" fill="#26343B" text-anchor="middle">staleness target</text>
-<text x="435" y="532" font-family="Courier New,monospace" font-size="10" font-weight="normal" fill="#26343B" text-anchor="middle">missing - aligned reference</text>
-<text x="435" y="547" font-family="Courier New,monospace" font-size="10" font-weight="normal" fill="#26343B" text-anchor="middle">+ state rebasing</text>
+<text x="435" y="511" font-family="Helvetica,Arial,sans-serif" font-size="24.8" font-weight="bold" fill="#26343B" text-anchor="middle">staleness target</text>
+<text x="435" y="532" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">missing - reference</text>
+<text x="435" y="547" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">+ rebasing</text>
 <polyline points="165,415 165,483" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
 <polygon points="165,483 169.0,475.0 161.0,475.0" fill="#647983"/>
 <polyline points="437,415 437,483" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
@@ -52,33 +52,33 @@
 <polyline points="437,430 437,454 245,454 245,483" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
 <polygon points="245,483 249.0,475.0 241.0,475.0" fill="#647983"/>
 <rect x="316" y="606" width="238" height="36" rx="18.0" fill="#A9D8E7" stroke="#647983" stroke-width="1.4"/>
-<text x="435.0" y="627.74" font-family="Courier New,monospace" font-size="11" font-weight="normal" fill="#26343B" text-anchor="middle">reference cached by query k</text>
-<text x="435" y="671" font-family="Courier New,monospace" font-size="10" font-weight="normal" fill="#26343B" text-anchor="middle">aligned at correction time tⱼ</text>
+<text x="435.0" y="627.74" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">cached reference (query k)</text>
+<text x="435" y="671" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">aligned at tⱼ</text>
 <polyline points="435,606 435,557" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
 <polygon points="435,557 431.0,565.0 439.0,565.0" fill="#647983"/>
-<text x="660" y="42" font-family="Courier New,monospace" font-size="25" font-weight="bold" fill="#26343B" text-anchor="start">(b)</text>
-<text x="705" y="42" font-family="Courier New,monospace" font-size="25" font-weight="bold" fill="#26343B" text-anchor="start">Residual policy and execution</text>
-<text x="1030" y="92" font-family="Courier New,monospace" font-size="15" font-weight="normal" fill="#26343B" text-anchor="middle">same typed conditioning set</text>
+<text x="660" y="42" font-family="Helvetica,Arial,sans-serif" font-size="38.75" font-weight="bold" fill="#26343B" text-anchor="start">(b)</text>
+<text x="718" y="42" font-family="Helvetica,Arial,sans-serif" font-size="38.75" font-weight="bold" fill="#26343B" text-anchor="start">Residual policy and execution</text>
+<text x="1030" y="92" font-family="Helvetica,Arial,sans-serif" font-size="23.25" font-weight="normal" fill="#26343B" text-anchor="middle">same typed conditioning set</text>
 <rect x="755" y="120" width="94" height="72" rx="7" fill="#A9D8E7" stroke="#647983" stroke-width="1.4"/>
 <rect x="778" y="139" width="20" height="12" rx="6" fill="#A9D8E7" stroke="#647983" stroke-width="1.0"/>
 <rect x="806" y="139" width="20" height="12" rx="6" fill="#A9D8E7" stroke="#647983" stroke-width="1.0"/>
-<text x="802" y="181" font-family="Courier New,monospace" font-size="12" font-weight="normal" fill="#26343B" text-anchor="middle">intent</text>
+<text x="802" y="181" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">intent</text>
 <rect x="864" y="120" width="94" height="72" rx="7" fill="#F5CFA2" stroke="#647983" stroke-width="1.4"/>
 <rect x="887" y="139" width="20" height="12" rx="6" fill="#F5CFA2" stroke="#647983" stroke-width="1.0"/>
-<text x="911" y="181" font-family="Courier New,monospace" font-size="12" font-weight="normal" fill="#26343B" text-anchor="middle">force</text>
+<text x="911" y="181" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">force</text>
 <rect x="973" y="120" width="94" height="72" rx="7" fill="#DEE5E8" stroke="#647983" stroke-width="1.4"/>
 <rect x="996" y="139" width="20" height="12" rx="6" fill="#DEE5E8" stroke="#647983" stroke-width="1.0"/>
-<text x="1020" y="181" font-family="Courier New,monospace" font-size="12" font-weight="normal" fill="#26343B" text-anchor="middle">state</text>
+<text x="1020" y="181" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">state</text>
 <rect x="1082" y="120" width="94" height="72" rx="7" fill="#A9D8E7" stroke="#647983" stroke-width="1.4"/>
 <rect x="1105" y="139" width="20" height="12" rx="6" fill="#A9D8E7" stroke="#647983" stroke-width="1.0"/>
-<text x="1129" y="181" font-family="Courier New,monospace" font-size="12" font-weight="normal" fill="#26343B" text-anchor="middle">reference</text>
+<text x="1129" y="181" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">reference</text>
 <rect x="1191" y="120" width="94" height="72" rx="7" fill="#DEE5E8" stroke="#647983" stroke-width="1.4"/>
 <rect x="1214" y="139" width="20" height="12" rx="6" fill="#DEE5E8" stroke="#647983" stroke-width="1.0"/>
-<text x="1238" y="181" font-family="Courier New,monospace" font-size="12" font-weight="normal" fill="#26343B" text-anchor="middle">time</text>
+<text x="1238" y="181" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">time</text>
 <rect x="684" y="225" width="225" height="38" rx="19.0" fill="#F5CFA2" stroke="#647983" stroke-width="1.4"/>
-<text x="796.5" y="248.42" font-family="Courier New,monospace" font-size="13" font-weight="normal" fill="#26343B" text-anchor="middle">force token present</text>
+<text x="796.5" y="248.42" font-family="Helvetica,Arial,sans-serif" font-size="20.150000000000002" font-weight="normal" fill="#26343B" text-anchor="middle">force token present</text>
 <rect x="1151" y="225" width="225" height="38" rx="19.0" fill="#DEE5E8" stroke="#647983" stroke-width="1.4"/>
-<text x="1263.5" y="248.42" font-family="Courier New,monospace" font-size="13" font-weight="normal" fill="#26343B" text-anchor="middle">force token masked</text>
+<text x="1263.5" y="248.42" font-family="Helvetica,Arial,sans-serif" font-size="20.150000000000002" font-weight="normal" fill="#26343B" text-anchor="middle">force token masked</text>
 <line x1="802" y1="205" x2="1238" y2="205" stroke="#647983" stroke-width="1.5"/>
 <line x1="802" y1="192" x2="802" y2="205" stroke="#647983" stroke-width="1.5"/>
 <line x1="911" y1="192" x2="911" y2="205" stroke="#647983" stroke-width="1.5"/>
@@ -90,37 +90,37 @@
 <polyline points="1264,205 1264,222" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
 <polygon points="1264,222 1268.0,214.0 1260.0,214.0" fill="#647983"/>
 <rect x="714" y="305" width="634" height="72" rx="9" fill="white" stroke="#647983" stroke-width="1.4"/>
-<text x="1031" y="337" font-family="Courier New,monospace" font-size="20" font-weight="bold" fill="#26343B" text-anchor="middle">shared set attention Φ</text>
-<text x="1031" y="361" font-family="Courier New,monospace" font-size="13" font-weight="normal" fill="#26343B" text-anchor="middle">evaluated twice with residual query</text>
+<text x="1031" y="337" font-family="Helvetica,Arial,sans-serif" font-size="31.0" font-weight="bold" fill="#26343B" text-anchor="middle">shared set attention Φ</text>
+<text x="1031" y="361" font-family="Helvetica,Arial,sans-serif" font-size="20.150000000000002" font-weight="normal" fill="#26343B" text-anchor="middle">evaluated twice with residual query</text>
 <polyline points="797,266 797,302" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
 <polygon points="797,302 801.0,294.0 793.0,294.0" fill="#647983"/>
 <polyline points="1264,266 1264,302" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
 <polygon points="1264,302 1268.0,294.0 1260.0,294.0" fill="#647983"/>
 <rect x="684" y="420" width="225" height="64" rx="28" fill="#F5CFA2" stroke="#647983" stroke-width="1.4"/>
-<text x="796" y="448" font-family="Courier New,monospace" font-size="17" font-weight="bold" fill="#26343B" text-anchor="middle">force head</text>
-<text x="796" y="471" font-family="Courier New,monospace" font-size="12" font-weight="normal" fill="#26343B" text-anchor="middle">K-step correction</text>
+<text x="796" y="448" font-family="Helvetica,Arial,sans-serif" font-size="26.35" font-weight="bold" fill="#26343B" text-anchor="middle">force head</text>
+<text x="796" y="471" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">K-step correction</text>
 <rect x="1151" y="420" width="225" height="64" rx="28" fill="#DCCBE8" stroke="#647983" stroke-width="1.4"/>
-<text x="1263" y="448" font-family="Courier New,monospace" font-size="17" font-weight="bold" fill="#26343B" text-anchor="middle">staleness head</text>
-<text x="1263" y="471" font-family="Courier New,monospace" font-size="12" font-weight="normal" fill="#26343B" text-anchor="middle">K-step correction</text>
+<text x="1263" y="448" font-family="Helvetica,Arial,sans-serif" font-size="26.35" font-weight="bold" fill="#26343B" text-anchor="middle">staleness head</text>
+<text x="1263" y="471" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">K-step correction</text>
 <polyline points="797,380 797,417" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
 <polygon points="797,417 801.0,409.0 793.0,409.0" fill="#647983"/>
 <polyline points="1264,380 1264,417" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
 <polygon points="1264,417 1268.0,409.0 1260.0,409.0" fill="#647983"/>
 <rect x="680" y="582" width="205" height="50" rx="8" fill="#A9D8E7" stroke="#647983" stroke-width="1.4"/>
-<text x="782" y="613" font-family="Courier New,monospace" font-size="13" font-weight="normal" fill="#26343B" text-anchor="middle">cached reference</text>
-<text x="905" y="615" font-family="Courier New,monospace" font-size="22" font-weight="bold" fill="#26343B" text-anchor="middle">+</text>
+<text x="782" y="613" font-family="Helvetica,Arial,sans-serif" font-size="20.150000000000002" font-weight="normal" fill="#26343B" text-anchor="middle">cached reference</text>
+<text x="905" y="615" font-family="Helvetica,Arial,sans-serif" font-size="34.1" font-weight="bold" fill="#26343B" text-anchor="middle">+</text>
 <rect x="928" y="582" width="205" height="50" rx="8" fill="#F5CFA2" stroke="#647983" stroke-width="1.4"/>
-<text x="1030" y="613" font-family="Courier New,monospace" font-size="13" font-weight="normal" fill="#26343B" text-anchor="middle">force correction</text>
-<text x="1153" y="615" font-family="Courier New,monospace" font-size="22" font-weight="bold" fill="#26343B" text-anchor="middle">+</text>
+<text x="1030" y="613" font-family="Helvetica,Arial,sans-serif" font-size="20.150000000000002" font-weight="normal" fill="#26343B" text-anchor="middle">force correction</text>
+<text x="1153" y="615" font-family="Helvetica,Arial,sans-serif" font-size="34.1" font-weight="bold" fill="#26343B" text-anchor="middle">+</text>
 <rect x="1176" y="582" width="220" height="50" rx="8" fill="#DCCBE8" stroke="#647983" stroke-width="1.4"/>
-<text x="1286" y="613" font-family="Courier New,monospace" font-size="12" font-weight="normal" fill="#26343B" text-anchor="middle">staleness correction</text>
+<text x="1286" y="613" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">staleness correction</text>
 <polyline points="1402,607 1450,607" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
 <polygon points="1450,607 1442.0,603.0 1442.0,611.0" fill="#647983"/>
 <rect x="1456" y="574" width="270" height="66" rx="9" fill="white" stroke="#647983" stroke-width="1.4"/>
-<text x="1591" y="604" font-family="Courier New,monospace" font-size="17" font-weight="bold" fill="#26343B" text-anchor="middle">commanded pose</text>
-<text x="1591" y="626" font-family="Courier New,monospace" font-size="11" font-weight="normal" fill="#26343B" text-anchor="middle">based at cached state Sₖ</text>
+<text x="1591" y="604" font-family="Helvetica,Arial,sans-serif" font-size="26.35" font-weight="bold" fill="#26343B" text-anchor="middle">commanded pose</text>
+<text x="1591" y="626" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">based at cached state Sₖ</text>
 <rect x="1464" y="657" width="254" height="28" rx="14.0" fill="#E6F1F4" stroke="#647983" stroke-width="1.4"/>
-<text x="1591.0" y="674.74" font-family="Courier New,monospace" font-size="11" font-weight="normal" fill="#26343B" text-anchor="middle">reference gripper unchanged</text>
+<text x="1591.0" y="674.74" font-family="Helvetica,Arial,sans-serif" font-size="20" font-weight="normal" fill="#26343B" text-anchor="middle">gripper from reference</text>
 <polyline points="796,487 796,560 1030,560 1030,579" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>
 <polygon points="1030,579 1034.0,571.0 1026.0,571.0" fill="#647983"/>
 <polyline points="1263,487 1263,560 1286,560 1286,579" fill="none" stroke="#647983" stroke-width="1.5" stroke-linejoin="round"/>

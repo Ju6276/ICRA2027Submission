@@ -186,11 +186,11 @@ The coefficient $\lambda_{\mathrm{stale}}$ balances force-conditioning and stale
 
 The reference and residual workers execute independently (Fig.~\ref{fig:async_deployment}). Each residual query reads the latest completed reference update available at its start, together with the current state and $\mathcal F_t$. The resulting $K$-step correction chunk continues using that same cached update throughout its execution; a newly completed reference is adopted by the next residual query.
 
-\begin{figure}[t]
+\begin{figure*}[t]
     \centering
-    \includegraphics[width=\columnwidth]{figures/fig03_async_execution.pdf}
+    \includegraphics[width=0.82\textwidth]{figures/fig03_async_execution.pdf}
     \caption{Illustrative asynchronous execution with $K=5$. Residual queries read the latest completed reference at their start and retain it for command composition. A newly published residual chunk replaces the preceding chunk; numbered blocks show its active steps. Colors identify reference updates, and dotted lines mark residual-query completion.}
     \label{fig:async_deployment}
-\end{figure}
+\end{figure*}
 
 Expired correction steps are skipped, and the remaining steps execute sequentially without interpolation. The reference pose is interpolated by timestamp. The force and reference-state-consistent staleness residuals are bounded independently, composed with the reference in normalized delta-action coordinates, and converted to an absolute command using the reference query state. The supervised staleness target already includes $\Gamma(S_t,S_k)$.

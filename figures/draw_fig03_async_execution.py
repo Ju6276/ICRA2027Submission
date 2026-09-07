@@ -49,7 +49,8 @@ def rounded(ax, x, y, w, h, text, face, edge=MUTED, size=8.5):
 def main():
     # Illustrative schedule in action-sample intervals, not measured latency.
     # Query timestamps, availability and chunk samples share one time axis.
-    fig, ax = plt.subplots(figsize=(8.1,3.8))
+    # Export close to the final single-column width to preserve label size.
+    fig, ax = plt.subplots(figsize=(4.4,2.06))
     fig.subplots_adjust(left=.19,right=.99,top=.93,bottom=.16)
     ax.set(xlim=(-.1,9),ylim=(-.15,3.7)); ax.axis('off')
     def bar(a,b,y,txt,fill):
