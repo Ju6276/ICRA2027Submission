@@ -59,7 +59,7 @@
 <polyline points="390,337 390,269" fill="none" stroke="#60747E" stroke-width="1.45" stroke-linejoin="round"/>
 <polygon points="390,269 386.0,277.0 394.0,277.0" fill="#60747E"/>
 <rect x="440" y="326" width="70" height="38" rx="19.0" fill="#F5CFA2" stroke="#60747E" stroke-width="1.35"/>
-<text x="475.0" y="349.5" font-family="Helvetica,Arial,sans-serif" font-size="18" fill="#2D3B42" text-anchor="middle"><tspan baseline-shift="baseline" font-size="18">z</tspan><tspan baseline-shift="super" font-size="12.24">F</tspan><tspan baseline-shift="sub" font-size="12.24">t</tspan></text>
+<text x="475.0" y="349.5" font-family="Helvetica,Arial,sans-serif" font-size="18" fill="#2D3B42" text-anchor="middle"><tspan baseline-shift="baseline" font-size="18">z</tspan><tspan baseline-shift="super" font-size="12.24" textLength="7.343999999999999" lengthAdjust="spacingAndGlyphs">F</tspan><tspan dx="-7.343999999999999" baseline-shift="sub" font-size="12.24" textLength="7.343999999999999" lengthAdjust="spacingAndGlyphs">t</tspan><tspan baseline-shift="baseline" dx="0.0" font-size="18">&#8203;</tspan></text>
 <rect x="540" y="326" width="70" height="38" rx="19.0" fill="#CDE5BE" stroke="#60747E" stroke-width="1.35"/>
 <text x="575.0" y="349.5" font-family="Helvetica,Arial,sans-serif" font-size="18" fill="#2D3B42" text-anchor="middle">z<tspan baseline-shift="sub" font-size="12.24">∅F</tspan></text>
 <text x="475" y="379" font-family="Helvetica,Arial,sans-serif" font-size="9.5" font-weight="normal" fill="#2D3B42" text-anchor="middle">Force-conditioned</text>
@@ -134,7 +134,7 @@
 <rect x="1710.5" y="218" width="25" height="11" rx="5" fill="#98C2D0" stroke="#60747E" stroke-width="1.0"/>
 <rect x="1490" y="181" width="338" height="36" rx="6" fill="white" stroke="#60747E" stroke-width="1.5"/>
 <text x="1659.0" y="205.12" font-family="Helvetica,Arial,sans-serif" font-size="18" font-weight="normal" fill="#2D3B42" text-anchor="middle">cached reference</text>
-<text x="1659" y="260" font-family="Courier New,monospace" font-size="14" fill="#2D3B42" text-anchor="middle"><tspan baseline-shift="baseline" font-size="14">A</tspan><tspan baseline-shift="super" font-size="9.520000000000001">ref</tspan><tspan baseline-shift="sub" font-size="9.520000000000001">k</tspan><tspan baseline-shift="baseline" font-size="14">(t</tspan><tspan baseline-shift="sub" font-size="9.520000000000001">1:K</tspan><tspan baseline-shift="baseline" font-size="14">); query state S</tspan><tspan baseline-shift="sub" font-size="9.520000000000001">k</tspan></text>
+<text x="1659" y="260" font-family="Courier New,monospace" font-size="14" fill="#2D3B42" text-anchor="middle"><tspan baseline-shift="baseline" font-size="14">A</tspan><tspan baseline-shift="super" font-size="9.520000000000001" textLength="17.136" lengthAdjust="spacingAndGlyphs">ref</tspan><tspan dx="-17.136" baseline-shift="sub" font-size="9.520000000000001" textLength="5.712000000000001" lengthAdjust="spacingAndGlyphs">k</tspan><tspan baseline-shift="baseline" dx="11.424" font-size="14">&#8203;</tspan><tspan baseline-shift="baseline" font-size="14">(t</tspan><tspan baseline-shift="sub" font-size="9.520000000000001">1:K</tspan><tspan baseline-shift="baseline" font-size="14">); query state S</tspan><tspan baseline-shift="sub" font-size="9.520000000000001">k</tspan></text>
 <polyline points="859,125 859,155" fill="none" stroke="#60747E" stroke-width="1.45" stroke-linejoin="round"/>
 <polygon points="859,155 863.0,147.0 855.0,147.0" fill="#60747E"/>
 <polyline points="1259,125 1259,155" fill="none" stroke="#60747E" stroke-width="1.45" stroke-linejoin="round"/>
@@ -183,12 +183,12 @@
 <rect x="77.0" y="675" width="25" height="11" rx="5" fill="#98C2D0" stroke="#60747E" stroke-width="1.0"/>
 <rect x="109.0" y="675" width="25" height="11" rx="5" fill="#98C2D0" stroke="#60747E" stroke-width="1.0"/>
 <text x="105.5" y="562" font-family="Helvetica,Arial,sans-serif" font-size="15" font-weight="normal" fill="#2D3B42" text-anchor="middle">context</text>
-<text x="105.5" y="582" font-family="Courier New,monospace" font-size="14" fill="#2D3B42" text-anchor="middle"><tspan baseline-shift="baseline" font-size="14">Z</tspan><tspan baseline-shift="super" font-size="9.520000000000001">intent</tspan><tspan baseline-shift="sub" font-size="9.520000000000001">k</tspan></text>
+<text x="105.5" y="582" font-family="Courier New,monospace" font-size="14" fill="#2D3B42" text-anchor="middle"><tspan baseline-shift="baseline" font-size="14">Z</tspan><tspan baseline-shift="super" font-size="9.520000000000001" textLength="34.272" lengthAdjust="spacingAndGlyphs">intent</tspan><tspan dx="-34.272" baseline-shift="sub" font-size="9.520000000000001" textLength="5.712000000000001" lengthAdjust="spacingAndGlyphs">k</tspan><tspan baseline-shift="baseline" dx="28.56" font-size="14">&#8203;</tspan></text>
 <rect x="178" y="592" width="127" height="104" rx="6" fill="#F5CFA2" stroke="#60747E" stroke-width="1.35"/>
 <rect x="229.0" y="602" width="25" height="11" rx="5" fill="#DCBA92" stroke="#60747E" stroke-width="1.0"/>
 <rect x="229.0" y="675" width="25" height="11" rx="5" fill="#DCBA92" stroke="#60747E" stroke-width="1.0"/>
 <text x="241.5" y="562" font-family="Helvetica,Arial,sans-serif" font-size="15" font-weight="normal" fill="#2D3B42" text-anchor="middle">force history</text>
-<text x="241.5" y="582" font-family="Courier New,monospace" font-size="14" fill="#2D3B42" text-anchor="middle"><tspan baseline-shift="baseline" font-size="14">u</tspan><tspan baseline-shift="super" font-size="9.520000000000001">F</tspan><tspan baseline-shift="sub" font-size="9.520000000000001">t</tspan><tspan baseline-shift="baseline" font-size="14"> = TCN(F[t−w:t])</tspan></text>
+<text x="241.5" y="582" font-family="Courier New,monospace" font-size="14" fill="#2D3B42" text-anchor="middle"><tspan baseline-shift="baseline" font-size="14">u</tspan><tspan baseline-shift="super" font-size="9.520000000000001" textLength="5.712000000000001" lengthAdjust="spacingAndGlyphs">F</tspan><tspan dx="-5.712000000000001" baseline-shift="sub" font-size="9.520000000000001" textLength="5.712000000000001" lengthAdjust="spacingAndGlyphs">t</tspan><tspan baseline-shift="baseline" dx="0.0" font-size="14">&#8203;</tspan><tspan baseline-shift="baseline" font-size="14"> = TCN(F[t−w:t])</tspan></text>
 <rect x="314" y="592" width="127" height="104" rx="6" fill="#DCCBE8" stroke="#60747E" stroke-width="1.35"/>
 <rect x="365.0" y="602" width="25" height="11" rx="5" fill="#C6B7D1" stroke="#60747E" stroke-width="1.0"/>
 <rect x="365.0" y="675" width="25" height="11" rx="5" fill="#C6B7D1" stroke="#60747E" stroke-width="1.0"/>
@@ -198,7 +198,7 @@
 <rect x="501.0" y="602" width="25" height="11" rx="5" fill="#B8CEAB" stroke="#60747E" stroke-width="1.0"/>
 <rect x="501.0" y="675" width="25" height="11" rx="5" fill="#B8CEAB" stroke="#60747E" stroke-width="1.0"/>
 <text x="513.5" y="562" font-family="Helvetica,Arial,sans-serif" font-size="15" font-weight="normal" fill="#2D3B42" text-anchor="middle">reference</text>
-<text x="513.5" y="582" font-family="Courier New,monospace" font-size="14" fill="#2D3B42" text-anchor="middle"><tspan baseline-shift="baseline" font-size="14">A</tspan><tspan baseline-shift="super" font-size="9.520000000000001">ref</tspan><tspan baseline-shift="sub" font-size="9.520000000000001">k</tspan><tspan baseline-shift="baseline" font-size="14">(t</tspan><tspan baseline-shift="sub" font-size="9.520000000000001">1:K</tspan><tspan baseline-shift="baseline" font-size="14">)</tspan></text>
+<text x="513.5" y="582" font-family="Courier New,monospace" font-size="14" fill="#2D3B42" text-anchor="middle"><tspan baseline-shift="baseline" font-size="14">A</tspan><tspan baseline-shift="super" font-size="9.520000000000001" textLength="17.136" lengthAdjust="spacingAndGlyphs">ref</tspan><tspan dx="-17.136" baseline-shift="sub" font-size="9.520000000000001" textLength="5.712000000000001" lengthAdjust="spacingAndGlyphs">k</tspan><tspan baseline-shift="baseline" dx="11.424" font-size="14">&#8203;</tspan><tspan baseline-shift="baseline" font-size="14">(t</tspan><tspan baseline-shift="sub" font-size="9.520000000000001">1:K</tspan><tspan baseline-shift="baseline" font-size="14">)</tspan></text>
 <rect x="586" y="592" width="127" height="104" rx="6" fill="#DEE5E8" stroke="#60747E" stroke-width="1.35"/>
 <rect x="637.0" y="602" width="25" height="11" rx="5" fill="#C8CED1" stroke="#60747E" stroke-width="1.0"/>
 <rect x="637.0" y="675" width="25" height="11" rx="5" fill="#C8CED1" stroke="#60747E" stroke-width="1.0"/>
@@ -277,15 +277,15 @@
 <text x="1525" y="553" font-family="Helvetica,Arial,sans-serif" font-size="12" font-weight="normal" fill="#2D3B42" text-anchor="middle">reference from missing-force query (a)</text>
 <rect x="1343" y="568" width="365" height="52" rx="7" fill="#A9D8E7" stroke="#60747E" stroke-width="1.35"/>
 <text x="1363" y="590" font-family="Helvetica,Arial,sans-serif" font-size="16" font-weight="normal" fill="#2D3B42" text-anchor="start">cached reference</text>
-<text x="1688" y="602" font-family="Courier New,monospace" font-size="15" fill="#2D3B42" text-anchor="end"><tspan baseline-shift="baseline" font-size="15">A</tspan><tspan baseline-shift="super" font-size="10.200000000000001">ref</tspan><tspan baseline-shift="sub" font-size="10.200000000000001">k</tspan><tspan baseline-shift="baseline" font-size="15">(t</tspan><tspan baseline-shift="sub" font-size="10.200000000000001">j</tspan><tspan baseline-shift="baseline" font-size="15">)</tspan></text>
+<text x="1688" y="602" font-family="Courier New,monospace" font-size="15" fill="#2D3B42" text-anchor="end"><tspan baseline-shift="baseline" font-size="15">A</tspan><tspan baseline-shift="super" font-size="10.200000000000001" textLength="18.36" lengthAdjust="spacingAndGlyphs">ref</tspan><tspan dx="-18.36" baseline-shift="sub" font-size="10.200000000000001" textLength="6.12" lengthAdjust="spacingAndGlyphs">k</tspan><tspan baseline-shift="baseline" dx="12.239999999999998" font-size="15">&#8203;</tspan><tspan baseline-shift="baseline" font-size="15">(t</tspan><tspan baseline-shift="sub" font-size="10.200000000000001">j</tspan><tspan baseline-shift="baseline" font-size="15">)</tspan></text>
 <line x1="1708" y1="594" x2="1750" y2="594" stroke="#60747E" stroke-width="1.4"/>
 <rect x="1343" y="650" width="365" height="52" rx="7" fill="#F5CFA2" stroke="#60747E" stroke-width="1.35"/>
-<text x="1363" y="672" font-family="Helvetica,Arial,sans-serif" font-size="16" font-weight="normal" fill="#2D3B42" text-anchor="start">force correction</text>
-<text x="1688" y="684" font-family="Courier New,monospace" font-size="15" fill="#2D3B42" text-anchor="end"><tspan baseline-shift="baseline" font-size="15">ΔÂ</tspan><tspan baseline-shift="super" font-size="10.200000000000001">force</tspan><tspan baseline-shift="sub" font-size="10.200000000000001">t,j</tspan></text>
+<text x="1363" y="672" font-family="Helvetica,Arial,sans-serif" font-size="16" font-weight="normal" fill="#2D3B42" text-anchor="start">force correction (bounded)</text>
+<text x="1688" y="684" font-family="Courier New,monospace" font-size="15" fill="#2D3B42" text-anchor="end"><tspan baseline-shift="baseline" font-size="15">ΔÂ</tspan><tspan baseline-shift="super" font-size="10.200000000000001" textLength="30.6" lengthAdjust="spacingAndGlyphs">force</tspan><tspan dx="-30.6" baseline-shift="sub" font-size="10.200000000000001" textLength="18.36" lengthAdjust="spacingAndGlyphs">t,j</tspan><tspan baseline-shift="baseline" dx="12.240000000000002" font-size="15">&#8203;</tspan></text>
 <line x1="1708" y1="676" x2="1750" y2="676" stroke="#60747E" stroke-width="1.4"/>
 <rect x="1343" y="732" width="365" height="52" rx="7" fill="#DCCBE8" stroke="#60747E" stroke-width="1.35"/>
-<text x="1363" y="754" font-family="Helvetica,Arial,sans-serif" font-size="16" font-weight="normal" fill="#2D3B42" text-anchor="start">learned staleness</text>
-<text x="1688" y="766" font-family="Courier New,monospace" font-size="15" fill="#2D3B42" text-anchor="end"><tspan baseline-shift="baseline" font-size="15">ΔÂ</tspan><tspan baseline-shift="super" font-size="10.200000000000001">stale</tspan><tspan baseline-shift="sub" font-size="10.200000000000001">t,j</tspan></text>
+<text x="1363" y="754" font-family="Helvetica,Arial,sans-serif" font-size="16" font-weight="normal" fill="#2D3B42" text-anchor="start">staleness correction (bounded)</text>
+<text x="1688" y="766" font-family="Courier New,monospace" font-size="15" fill="#2D3B42" text-anchor="end"><tspan baseline-shift="baseline" font-size="15">ΔÂ</tspan><tspan baseline-shift="super" font-size="10.200000000000001" textLength="30.6" lengthAdjust="spacingAndGlyphs">stale</tspan><tspan dx="-30.6" baseline-shift="sub" font-size="10.200000000000001" textLength="18.36" lengthAdjust="spacingAndGlyphs">t,j</tspan><tspan baseline-shift="baseline" dx="12.240000000000002" font-size="15">&#8203;</tspan></text>
 <line x1="1708" y1="758" x2="1750" y2="758" stroke="#60747E" stroke-width="1.4"/>
 <polyline points="1292,645 1318,645 1318,676 1341,676" fill="none" stroke="#60747E" stroke-width="1.45" stroke-linejoin="round"/>
 <polygon points="1341,676 1333.0,672.0 1333.0,680.0" fill="#60747E"/>
@@ -297,8 +297,8 @@
 <polyline points="1750,758 1750,790" fill="none" stroke="#60747E" stroke-width="1.45" stroke-linejoin="round"/>
 <polygon points="1750,790 1754.0,782.0 1746.0,782.0" fill="#60747E"/>
 <rect x="1390" y="856" width="360" height="57" rx="7" fill="#FBF4E3" stroke="#60747E" stroke-width="1.35"/>
-<text x="1570" y="880" font-family="Helvetica,Arial,sans-serif" font-size="18" font-weight="bold" fill="#2D3B42" text-anchor="middle">commanded pose</text>
-<text x="1570" y="902" font-family="Courier New,monospace" font-size="14" font-weight="normal" fill="#2D3B42" text-anchor="middle">gripper inherited from reference</text>
+<text x="1570" y="878" font-family="Helvetica,Arial,sans-serif" font-size="17" font-weight="bold" fill="#2D3B42" text-anchor="middle">Convert to absolute command</text>
+<text x="1570" y="901" font-family="Helvetica,Arial,sans-serif" font-size="14" fill="#2D3B42" text-anchor="middle"><tspan baseline-shift="baseline" font-size="14">using S</tspan><tspan baseline-shift="sub" font-size="9.520000000000001">k</tspan><tspan baseline-shift="baseline" font-size="14">; reference gripper</tspan></text>
 <polyline points="1750,828 1750,841 1570,841 1570,854" fill="none" stroke="#60747E" stroke-width="1.45" stroke-linejoin="round"/>
 <polygon points="1570,854 1574.0,846.0 1566.0,846.0" fill="#60747E"/>
 </svg>

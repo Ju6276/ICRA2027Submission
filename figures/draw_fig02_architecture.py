@@ -71,13 +71,24 @@ def rich_text(x, y, parts, size=16, anchor="middle", color=INK,
     ``sub``, or ``super``.
     """
     chunks = []
-    for value, shift in parts:
+    i = 0
+    while i < len(parts):
+        value, shift = parts[i]
+        if i+1 < len(parts) and {shift, parts[i+1][1]} == {'sub', 'super'}:
+            value2, shift2 = parts[i+1]
+            widths = [len(v)*size*.68*.6 for v in (value,value2)]
+            chunks.append(f'<tspan baseline-shift="{shift}" font-size="{size*.68}" textLength="{widths[0]}" lengthAdjust="spacingAndGlyphs">{escape(value)}</tspan>')
+            chunks.append(f'<tspan dx="{-widths[0]}" baseline-shift="{shift2}" font-size="{size*.68}" textLength="{widths[1]}" lengthAdjust="spacingAndGlyphs">{escape(value2)}</tspan>')
+            chunks.append(f'<tspan baseline-shift="baseline" dx="{max(widths)-widths[1]}" font-size="{size}">&#8203;</tspan>')
+            i += 2
+            continue
         if shift == "base":
             chunks.append(f'<tspan baseline-shift="baseline" font-size="{size}">{escape(value)}</tspan>')
         else:
             chunks.append(
                 f'<tspan baseline-shift="{shift}" font-size="{size*.68}">{escape(value)}</tspan>'
             )
+        i += 1
     s.append(
         f'<text x="{x}" y="{y}" font-family="{family}" font-size="{size}" '
         f'fill="{color}" text-anchor="{anchor}">{"".join(chunks)}</text>'
@@ -223,8 +234,8 @@ panel_title(1325,499,"d","Command composition")
 text(1604,531,"per correction step j",14,"middle",family="Courier New,monospace")
 text(1525,553,"reference from missing-force query (a)",12,"middle")
 rows=[(568,BLUE,"cached reference",[("A","base"),("ref","super"),("k","sub"),("(t","base"),("j","sub"),(")","base")]),
-      (650,ORANGE,"force correction",[("ΔÂ","base"),("force","super"),("t,j","sub")]),
-      (732,PURPLE,"learned staleness",[("ΔÂ","base"),("stale","super"),("t,j","sub")])]
+      (650,ORANGE,"force correction (bounded)",[("ΔÂ","base"),("force","super"),("t,j","sub")]),
+      (732,PURPLE,"staleness correction (bounded)",[("ΔÂ","base"),("stale","super"),("t,j","sub")])]
 for y,c,title,symbol in rows:
     rect(1343,y,365,52,c,radius=7); text(1363,y+22,title,16)
     rich_text(1688,y+34,symbol,15,"end",family="Courier New,monospace")
@@ -233,8 +244,8 @@ for y,c,title,symbol in rows:
 arrow([(1292,645),(1318,645),(1318,676),(1341,676)])
 arrow([(1292,839),(1318,839),(1318,758),(1341,758)])
 line(1750,594,1750,758); pill(1732,792,36,36,"+","white",21,"bold"); arrow([(1750,758),(1750,790)])
-rect(1390,856,360,57,CREAM,radius=7); text(1570,880,"commanded pose",18,"middle","bold")
-text(1570,902,"gripper inherited from reference",14,"middle",family="Courier New,monospace")
+rect(1390,856,360,57,CREAM,radius=7); text(1570,878,"Convert to absolute command",17,"middle","bold")
+rich_text(1570,901,[("using S","base"),("k","sub"),("; reference gripper","base")],14)
 arrow([(1750,828),(1750,841),(1570,841),(1570,854)])
 
 s.append("</svg>"); OUT.with_suffix(".svg").write_text("\n".join(s))

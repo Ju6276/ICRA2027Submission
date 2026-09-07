@@ -55,7 +55,7 @@ def main():
     def bar(a,b,y,txt,fill):
         ax.add_patch(Rectangle((a,y-.17),b-a,.34,facecolor=fill,edgecolor=MUTED,lw=.7,zorder=3))
         ax.text((a+b)/2,y,txt,ha='center',va='center',fontsize=7,zorder=4)
-    for y,txt in [(3.2,'Reference query'),(2.25,'Residual query'),(1.3,'Active reference'),(.35,'Executed correction')]:
+    for y,txt in [(3.2,'Reference query'),(2.25,'Residual query'),(1.3,'Active reference'),(.35,'Residual steps')]:
         ax.text(-.25,y,txt,ha='right',va='center',fontsize=8)
         ax.plot([0,8.7],[y,y],color=MUTED,lw=.6,zorder=0)
     bar(.8,3.5,3.2,r'$k$',CREAM); bar(4.2,7.8,3.2,r'$k+1$',CREAM)
@@ -73,15 +73,13 @@ def main():
     # Latest completed query preempts the previous chunk; K=5, delta_t=1.
     for n,(a,b,c,q) in enumerate(queries):
         end=queries[n+1][1] if n+1<len(queries) else 8.7
+        ax.text(b+.20,.80,r'$'+q+'$',fontsize=8,ha='left')
+        ax.plot([b+.05,end-.05],[.65,.65],color=MUTED,lw=.7)
         for j in range(5):
             l=max(a+j,b); r=min(a+j+1,end,8.7)
             if r>l:
                 bar(l,r,.35,str(j+1),c)
-    ax.text(6.45,1.73,'cache update does not replace residual',
-            fontsize=6.7,ha='center',color=MUTED)
-    ax.text(6.45,.87,'fill: reference used for composition',fontsize=6.7,ha='center')
-    ax.text(4.5,-.18,'Time →   |   blocks: active steps of K=5 chunks',fontsize=8,ha='center',va='top')
-    fig.text(.5,.035,'Residual bars: request → publish. Dotted lines: completed query takes over.\nIllustrative timing; step timestamps remain anchored at the query start.',ha='center',fontsize=7)
+    ax.text(4.5,-.18,'Time →',fontsize=8,ha='center',va='top')
     for out in (OUTPUT_PDF,OUTPUT_PNG):
         fig.savefig(out,dpi=220,bbox_inches='tight',pad_inches=.03)
     plt.close(fig)
