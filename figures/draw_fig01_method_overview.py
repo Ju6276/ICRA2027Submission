@@ -13,8 +13,8 @@ from PIL import Image, ImageOps
 
 
 ROOT = Path(__file__).resolve().parent
-OUTPUT_PDF = ROOT / "fig01_teaser_pi_style_v2.pdf"
-OUTPUT_PNG = ROOT / "fig01_teaser_pi_style_v2.png"
+OUTPUT_PDF = ROOT / "fig01_method_overview.pdf"
+OUTPUT_PNG = ROOT / "fig01_method_overview.png"
 
 FAILURE_IMAGES = [None, None, None, None]
 FAILURE_LABELS = ["Impact", "Jamming", "Stick--slip", "Delayed recovery"]

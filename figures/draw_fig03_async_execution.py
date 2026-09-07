@@ -8,8 +8,8 @@ from matplotlib.patches import Circle, FancyArrowPatch, FancyBboxPatch, Rectangl
 
 
 ROOT = Path(__file__).resolve().parent
-OUTPUT_PDF = ROOT / "fig03_async_deployment.pdf"
-OUTPUT_PNG = ROOT / "fig03_async_deployment.png"
+OUTPUT_PDF = ROOT / "fig03_async_execution.pdf"
+OUTPUT_PNG = ROOT / "fig03_async_execution.png"
 
 INK = "#171717"
 MUTED = "#657078"

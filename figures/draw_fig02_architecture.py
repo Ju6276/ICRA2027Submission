@@ -9,7 +9,7 @@ try:
 except ModuleNotFoundError:
     fitz = None
 
-OUT = Path(__file__).resolve().parent / "fig02_network_structure"
+OUT = Path(__file__).resolve().parent / "fig02_architecture"
 W, H = 1900, 980
 INK, EDGE, FAINT = "#2D3B42", "#60747E", "#B7C2C7"
 CREAM, BLUE, GREEN = "#FBF4E3", "#A9D8E7", "#CDE5BE"

@@ -2,7 +2,7 @@
 \label{sec:exp_protocol}
 
 \noindent\textbf{Hardware, tasks, and data collection.}
-The evaluation includes $5$ single-arm and $4$ bimanual tasks on two platforms (Fig.~\ref{fig:robot_platforms} and Table~\ref{tab:tasks}). The single-arm platform is a 7-DoF Franka Emika Panda with wrist-mounted and external Intel RealSense D405 cameras. Demonstrations are collected using a 3Dconnexion SpaceMouse. The bimanual platform is an X Square Robot with one wrist-mounted camera per arm and one shared external camera. Demonstrations are collected through leader--follower teleoperation. Following ForceVLA~\cite{yu2025forcevlaenhancingvlamodels}, both platforms use robot-provided joint-torque-based wrench estimates without additional wrist force/torque sensors.
+The evaluation includes $5$ single-arm and $4$ bimanual tasks on two platforms (Figs.~\ref{fig:robot_platforms} and~\ref{fig:task_overview}). The single-arm platform is a 7-DoF Franka Emika Panda with wrist-mounted and external Intel RealSense D405 cameras. Demonstrations are collected using a 3Dconnexion SpaceMouse. The bimanual platform is an X Square Robot with one wrist-mounted camera per arm and one shared external camera. Demonstrations are collected through leader--follower teleoperation. Following ForceVLA~\cite{yu2025forcevlaenhancingvlamodels}, both platforms use robot-provided joint-torque-based wrench estimates without additional wrist force/torque sensors.
 
 For each task, we collect $200$ demonstrations. Multi-view images, robot states, and commanded actions are recorded at $30$~Hz, and timestamped wrench estimates at $100$~Hz.
 
@@ -10,39 +10,22 @@ For each task, we collect $200$ demonstrations. Multi-view images, robot states,
     \centering
     \begin{minipage}[t]{0.43\linewidth}
         \centering
-        \includegraphics[width=\linewidth]{frankasetup.pdf}
+        \includegraphics[width=\linewidth]{figures/fig04a_franka_platform.pdf}
     \end{minipage}\hspace{0.03\linewidth}
     \begin{minipage}[t]{0.43\linewidth}
         \centering
-        \includegraphics[width=\linewidth]{xrrobotsetup.pdf}
+        \includegraphics[width=\linewidth]{figures/fig04b_bimanual_platform.pdf}
     \end{minipage}
     \caption{Real-robot platforms used in the experiments. \emph{Left:} single-arm Franka Emika Panda. \emph{Right:} bimanual X Square Robot.}
     \label{fig:robot_platforms}
 \end{figure}
 
-\begin{table}[t]
+\begin{figure}[t]
     \centering
-    \small
-    \setlength{\tabcolsep}{3pt}
-    \caption{Real-robot tasks.}
-    \label{tab:tasks}
-    \begin{tabularx}{\columnwidth}{ll>{\raggedright\arraybackslash}X}
-        \toprule
-        \textbf{Platform} & \textbf{Task} & \textbf{Interaction} \\
-        \midrule
-        Single-arm & Object Flipping & Surface-assisted reorientation \\
-        Single-arm & USB Insertion & Precision insertion \\
-        Single-arm & Cabinet Opening & Frictional articulated motion \\
-        Single-arm & Button Pressing & Discrete contact actuation \\
-        Single-arm & Whiteboard Wiping & Sustained surface contact \\
-        \midrule
-        Bimanual & Plug Removal & Coordinated constrained extraction \\
-        Bimanual & Plug Insertion & Coordinated alignment and insertion \\
-        Bimanual & Drawer Opening & Coordinated frictional motion \\
-        Bimanual & Whiteboard Wiping & Board stabilization and wiping \\
-        \bottomrule
-    \end{tabularx}
-\end{table}
+    \includegraphics[width=\columnwidth]{figures/fig05_task_overview.pdf}
+    \caption{The nine real-robot manipulation tasks used in the evaluation. The first five panels show single-arm tasks; the remaining four show bimanual tasks.}
+    \label{fig:task_overview}
+\end{figure}
 
 \begin{table*}[!t]
     \centering
@@ -92,7 +75,7 @@ Figure~\ref{fig:qualitative_button} highlights how the learned translational cor
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=\columnwidth]{figures/qualitative_button_total_fast_real.pdf}
+    \includegraphics[width=\columnwidth]{figures/fig06_button_pressing_rollout.pdf}
     \caption{Representative rollout of Button Pressing. Front- and wrist-camera observations at four interaction phases are aligned with robot-estimated end-effector force components and translational correction magnitude; vertical lines mark the displayed frames.}
     \label{fig:qualitative_button}
 \end{figure}
@@ -160,11 +143,11 @@ We evaluate USB Insertion and Plug Insertion with $0$, $100$, and $200$~ms of ad
     \centering
     \begin{minipage}[c]{0.49\columnwidth}
         \centering
-        \includegraphics[width=\linewidth]{figures/fig4a_success_delay.pdf}
+        \includegraphics[width=\linewidth]{figures/fig07a_delay_success.pdf}
     \end{minipage}\hfill
     \begin{minipage}[c]{0.49\columnwidth}
         \centering
-        \includegraphics[width=\linewidth]{figures/fig4b_peak_force_delay.pdf}
+        \includegraphics[width=\linewidth]{figures/fig07b_delay_peak_force.pdf}
     \end{minipage}
     \caption{Sensitivity to additional reference-availability delay on the two insertion tasks. Left: success rate. Right: peak force over successful trials. Blue solid lines with circular markers denote ForceDelta-VLA; gray dashed lines with square markers denote Temporal Teacher.}
     \label{fig:latency_sensitivity}
@@ -223,7 +206,7 @@ For the tasks shown in Fig.~\ref{fig:physical_generalization_objects}, we replac
 
 \begin{table}[!htbp]
     \centering
-    \includegraphics[width=0.85\columnwidth]{figures/generalization.pdf}
+    \includegraphics[width=0.85\columnwidth]{figures/fig08_unseen_objects.pdf}
     \begingroup
     \captionof{figure}{Generalization evaluation. From left to right: USB Insertion, Object Flipping, and bimanual Whiteboard Wiping.}
     \label{fig:physical_generalization_objects}
