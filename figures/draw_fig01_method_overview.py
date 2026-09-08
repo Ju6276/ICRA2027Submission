@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Draw the Fig. 1 teaser in the visual language of the pi-series papers.
 
-Populate FAILURE_IMAGES with paths relative to this directory to replace the
-four placeholders without changing the layout.
+Populate COMPARISON_IMAGES with paths relative to this directory to replace
+the two author-reserved rollout placeholders without changing the layout.
 """
 
 from pathlib import Path
@@ -137,66 +137,54 @@ def main():
     label(ax,.333,.96,"ForceDelta-VLA",size=13,weight="bold")
     label(ax,.829,.96,"Real-robot outcome",size=11.5,weight="bold")
 
-    # Training: four left-to-right groups with one connector between groups.
-    label(ax,.032,.89,"Training",size=10.5,weight="bold",ha="left")
+    # Conceptual overview: preparation, paired predictions, and two distinct targets.
+    label(ax,.032,.89,"Correction target construction",size=10.5,weight="bold",ha="left")
     panel(ax,.03,.55,.605,.30,face=POLICY_BLUE)
-    label(ax,.092,.818,"Inputs",size=8.1,weight="bold")
-    for ix,iy,name,color in [(.043,.75,"Image",PALE_BLUE),(.101,.75,"Language",CREAM),
-                             (.043,.675,"State",ACTION_GREEN),(.101,.675,"Force",FORCE_PALE)]:
-        panel(ax,ix,iy,.05,.052,face=color,radius=.006)
-        label(ax,ix+.025,iy+.026,name,size=6.4,weight="bold")
+    panel(ax,.047,.645,.153,.145,face=CREAM)
+    label(ax,.1235,.756,"Teacher preparation",size=8.0,weight="bold")
+    label(ax,.1235,.70,"Force-conditioned +\nforce-agnostic modes",size=7.0)
+    arrow(ax,(.205,.72),(.23,.72),scale=8)
+    panel(ax,.235,.645,.175,.145,face="white")
+    label(ax,.3225,.755,"Paired teacher predictions",size=7.6,weight="bold")
+    label(ax,.3225,.712,"Force-conditioned",size=7.3,color="#99531D")
+    label(ax,.3225,.673,"Force-agnostic",size=7.3,color=SUBTLE)
+    panel(ax,.46,.718,.155,.088,face=FORCE_PALE)
+    label(ax,.5375,.774,"Force target",size=8.0,weight="bold")
+    label(ax,.5375,.740,"Paired prediction difference",size=6.4)
+    panel(ax,.46,.588,.155,.106,face=STALE_PALE)
+    label(ax,.5375,.670,"Delay target",size=8.0,weight="bold")
+    label(ax,.5375,.625,"Reference mismatch +\nstate rebasing",size=6.7)
+    arrow(ax,(.415,.755),(.455,.762),scale=8)
+    arrow(ax,(.415,.673),(.455,.652),scale=8)
+    panel(ax,.235,.575,.175,.045,face=PALE_BLUE)
+    label(ax,.3225,.5975,"Previous reference + state change",size=6.4)
+    arrow(ax,(.415,.5975),(.455,.617),scale=8)
 
-    panel(ax,.18,.68,.125,.105,face=CREAM)
-    label(ax,.2425,.748,"Frozen teacher",size=8.2,weight="bold")
-    label(ax,.2425,.712,"matched context/noise",size=6.1)
-    arrow(ax,(.156,.738),(.175,.738),scale=7)
-
-    panel(ax,.335,.635,.14,.165,face="white",edge="#7D9099")
-    label(ax,.405,.778,"Paired predictions",size=7.5,weight="bold")
-    panel(ax,.347,.712,.116,.043,face=FORCE_PALE,radius=.005)
-    label(ax,.405,.7335,"Force-conditioned",size=6.1,weight="bold")
-    panel(ax,.347,.654,.116,.043,face=PALE_BLUE,radius=.005)
-    label(ax,.405,.6755,"Force-agnostic base",size=5.9,weight="bold")
-    arrow(ax,(.31,.738),(.33,.718),scale=7)
-
-    panel(ax,.505,.635,.115,.165,face="white",edge="#7D9099")
-    label(ax,.5625,.778,"Training targets",size=7.4,weight="bold")
-    panel(ax,.517,.712,.091,.043,face=FORCE_PALE,radius=.005)
-    label(ax,.5625,.7335,"Force correction",size=5.9,weight="bold")
-    panel(ax,.517,.654,.091,.043,face=STALE_PALE,radius=.005)
-    label(ax,.5625,.6755,"Delay correction",size=5.9,weight="bold")
-    arrow(ax,(.48,.718),(.50,.718),scale=7)
-    label(ax,.49,.744,"Δ",size=6.7,weight="bold",color=FORCE_ORANGE)
-    label(ax,.332,.585,"paired teacher targets from offline demonstrations",size=7.2,weight="bold",color=SUBTLE)
-
-    # Deployment: no crossing connectors; cached base action occupies its own lower lane.
-    label(ax,.032,.505,"Deployment",size=10.5,weight="bold",ha="left")
+    label(ax,.032,.505,"Reference action + learned corrections",size=10.5,weight="bold",ha="left")
     panel(ax,.03,.12,.605,.345,face="white",edge="#C8D0D4")
-    label(ax,.092,.425,"Live inputs",size=7.5,weight="bold")
-    panel(ax,.043,.352,.05,.052,face=ACTION_GREEN,radius=.006); label(ax,.068,.378,"State",size=6.4,weight="bold")
-    panel(ax,.101,.352,.05,.052,face=FORCE_PALE,radius=.006); label(ax,.126,.378,"Force",size=6.4,weight="bold")
-    panel(ax,.043,.278,.108,.048,face=PALE_BLUE,radius=.006); label(ax,.097,.302,"Task context",size=6.2,weight="bold")
+    panel(ax,.05,.325,.16,.095,face=FORCE_PALE)
+    label(ax,.13,.386,"Recent force + current state",size=7.0,weight="bold")
+    label(ax,.13,.35,"Cached task context",size=7.0)
+    panel(ax,.27,.325,.18,.095,face=STALE_PALE)
+    label(ax,.36,.386,"Lightweight correction policy",size=7.4,weight="bold")
+    label(ax,.36,.35,"Fast corrections: 100 Hz",size=7.0,color=SUBTLE)
+    arrow(ax,(.215,.373),(.265,.373),scale=8)
+    label(ax,.507,.415,"Force + delay\ncorrections",size=7.2,weight="bold")
+    arrow(ax,(.455,.373),(.519,.281),scale=8)
+    panel(ax,.05,.19,.16,.09,face=PALE_BLUE)
+    label(ax,.13,.251,"Reference action",size=8.0,weight="bold")
+    label(ax,.13,.216,"Slow pathway: ~6 Hz",size=7.0,color=SUBTLE)
+    arrow(ax,(.215,.2375),(.512,.255),scale=8)
+    # The reference-action segment also conditions the correction prediction.
+    arrow(ax,(.215,.26),(.265,.337),scale=7)
+    ax.add_patch(Circle((.535,.255),.018,facecolor="white",edgecolor=INK,lw=.8,zorder=4))
+    label(ax,.535,.255,"+",size=11,weight="bold")
+    panel(ax,.573,.215,.05,.08,face=ACTION_GREEN)
+    label(ax,.598,.255,"Action",size=7.0,weight="bold")
+    arrow(ax,(.555,.255),(.569,.255),scale=7)
+    label(ax,.332,.15,"Respond to contact changes between reference-action updates",size=7.8,weight="bold",color=SUBTLE)
 
-    panel(ax,.185,.29,.15,.105,face=STALE_PALE)
-    label(ax,.26,.356,"Distilled correction policy",size=7.3,weight="bold")
-    label(ax,.26,.32,"2.43-ms forward pass",size=6.3,color=SUBTLE)
-    arrow(ax,(.156,.354),(.18,.347),scale=7); arrow(ax,(.156,.302),(.18,.322),scale=7)
-
-    panel(ax,.37,.315,.12,.062,face=FORCE_PALE); label(ax,.43,.346,"Force correction",size=6.5,weight="bold")
-    panel(ax,.37,.232,.12,.062,face=STALE_PALE); label(ax,.43,.263,"Delay correction",size=6.5,weight="bold")
-    arrow(ax,(.34,.35),(.365,.346),scale=7); arrow(ax,(.34,.327),(.365,.263),scale=7)
-
-    panel(ax,.185,.16,.15,.062,face=PALE_BLUE); label(ax,.26,.191,"Cached base action",size=6.8,weight="bold")
-    ax.add_patch(Circle((.535,.255),.016,facecolor="white",edgecolor=INK,lw=.8,zorder=4)); label(ax,.535,.255,"+",size=9,weight="bold")
-    arrow(ax,(.495,.346),(.525,.272),scale=7); arrow(ax,(.495,.263),(.515,.257),scale=7)
-    ax.plot([.34,.515],[.191,.191],color=INK,lw=.9,zorder=3)
-    arrow(ax,(.515,.191),(.525,.241),scale=7)
-    panel(ax,.57,.215,.052,.08,face=ACTION_GREEN); label(ax,.596,.264,"Action",size=6.7,weight="bold"); label(ax,.596,.238,"100 Hz",size=5.8,color=SUBTLE)
-    arrow(ax,(.552,.255),(.565,.255),scale=7)
-
-    label(ax,.332,.14,"cached base action + independent high-rate corrections",size=7.2,weight="bold",color=SUBTLE)
-
-    for y,title,color,path in [(.52,"ForceVLA failure",ACCENT_RED,COMPARISON_IMAGES[0]),(.105,"ForceDelta-VLA success","#4E8A45",COMPARISON_IMAGES[1])]:
+    for y,title,color,path in [(.52,"ForceVLA failure  (~6 Hz)",ACCENT_RED,COMPARISON_IMAGES[0]),(.105,"ForceDelta-VLA success","#4E8A45",COMPARISON_IMAGES[1])]:
         panel(ax,.695,y,.268,.335,face="white",edge=color,lw=1.1,radius=.009)
         if path:
             source=Image.open(ROOT/path).convert("RGB")

@@ -1,89 +1,90 @@
 #!/usr/bin/env python3
-"""Draw the asynchronous cached-packet protocol for Figure 3."""
-
+"""Illustrative local timing around one reference publication, not a robot trace."""
 from pathlib import Path
-
 import matplotlib.pyplot as plt
-from matplotlib.patches import Circle, FancyArrowPatch, FancyBboxPatch, Rectangle
-
+from matplotlib.patches import Rectangle, FancyArrowPatch
 
 ROOT = Path(__file__).resolve().parent
-OUTPUT_PDF = ROOT / "fig03_async_execution.pdf"
-OUTPUT_PNG = ROOT / "fig03_async_execution.png"
-
-INK = "#171717"
-MUTED = "#657078"
-REF = "#759EAD"
-REF_PALE = "#DCE9ED"
-OLD = "#92999D"
-OLD_PALE = "#E4E5E3"
-CREAM = "#F4EEDC"
-FIELD = "#EAF1F3"
-
-
-plt.rcParams.update({
-    "font.family": "Courier New",
-    "mathtext.fontset": "dejavusans",
-})
+OLD = '#E1E4E6'
+NEW = '#C4DDE8'
+INK = '#202A30'
+EDGE = '#687680'
+# User-confirmed fast rate: 100 Hz. Illustrative compute time rounds the
+# reported 2.43-ms mean; it is not a measured per-query latency trace.
+STARTS = [-1.0, 9.0, 19.0]
+COMPUTE_MS = 2.4
+READY_MS = 0.0
+LEFT, RIGHT = -8.0, 25.0
 
 
-def arrow(ax, x1, y1, x2, y2, color=INK, width=0.8):
-    ax.add_patch(FancyArrowPatch(
-        (x1, y1), (x2, y2), arrowstyle="-|>", mutation_scale=8,
-        linewidth=width, color=color, shrinkA=0, shrinkB=0, zorder=2,
-    ))
-
-
-def rounded(ax, x, y, w, h, text, face, edge=MUTED, size=8.5):
-    ax.add_patch(FancyBboxPatch(
-        (x, y), w, h,
-        boxstyle="round,pad=0.005,rounding_size=0.009",
-        facecolor=face, edgecolor=edge, linewidth=0.8, zorder=3,
-    ))
-    ax.text(x + w / 2, y + h / 2, text, ha="center", va="center",
-            fontsize=size, color=INK, zorder=4)
-
-
+def reference_at_start(t):
+    return 'Previous' if t < READY_MS else 'New'
 
 
 def main():
-    # Illustrative schedule in action-sample intervals, not measured latency.
-    # Query timestamps, availability and chunk samples share one time axis.
-    # Export close to the final single-column width to preserve label size.
-    fig, ax = plt.subplots(figsize=(4.4,2.06))
-    fig.subplots_adjust(left=.19,right=.99,top=.93,bottom=.16)
-    ax.set(xlim=(-.1,9),ylim=(-.15,3.7)); ax.axis('off')
-    def bar(a,b,y,txt,fill):
-        ax.add_patch(Rectangle((a,y-.17),b-a,.34,facecolor=fill,edgecolor=MUTED,lw=.7,zorder=3))
-        ax.text((a+b)/2,y,txt,ha='center',va='center',fontsize=7,zorder=4)
-    for y,txt in [(3.2,'Base-action query'),(2.25,'Correction query'),(1.3,'Latest completed base action'),(.35,'Correction steps')]:
-        ax.text(-.25,y,txt,ha='right',va='center',fontsize=8)
-        ax.plot([0,8.7],[y,y],color=MUTED,lw=.6,zorder=0)
-    bar(.8,3.5,3.2,r'$k$',CREAM); bar(4.2,7.8,3.2,r'$k+1$',CREAM)
-    ax.text(.8,3.5,r'$t_k$',ha='center',fontsize=8)
-    ax.text(3.5,3.5,r'$\bar t_k$: publish',ha='center',fontsize=8)
-    ax.plot([3.5,3.5],[.02,3.38],color=REF,ls='--',lw=.8,zorder=1)
-    bar(0,3.5,1.3,r'Base action $k-1$',OLD_PALE); bar(3.5,7.8,1.3,r'Base action $k$',REF_PALE)
-    bar(7.8,8.7,1.3,r'$k+1$',CREAM)
-    # Starts before publication retain base action k-1; a later query reads base action k.
-    queries=[(0,.35,OLD_PALE,'query 1'),(2,2.4,OLD_PALE,'query 2'),(4.3,4.7,REF_PALE,'query 3')]
-    for a,b,c,q in queries:
-        bar(a,b,2.25,'',c)
-        ax.text(a,2.59,q,fontsize=7.5,ha='center')
-        ax.plot([b,b],[2.07,.55],color=MUTED,ls=':',lw=.7,zorder=1)
-    # Latest completed query preempts the previous chunk; K=5, delta_t=1.
-    for n,(a,b,c,q) in enumerate(queries):
-        end=queries[n+1][1] if n+1<len(queries) else 8.7
-        ax.text(b+.20,.80,q,fontsize=7.5,ha='left')
-        ax.plot([b+.05,end-.05],[.65,.65],color=MUTED,lw=.7)
-        for j in range(5):
-            l=max(a+j,b); r=min(a+j+1,end,8.7)
-            if r>l:
-                bar(l,r,.35,str(j+1),c)
-    ax.text(4.5,-.18,'Time →',fontsize=8,ha='center',va='top')
-    for out in (OUTPUT_PDF,OUTPUT_PNG):
-        fig.savefig(out,dpi=220,bbox_inches='tight',pad_inches=.03)
+    plt.rcParams.update({'font.family': 'Arial', 'mathtext.fontset': 'dejavusans'})
+    fig, ax = plt.subplots(figsize=(3.45, 2.70))
+    fig.subplots_adjust(left=.235, right=.98, top=.87, bottom=.23)
+    ax.set(xlim=(LEFT, RIGHT), ylim=(-.35, 3.65))
+    ax.axis('off')
+    fig.text(.5, .975, 'One reference update · correction period: 10 ms',
+             ha='center', va='top', fontsize=7.2, color=INK)
+
+    def bar(a, b, y, text, color):
+        ax.add_patch(Rectangle((a, y-.19), b-a, .38,
+                              facecolor=color, edgecolor=EDGE, lw=.65, zorder=3))
+        if text:
+            ax.text((a+b)/2, y, text, ha='center', va='center',
+                    fontsize=7, color=INK, zorder=4)
+
+    lanes=[(3.2, 'Slow\ncomputation'), (2.3, 'Available\nreference'),
+           (1.25, 'Fast\ncomputation'), (.15, 'Reference\nused in output')]
+    for y, label in lanes:
+        ax.text(LEFT-1, y, label, ha='right', va='center', fontsize=6.9, color=INK)
+        if y != 3.2:
+            ax.plot([LEFT,RIGHT],[y,y],color=EDGE,lw=.5,zorder=0)
+
+    # The slow computation starts before this cropped time window.
+    bar(LEFT, 0, 3.2, '', NEW)
+    ax.text(-4, 3.52, '…', ha='center', fontsize=9, color=INK)
+    ax.plot([0,0],[-.1,3.5],color='#39738F',lw=.85,ls='--',zorder=1)
+    ax.scatter([0],[3.2],s=15,color='#39738F',zorder=5)
+    ax.text(1.1,3.2,'New reference ready',ha='left',va='center',fontsize=7,color=INK)
+
+    bar(LEFT,0,2.3,'Previous',OLD)
+    bar(0,RIGHT,2.3,'New',NEW)
+
+    ends=[start+COMPUTE_MS for start in STARTS]
+    for i,(start,end) in enumerate(zip(STARTS,ends),1):
+        ref=reference_at_start(start)
+        color=OLD if ref=='Previous' else NEW
+        bar(start,end,1.25,'',color)
+        ax.text((start+end)/2,1.72,f'Update {i}',ha='center',fontsize=6.8,color=INK)
+        # Circle: input/reference read. Square: result becomes available.
+        ax.scatter([start],[1.25],s=12,facecolors='white',edgecolors=INK,lw=.65,zorder=5)
+        ax.scatter([end],[1.25],s=10,marker='s',color=INK,zorder=5)
+        ax.plot([end,end],[1.03,.36],color=EDGE,ls=':',lw=.7,zorder=1)
+
+    # Display the reference used in composed commands, not chunk step indices.
+    # Update 1 starts before publication and retains the previous reference;
+    # the new reference first affects output when Update 2 finishes.
+    switch=ends[1]
+    bar(LEFT,switch,.15,'Previous',OLD)
+    bar(switch,RIGHT,.15,'New',NEW)
+    ax.annotate('',xy=(switch,.38),xytext=(switch,.87),
+                arrowprops=dict(arrowstyle='-|>',color='#39738F',lw=.8))
+
+    axis_y=-.29
+    ax.plot([LEFT,RIGHT],[axis_y,axis_y],color=EDGE,lw=.65,clip_on=False)
+    for t in [0,10,20]:
+        ax.plot([t,t],[axis_y,axis_y-.07],color=EDGE,lw=.65,clip_on=False)
+        ax.text(t,axis_y-.12,str(t),ha='center',va='top',fontsize=7,color=INK)
+    fig.text(.61,.115,'Time relative to reference publication (ms)',ha='center',fontsize=6.4,color=INK)
+    fig.text(.5,.047,'○ Read inputs / start     ■ Result ready',ha='center',fontsize=7,color=INK)
+    for suffix in ['pdf','png']:
+        fig.savefig(ROOT/f'fig03_async_execution.{suffix}',dpi=240,bbox_inches='tight',pad_inches=.035)
     plt.close(fig)
 
-if __name__ == "__main__":
+
+if __name__=='__main__':
     main()
