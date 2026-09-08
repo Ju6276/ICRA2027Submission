@@ -65,9 +65,9 @@ ForceDelta-VLA: Distilling Force-Conditioned Action\\Corrections for Contact-Ric
     \let\@oldmaketitle\@maketitle
     \renewcommand{\@maketitle}{\@oldmaketitle
       \centering
-      \includegraphics[width=0.98\linewidth,height=0.28\textheight,keepaspectratio]{figures/fig01_method_overview.pdf}
+      \includegraphics[width=\textwidth]{figures/fig01_method_overview.pdf}
       % \vspace{-0.2in}
-      \captionof{figure}{ForceDelta-VLA overview. Paired teacher predictions define the force target; reference-action mismatch and reference-state alignment define the delay target. The reference-action pathway updates at approximately $6$~Hz, while the lightweight policy predicts corrections independently. Composed robot commands are sent at $100$~Hz. The ForceVLA comparison runs at approximately $6$~Hz in this setup.}
+      \captionof{figure}{ForceDelta-VLA overview. A frozen teacher provides force and delay correction targets to train a lightweight student. During execution, the student jointly predicts both corrections to adjust reference actions from the slow teacher.}
       \label{fig:teaser}
       \vspace{-0.1in}
       \bigskip}

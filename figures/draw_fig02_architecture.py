@@ -12,11 +12,11 @@ import fitz
 
 OUT = Path(__file__).resolve().parent / 'fig02_architecture'
 W,H=1900,800
-INK,EDGE='#202A30','#647781'
-BLUE,BLUE_D='#D8E8EE','#668C9C'
-ORANGE,ORANGE_D='#F8DEC2','#B6793D'
-PURPLE,PURPLE_D='#E7DDF0','#8D70A7'
-GREEN='#E7EEDC'
+from figure_palette import (INK, EDGE, NEUTRAL, REFERENCE as BLUE,
+                            REFERENCE_EDGE as BLUE_D, FORCE as ORANGE,
+                            FORCE_EDGE as ORANGE_D, DELAY as PURPLE,
+                            DELAY_EDGE as PURPLE_D, COMMAND as GREEN,
+                            snowflake_segments)
 s=[f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">',f'<rect width="{W}" height="{H}" fill="white"/>']
 
 def text(x,y,v,size=23,anchor='middle',weight='normal',color=INK):
@@ -53,7 +53,7 @@ def curve(x,y,w=125,h=35,color=ORANGE_D):
     line(points,color=color,width=2)
 def state(x,y):
     line([(x-45,y+17),(x,y-6),(x+32,y+17),(x+53,y-4)],width=3)
-    for a,b in [(x-45,y+17),(x,y-6),(x+32,y+17)]:circle(a,b,5,BLUE)
+    for a,b in [(x-45,y+17),(x,y-6),(x+32,y+17)]:circle(a,b,5,NEUTRAL)
     line([(x+45,y-11),(x+60,y+3)],width=2)
 def clock(x,y):
     circle(x,y,17);line([(x,y-11),(x,y),(x+10,y)],width=2)
@@ -63,17 +63,22 @@ text(1010,36,'(b) Dual-correction policy',29,anchor='start',weight='bold')
 line([(977,62),(977,737)],color='#CDD5D9',width=1)
 
 # Image and language pictograms describe the cached prefix source, not fresh input.
-rect(45,82,111,72,BLUE,r=3)
+rect(45,82,111,72,NEUTRAL,r=3)
 line([(57,144),(81,114),(111,137),(143,103)],color=BLUE_D,width=2)
 circle(130,97,6,'white',BLUE_D)
 text(101,183,'Query-time images',20)
-rect(194,88,157,57,'#F4EEDC',r=9)
+rect(194,88,157,57,NEUTRAL,r=9)
 line([(209,145),(207,155),(223,145)],width=1.5)
 text(272,121,'“Insert the plug”',20)
 text(272,183,'Instruction',20)
-line([(45,197),(45,205),(351,205),(351,197)],width=1.2)
-text(198,233,'Cached context Eₖ',23)
-line([(355,225),(400,225),(400,260)],arrow=True)
+line([(101,190),(101,213),(166,213),(166,225)],arrow=True)
+line([(272,190),(272,213),(229,213),(229,225)],arrow=True)
+# Blue visual tokens and cream language tokens explicitly form cached E_k.
+rect(123,223,146,37,'#F7FAFB',stroke='#AFC0C7',r=5,width=1)
+for i in range(6):
+    rect(132+i*21,230,15,23,'#DDE3E7' if i<3 else '#F5F6F7',r=2,width=1)
+text(196,283,'Cached context Eₖ',22)
+line([(273,241),(361,241),(361,261)],arrow=True)
 text(500,194,'Shared noise εₖ',21)
 line([(475,207),(475,260)],arrow=True)
 
@@ -83,12 +88,13 @@ line([(194,314),(298,314)],arrow=True)
 curve(57,390);text(122,458,'Force history ℱₜ',23,color=ORANGE_D)
 line([(194,416),(298,416)],color=ORANGE_D,arrow=True)
 circle(119,511,15,'#E6EBED');text(119,518,'z',21)
-text(124,554,'Learned force-agnostic input',19)
+text(124,554,'Learned token',23)
 line([(194,512),(273,512),(273,476),(298,476)],arrow=True)
 
 # One frozen teacher, two modes; avoid expanding the encoder and adapter.
-rect(300,265,205,240,BLUE,r=13)
-text(402,325,'Frozen VLA',27,weight='bold');text(402,359,'teacher',27,weight='bold')
+rect(300,265,205,240,NEUTRAL,r=13)
+text(402,345,'VLA teacher',27,weight='bold')
+for pts in snowflake_segments(402,297,15):line(pts,width=1.8)
 line([(324,382),(480,382)],color='#A6BBC4',width=1)
 text(402,417,'Paired queries',23)
 text(402,452,'Two input modes',20,color=EDGE)
@@ -129,60 +135,59 @@ text(903,435,'Delay',23,weight='bold',color=PURPLE_D)
 text(903,461,'target',23,weight='bold',color=PURPLE_D)
 tokens(870,478,PURPLE,n=6,w=8,h=25)
 
-# Short, aligned supervision lines bridge teacher targets and policy outputs.
-line([(941,305),(1060,305)],color=ORANGE_D,dash='6 5',arrow=True)
-line([(941,491),(1060,491)],color=PURPLE_D,dash='6 5',arrow=True)
-text(1001,379,'Supervision',19)
-text(1130,273,'Force correction',23,weight='bold',color=ORANGE_D)
-tokens(1070,290,ORANGE)
-text(1130,459,'Delay correction',23,weight='bold',color=PURPLE_D)
-tokens(1070,476,PURPLE)
-line([(1300,305),(1210,305)],color=ORANGE_D,arrow=True)
-line([(1300,491),(1210,491)],color=PURPLE_D,arrow=True)
+# Panel (b) reads consistently left to right.
+# Teacher supervision runs above the policy, outside the input/data-flow paths.
+line([(941,305),(957,305),(957,71),(1566,71),(1566,286)],color=ORANGE_D,dash='6 5',arrow=True)
+line([(941,491),(968,491),(968,96),(1633,96),(1633,474),(1607,489)],color=PURPLE_D,dash='6 5',arrow=True)
+text(1270,134,'Teacher supervision',20,color=EDGE)
 
-# One shared module, with both passes made visible in its annotations.
-rect(1300,249,240,297,GREEN,r=13)
-text(1420,285,'Shared attention',25,weight='bold')
-text(1420,317,'module Φ',25,weight='bold')
-line([(1318,338),(1522,338)],color='#BAC8AE',width=1)
-text(1420,370,'Force pass',23,color=ORANGE_D)
-text(1420,398,'All inputs',21)
-text(1420,451,'Delay pass',23,color=PURPLE_D)
-text(1420,479,'Force token masked',20)
-text(1420,523,'Two passes · shared weights',18,color=EDGE)
+# Input bank: pooled E_k, current state, force history, reference and timing.
+tokens(1044,177,NEUTRAL);text(1108,229,'Pooled task context',21)
+state(1108,288);text(1108,337,'Current state Sₜ',21)
+curve(1044,377);text(1108,443,'Recent force history',21,color=ORANGE_D)
+tokens(1044,508,BLUE);text(1108,562,'Reference segment',21)
+clock(1108,613);text(1108,662,'Timing: age + phase',21)
+line([(1210,191),(1210,613)])
+for y in [191,298,401,523,613]:line([(1175,y),(1210,y)])
 
-# Student inputs: cached context, state, force, reference, timing.
-tokens(1690,118,BLUE);text(1753,169,'Cached task context',22)
-state(1753,226);text(1753,274,'Current state Sₜ',22)
-curve(1690,313);text(1753,379,'Recent force history',22,color=ORANGE_D)
-tokens(1690,428,BLUE);text(1753,482,'Reference segment',22)
-clock(1753,538);text(1753,587,'Timing: age + phase',22)
-# The bus groups inputs only; masking is done inside the delay pass.
-line([(1632,133),(1632,539)],color=EDGE)
-for y in [133,236,337,443,538]:line([(1680,y),(1632,y)])
-line([(1632,398),(1544,398)],arrow=True)
+# Shared attention evaluations and separate heads.
+for cy,fill,letter in [(305,ORANGE,'F'),(491,PURPLE,'D')]:
+    line([(1210,cy),(1254,cy)],arrow=True)
+    for i,color in enumerate([NEUTRAL,'#E6EBED',ORANGE,BLUE,'#E6EBED']):
+        x=1260+i*17
+        rect(x,cy-17,12,34,color if cy==305 or i!=2 else '#F5F5F5',r=2,width=1)
+        if cy==491 and i==2:
+            line([(x-2,cy-19),(x+14,cy+19)],color=PURPLE_D,width=2)
+            line([(x+14,cy-19),(x-2,cy+19)],color=PURPLE_D,width=2)
+    line([(1344,cy),(1362,cy)],arrow=True)
+    rect(1366,cy-36,85,72,NEUTRAL,r=9)
+    text(1408,cy+12,'Φ',39)
+    line([(1455,cy),(1471,cy)],arrow=True)
+    circle(1494,cy,19,fill);text(1494,cy+8,letter,23)
+    line([(1516,cy),(1532,cy)],arrow=True)
+    tokens(1537,cy-14,fill,n=6,w=8,h=28)
+line([(1408,345),(1408,451)],dash='6 5')
+circle(1408,398,17,'white',stroke='white');text(1408,407,'=',30,color=EDGE)
+text(1408,242,'Shared attention',22,weight='bold')
+text(1569,355,'Force correction',21,color=ORANGE_D)
+text(1569,543,'Delay correction',21,color=PURPLE_D)
 
-# Continue panel (b) with explicit composition and an end-effector target glyph.
-# Read the pose component of the same reference segment; no extra Gamma term.
-line([(1253,483),(1253,499)],color='white',width=8)
-line([(1198,305),(1253,305),(1253,659),(1348,678)],color=ORANGE_D,arrow=True)
-line([(1198,491),(1228,491),(1228,719),(1348,702)],color=PURPLE_D,arrow=True)
-line([(1814,443),(1861,443),(1861,617),(1370,617),(1370,663)],color=BLUE_D,arrow=True)
-text(1548,605,'Reference pose',22,color=BLUE_D)
-circle(1370,690,25,GREEN)
-text(1370,699,'+',30)
-line([(1398,690),(1620,690)],arrow=True)
-text(1507,663,'To absolute pose',21)
-text(1507,724,'using Sₖ',21,color=EDGE)
-# Target coordinate frame and gripper outline, not an additional network block.
-circle(1685,685,48,'#F4F7EF',stroke='#D4DDC9')
-line([(1685,693),(1737,693)],color='#AF6B60',width=2,arrow=True)
-line([(1685,693),(1685,643)],color='#6D936A',width=2,arrow=True)
-line([(1685,693),(1655,715)],color=BLUE_D,width=2,arrow=True)
-line([(1665,671),(1699,671),(1699,681),(1691,681)],width=2.7)
-line([(1665,671),(1665,681),(1673,681)],width=2.7)
-line([(1682,655),(1682,670)],width=2.7)
-text(1685,758,'Commanded pose',24,weight='bold')
+# Composition follows the two outputs; a lower branch carries the reference pose.
+line([(1610,305),(1720,305),(1720,372)],color=ORANGE_D,arrow=True)
+line([(1610,491),(1720,491),(1720,428)],color=PURPLE_D,arrow=True)
+line([(1040,523),(994,523),(994,712),(1668,712),(1668,400),(1692,400)],color=BLUE_D,arrow=True)
+text(1420,744,'Reference pose',22,color=BLUE_D)
+circle(1720,400,25,GREEN);text(1720,409,'+',30)
+line([(1748,400),(1796,400)],arrow=True)
+text(1829,313,'Absolute pose',21)
+text(1829,342,'using Sₖ',20,color=EDGE)
+# End-effector pose glyph: a simple parallel-jaw gripper.
+rect(1820,360,22,25,GREEN,r=3,width=2)
+rect(1799,385,65,22,GREEN,r=4,width=2)
+line([(1805,407),(1805,438),(1817,438)],width=4)
+line([(1858,407),(1858,438),(1846,438)],width=4)
+text(1829,477,'Commanded',21,weight='bold')
+text(1829,504,'pose',21,weight='bold')
 text(25,771,'Sequence glyphs and force curves are schematic.',19,anchor='start',color=EDGE)
 
 s.append('</svg>');OUT.with_suffix('.svg').write_text('\n'.join(s))

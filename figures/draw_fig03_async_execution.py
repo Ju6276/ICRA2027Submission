@@ -1,85 +1,103 @@
 #!/usr/bin/env python3
-"""Single-column execution timeline, styled consistently with Figures 1 and 2."""
-from html import escape
+"""Schematic execution events, with reference binding derived from query starts."""
 from pathlib import Path
-import fitz
+
+import matplotlib.pyplot as plt
+from matplotlib.patches import FancyArrowPatch, Rectangle
+
+from figure_palette import INK, EDGE, REFERENCE_EDGE
 
 OUT = Path(__file__).resolve().parent / 'fig03_async_execution'
-W, H = 900, 520
-INK, EDGE = '#202A30', '#586B74'
-BLUE, CREAM = '#BFD6DF', '#F4EEDC'
-s = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">',
-     f'<rect width="{W}" height="{H}" fill="white"/>']
+OLD_FILL, OLD_EDGE = '#E9EDF0', '#8597A1'
+NEW_FILL, NEW_EDGE = '#BCD8E5', REFERENCE_EDGE
+PALETTE = {0: (OLD_FILL, OLD_EDGE), 1: (NEW_FILL, NEW_EDGE)}
+
+# These are schematic event positions, not an experimental timing trace.
+# Reference 0 and an earlier correction are already available at the left edge.
+REFERENCES = [dict(key=0,start=-180,end=-130), dict(key=1,start=0,end=45)]
+QUERIES = [dict(start=-20,end=-10),dict(start=2,end=12),dict(start=17,end=27),
+           dict(start=32,end=52),dict(start=58,end=78)]
+COMMAND_TIMES = list(range(0,100,10))
 
 
-def text(x, y, label, size=22, anchor='start', weight='normal', color=INK):
-    s.append(f'<text x="{x}" y="{y}" font-family="Arial,Helvetica,sans-serif" font-size="{size}" font-weight="{weight}" fill="{color}" text-anchor="{anchor}">{escape(label)}</text>')
+def reference_at(t):
+    return max((r for r in REFERENCES if r['end'] <= t),key=lambda r:r['start'])['key']
 
 
-def rect(x, y, w, h, fill, stroke=EDGE, radius=7, width=1.5):
-    s.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="{radius}" fill="{fill}" stroke="{stroke}" stroke-width="{width}"/>')
+for query in QUERIES:
+    query['reference'] = reference_at(query['start'])
 
 
-def line(points, color=EDGE, width=1.5, dash=None, arrow=False):
-    pts = ' '.join(f'{x},{y}' for x,y in points)
-    dashed = f' stroke-dasharray="{dash}"' if dash else ''
-    s.append(f'<polyline points="{pts}" fill="none" stroke="{color}" stroke-width="{width}" stroke-linejoin="round"{dashed}/>')
-    if arrow:
-        x,y=points[-1]; px,py=points[-2]
-        dx,dy=x-px,y-py; n=(dx*dx+dy*dy)**.5
-        ux,uy=dx/n,dy/n
-        p=[(x,y),(x-8*ux+4*uy,y-8*uy-4*ux),(x-8*ux-4*uy,y-8*uy+4*ux)]
-        s.append(f'<polygon points="{" ".join(f"{a},{b}" for a,b in p)}" fill="{color}"/>')
+def correction_at(t):
+    return max((q for q in QUERIES if q['end'] <= t),key=lambda q:q['start'])
 
 
-# Soft bands, thin outlines, and typography follow the method architecture.
-for y,h,fill in [(55,122,'#E8F1F4'),(191,174,'#EDF6E9'),(379,91,'#F5F7F8')]:
-    rect(12,y,876,h,fill,stroke='none',radius=12,width=0)
+# The old-reference correction straddles availability; adoption and command
+# selection must follow their own event times rather than a shared vertical line.
+assert QUERIES[-2]['start'] < REFERENCES[1]['end'] < QUERIES[-2]['end']
+assert QUERIES[-2]['reference'] == 0 and QUERIES[-1]['reference'] == 1
+assert correction_at(50)['start'] == 17
+assert correction_at(60) is QUERIES[-2]
+assert correction_at(80) is QUERIES[-1]
 
-rect(223,13,24,18,BLUE,radius=3)
-text(258,30,'Previous reference',21)
-rect(572,13,24,18,CREAM,radius=3)
-text(607,30,'New reference',21)
+plt.rcParams.update({'font.family':'Times New Roman', 'mathtext.fontset':'stix', 'svg.fonttype':'none'})
+fig,ax = plt.subplots(figsize=(7.2,2.65))
+fig.subplots_adjust(left=.025,right=.975,top=.97,bottom=.04)
+ax.set(xlim=(-2,106),ylim=(-5,67))
+ax.axis('off')
 
-text(30,93,'Reference',23,weight='bold')
-text(30,121,'generation',23,weight='bold')
-text(30,153,'≈6 Hz',21,color=EDGE)
-text(30,243,'Correction',23,weight='bold')
-text(30,271,'inference',23,weight='bold')
-text(30,416,'Robot commands',22,weight='bold')
-text(30,446,'100 Hz',21,color=EDGE)
 
-# Only one reference handover is expanded; no assumed query period is shown.
-text(611,88,'Reference ready',21,anchor='middle')
-rect(223,111,388,40,CREAM)
-text(417,138,'Generate new reference',22,anchor='middle')
-line([(611,97),(611,109)],arrow=True)
-line([(611,151),(611,207)],dash='5 4')
-line([(611,239),(611,288)],dash='5 4')
-text(545,228,'Read current state + recent force history',21,anchor='middle')
+def text(x,y,label,size=13,color=INK,ha='left',weight='normal'):
+    ax.text(x,y,label,fontsize=size,color=color,ha=ha,va='center',fontweight=weight,zorder=6)
 
-for x,fill in [(250,BLUE),(410,BLUE),(580,BLUE),(748,CREAM)]:
-    line([(x,239),(x,251)],arrow=True)
-    rect(x,254,62,34,fill,radius=5)
 
-# These labels make reference binding visible without introducing new indices.
-line([(611,290),(611,302)],arrow=True)
-text(598,327,'Keep previous',21,anchor='middle')
-text(598,351,'reference',21,anchor='middle')
-line([(779,290),(779,302)],arrow=True)
-text(779,327,'Adopt new',21,anchor='middle')
-text(779,351,'reference',21,anchor='middle')
+def block(x,y,w,h,fill,edge=None,lw=.7):
+    ax.add_patch(Rectangle((x,y),w,h,facecolor=fill,edgecolor=edge or 'none',lw=lw,zorder=3))
 
-# Uniform cells are command transmissions, not action-chunk samples.
-for x in range(223,864,24):
-    rect(x,412,18,26,BLUE if x<823 else CREAM,radius=2,width=1)
-line([(223,490),(877,490)],width=1.3,arrow=True)
-text(223,514,'Schematic; not to scale',19,color=EDGE)
-text(877,514,'Time',20,anchor='end')
 
-s.append('</svg>')
-OUT.with_suffix('.svg').write_text('\n'.join(s))
-doc=fitz.open(OUT.with_suffix('.svg'))
-pdf=fitz.open('pdf',doc.convert_to_pdf())
-pdf.save(OUT.with_suffix('.pdf'))
-pdf[0].get_pixmap(matrix=fitz.Matrix(1.6,1.6),alpha=False).save(OUT.with_suffix('.png'))
+def arrow(x1,y1,x2,y2,color=EDGE):
+    ax.add_patch(FancyArrowPatch((x1,y1),(x2,y2),arrowstyle='-|>',mutation_scale=8,
+                                lw=.85,color=color,shrinkA=0,shrinkB=1,zorder=5))
+
+
+def bracket(left,right,y,label,color):
+    ax.plot([left,left,right,right],[y+1.5,y,y,y+1.5],color=color,lw=.8,zorder=4)
+    text((left+right)/2,y-4,label,size=13,color=color,ha='center')
+
+
+# Reference computation is a single interval above the main action sequence.
+ready = REFERENCES[1]['end']
+block(0,52,ready,4,'#F0F3F5',NEW_EDGE,lw=.65)
+text(ready/2,62,'Reference inference',size=13.5,ha='center')
+ax.plot([ready,ready],[56,29],color=EDGE,lw=.8,linestyle=(0,(3,3)),zorder=2)
+text(ready+2,54,'Ready',size=12.5,color=NEW_EDGE)
+
+# Short intervals remain separate from the denser, continuous control stream.
+text(0,43,'Correction inference',size=13.5)
+for query in QUERIES[1:]:
+    fill,edge=PALETTE[query['reference']]
+    block(query['start'],31,query['end']-query['start'],5.5,fill,edge)
+
+# Only the two queries relevant to the handover are connected to execution.
+for query in QUERIES[-2:]:
+    first_command=next(t for t in COMMAND_TIMES if correction_at(t) is query)
+    arrow(query['end'],30.5,first_command,18,PALETTE[query['reference']][1])
+
+# This is the visual center of the figure: actual command transmissions.
+text(0,22,'Robot commands · 100 Hz',size=13)
+for t in COMMAND_TIMES:
+    fill,edge=PALETTE[correction_at(t)['reference']]
+    block(t,9,10,8,fill,INK,lw=.55)
+
+first_new=next(t for t in COMMAND_TIMES if correction_at(t)['reference']==1)
+bracket(.5,first_new-.5,5,'Current reference',OLD_EDGE)
+bracket(first_new+.5,99.5,5,'New reference',NEW_EDGE)
+arrow(100.8,13,105.5,13)
+text(105,23,'Time',size=11.5,ha='right',color=EDGE)
+text(0,-4,'Schematic timing',size=10.5,color=EDGE)
+
+for suffix in ['.svg','.pdf','.png']:
+    fig.savefig(OUT.with_suffix(suffix),dpi=240,facecolor='white')
+plt.close(fig)
+svg_path=OUT.with_suffix('.svg')
+svg_path.write_text('\n'.join(line.rstrip() for line in svg_path.read_text().splitlines())+'\n')

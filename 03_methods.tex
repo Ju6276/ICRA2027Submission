@@ -1,7 +1,7 @@
 \begin{figure*}[!t]
     \centering
     \includegraphics[width=0.98\textwidth]{figures/fig02_architecture.pdf}
-    \caption{Teacher supervision and dual-correction policy. (a) Paired teacher queries share cached context, current state, and noise. Signed sums define the force and delay targets; $\Gamma$ aligns reference states. (b) Two passes share attention weights and use separate output heads; only the delay pass masks force input. The two pose corrections are added to the reference pose before conversion to an absolute command using $S_k$. Dashed arrows indicate supervision.}
+    \caption{Teacher supervision and dual-correction policy. The snowflake marks frozen teacher parameters. (a) Image and language features form cached context $E_k$, shared by paired teacher queries with current state and noise. Signed sums define the force and delay targets; $\Gamma$ aligns reference states. (b) The policy reads pooled task context and recent observations. The linked $\Phi$ blocks share attention weights; F and D denote separate output heads. The crossed token marks the masked force input for the delay output. The two pose corrections are added to the reference pose before conversion to an absolute command using $S_k$. Dashed arrows indicate supervision; gripper poses are schematic.}
     \label{fig:network_structure}
 \end{figure*}
 
@@ -177,7 +177,7 @@ The reference-action and correction workers execute independently (Fig.~\ref{fig
 \begin{figure}[!htb]
     \centering
     \includegraphics[width=\columnwidth]{figures/fig03_async_execution.pdf}
-    \caption{Asynchronous execution. Each correction remains paired with the reference read at query start (matching colors), while robot commands are sent at $100$~Hz. Timing is not to scale.}
+    \caption{Asynchronous execution. Each correction remains paired with the reference read at query start; subsequent queries adopt the newly completed reference.}
     \label{fig:async_deployment}
 \end{figure}
 
