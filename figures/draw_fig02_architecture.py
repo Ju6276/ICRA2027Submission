@@ -31,7 +31,7 @@ def tag(x,y,w,label,fill,size=19):
 def section(x,y,w,h,label,fill):
     rect(x,y,w,h,fill=fill,stroke=fill,r=14,width=0); text(x+18,y+31,label,23,anchor="start",weight="bold")
 
-# Three predictions feed two targets; rebasing belongs only to delay supervision.
+# Three predictions feed two targets; alignment belongs only to delay supervision.
 section(24,20,1852,410,"CORRECTION TARGET CONSTRUCTION",BP)
 tag(650,66,380,"Eₖ  ·  Sₜ  ·  shared noise εₖ",BLUE)
 tag(52,143,250,"Wrench history  ℱₜ",ORANGE)
@@ -47,13 +47,13 @@ box(1090,205,340,74,"Force-agnostic prediction","at current state Sₜ",GREY,ts=
 box(1090,321,340,68,"Previous reference action","queried at Sₖ · time-aligned",BLUE,ts=21,ss=17)
 arrow([(1030,164),(1060,164),(1060,123),(1086,123)])
 arrow([(1030,261),(1060,261),(1060,242),(1086,242)])
-tag(660,335,365,"State rebasing  Γ(Sₜ,Sₖ)",PURPLE,size=21)
+tag(660,335,365,"Reference-state alignment  Γ(Sₜ,Sₖ)",PURPLE,size=17)
 box(1510,90,330,90,"Force target","conditioned − agnostic",ORANGE)
 box(1510,283,330,96,"Delay target","current agnostic − previous ref + Γ",PURPLE,ss=16)
 # Both current predictions contribute to the force difference.
 arrow([(1430,123),(1506,123)])
 arrow([(1430,242),(1460,242),(1460,153),(1506,153)])
-# Delay compares current agnostic and previous reference after state rebasing.
+# Delay compares current agnostic and previous reference after reference-state alignment.
 arrow([(1430,242),(1480,242),(1480,306),(1506,306)])
 arrow([(1430,355),(1506,355)])
 arrow([(1025,354),(1050,354),(1050,407),(1630,407),(1630,383)],color="#81649A")

@@ -41,7 +41,7 @@
 <polyline points="1030,261 1060,261 1060,242 1086,242" fill="none" stroke="#586B74" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
 <polygon points="1086,242 1076.0,237.0 1076.0,247.0" fill="#586B74"/>
 <rect x="660" y="335" width="365" height="38" rx="19" fill="#D8C9E5" stroke="#586B74" stroke-width="1.2"/>
-<text x="842.5" y="361" font-family="Arial,Helvetica,sans-serif" font-size="21" font-style="normal" font-weight="normal" fill="#202A30" text-anchor="middle">State rebasing  Γ(Sₜ,Sₖ)</text>
+<text x="842.5" y="361" font-family="Arial,Helvetica,sans-serif" font-size="17" font-style="normal" font-weight="normal" fill="#202A30" text-anchor="middle">Reference-state alignment  Γ(Sₜ,Sₖ)</text>
 <rect x="1510" y="90" width="330" height="90" rx="8" fill="#F2C99D" stroke="#586B74" stroke-width="1.5"/>
 <text x="1675.0" y="128.0" font-family="Arial,Helvetica,sans-serif" font-size="23" font-style="normal" font-weight="bold" fill="#202A30" text-anchor="middle">Force target</text>
 <text x="1675.0" y="155.0" font-family="Arial,Helvetica,sans-serif" font-size="18" font-style="normal" font-weight="normal" fill="#202A30" text-anchor="middle">conditioned − agnostic</text>

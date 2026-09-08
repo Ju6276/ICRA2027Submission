@@ -19,18 +19,18 @@
 
 \assumed{The teacher is trained for $50{,}000$ steps with AdamW at a peak learning rate of $2\times10^{-5}$. It predicts $H{=}50$ actions at $30$~Hz from the latest $100$~ms of the $100$~Hz wrench stream, and flow-matching inference uses $N_{\mathrm{flow}}{=}10$ steps.}
 
-After freezing the teacher, \assumed{we train the rank-$32$ force-agnostic adapter for $10{,}000$ steps at a learning rate of $10^{-4}$. The visual--language prefix is pooled into $M{=}16$ positional bins and projected to $Q{=}2$ task-context tokens. The correction policy comprises a causal force encoder and one pre-norm set-attention block with separate zero-initialized force and delay-correction output projections. It predicts $K{=}5$ corrections and is trained for $30{,}000$ steps at a learning rate of $3\times10^{-4}$ under the sampled asynchronous schedule. The delay-correction pass masks the force-token position in the attention-validity mask.}
+After freezing the teacher, \assumed{we train the rank-$32$ force-agnostic adapter for $10{,}000$ steps at a learning rate of $10^{-4}$. The visual--language prefix is pooled into $M{=}16$ positional bins and projected to $Q{=}2$ task-context tokens. The correction policy contains a causal force encoder and one attention block that processes the condition tokens. Layer normalization precedes attention, and separate force and delay output projections are initialized to zero. It predicts $K{=}5$ corrections and is trained for $30{,}000$ steps at a learning rate of $3\times10^{-4}$ under the sampled asynchronous schedule. The delay-correction pass masks the force-token position in the attention-validity mask.}
 
 \subsection{Action Representation and Context Encoding}
 
 Pose actions use $\mathcal P(A)=[p;r]$, where $p\in\mathbb R^3$ is translation and $r\in\mathbb R^6$ is the continuous rotation representation. Pose actions and wrench measurements use the corresponding robot-base frame. Differences are scaled by the training-set action standard deviations. Rotational corrections are added in the teacher's 6D action coordinates and mapped to valid rotation matrices by Gram--Schmidt orthogonalization. Bimanual inputs and outputs concatenate the per-arm quantities; correction construction is component-wise and bounds are applied independently to each arm.
 
-The visual--language prefix $E_k$ excludes state, force, and action tokens. Its mask $m_k$ selects available image-view and non-padding language tokens. Masked mean pooling partitions the padded prefix into $M=16$ contiguous, approximately equal-width positional bins:
+The visual--language prefix $E_k$ excludes state, force, and action tokens. Its mask $m_k$ selects available image-view and non-padding language tokens. Masked mean pooling partitions the padded prefix into $M=16$ consecutive groups of approximately equal size:
 \begin{equation}
     (\bar E_k,\bar m_k)=\operatorname{Pool}_M(E_k,m_k),
     \qquad Z_k^{\mathrm{ctx}}=P_{\mathrm{ctx}}(\bar E_k,\bar m_k).
 \end{equation}
-The learned projector uses $Q=2$ queries to aggregate valid pooled tokens. Condition-specific projections map task context, force history, state, reference-action segment, and timing features to the shared token width. Learned type embeddings identify the conditions; no positional encoding is used in the conditioning set. Permuting condition tokens together with their type embeddings leaves the fixed correction-query output invariant. The force and delay passes share the attention block and use separate output projections; the delay pass masks the force token.
+The learned projector uses $Q=2$ queries to aggregate valid pooled tokens. Condition-specific projections map task context, force history, state, reference-action segment, and timing features to the shared token width. Learned type embeddings identify the conditions; no positional encoding is used in the conditioning set. Reordering condition tokens together with their type embeddings does not change the output at the fixed correction-query token. The force and delay passes share the attention block and use separate output projections; the delay pass masks the force token.
 
 Cache age and interpolation phase are represented as
 \begin{equation}
@@ -39,7 +39,7 @@ Cache age and interpolation phase are represented as
 \end{equation}
 where $\alpha_{t,k}$ is the position of $t$ between adjacent reference-action samples.
 
-The action representation and rotational correction composition are defined in Sec.~III-A of the main paper. Let $\widetilde S^p$ be the nine per-arm pose coordinates of the normalized robot state, obtained after converting orientation to the continuous 6D representation, and let $\sigma_S^p$ and $\sigma_A^p$ be the corresponding training-set state and action standard deviations. The implementation computes
+The action representation and rotational correction composition are defined in Sec.~III-A of the main paper. Let $\widetilde S^p$ be the nine per-arm pose coordinates of the normalized robot state, obtained after converting orientation to the continuous 6D representation, and let $\sigma_S^p$ and $\sigma_A^p$ be the corresponding training-set state and action standard deviations. Reference-state alignment expresses the current prediction relative to the reference-query state $S_k$. The implementation computes
 \begin{equation}
     \Gamma(S_t,S_k)=
     \frac{\sigma_S^p+\varepsilon}{\sigma_A^p+\varepsilon}
@@ -47,13 +47,13 @@ The action representation and rotational correction composition are defined in S
     \qquad \varepsilon=10^{-6}.
     \label{eq:supp_gamma}
 \end{equation}
-This scale-corrected componentwise difference is included in the learned delay-correction target, placing the current force-agnostic prediction and reference action in the same normalized delta-action coordinate system. The composed normalized action is de-normalized, applied relative to the reference-action-query state $S_k$, and projected to a valid rotation by Gram--Schmidt orthogonalization.
+This difference, rescaled separately for each coordinate, is included in the learned delay-correction target, placing the current force-agnostic prediction and reference action in the same normalized delta-action coordinate system. The composed normalized action is de-normalized, applied relative to the reference-action-query state $S_k$, and projected to a valid rotation by Gram--Schmidt orthogonalization.
 
-The correction policy observes the complete $K$-step reference-action segment aligned with its output timestamps. The segment is flattened and projected to one typed reference-action token, so each predicted correction is conditioned on the corresponding future reference-action waypoint without increasing the attention-sequence length.
+The correction policy observes the complete $K$-step reference-action segment aligned with its output timestamps. The segment is flattened and projected to one reference-action token with a type embedding, so each predicted correction is conditioned on the corresponding future reference-action waypoint without increasing the attention-sequence length.
 
 At deployment, force and delay corrections are clipped separately and element-wise before composition. The implementation accepts either nine-dimensional nonnegative bounds $b_F,b_S\in\mathbb R_{\geq0}^{9}$ or scalar values broadcast over the pose coordinates; bimanual clipping is applied independently per arm. \assumed{The final robot configuration must specify the values used for $b_F$ and $b_S$.}
 
-Correction-policy training examples are anchored at the $30$~Hz state/action timestamps while retaining every $100$~Hz wrench sample in $\mathcal F_t$. The sampled schedule independently draws inter-query periods $T_i\sim\mathcal U(1/15,1/5)$~s and reference-action-query latencies $L_i\sim\mathcal U(0.05,0.30)$~s. Query rows are first selected greedily on the recorded grid, after which query timestamps receive $J_i\sim\mathcal U(-0.01,0.01)$~s jitter to exercise off-grid reference-action interpolation. Correction queries may start more frequently at deployment; the realized correction-update rate is measured directly rather than inferred from the action-sample rate within a chunk.
+Correction-policy training examples use the $30$~Hz state/action timestamps while retaining every $100$~Hz wrench sample in $\mathcal F_t$. The sampled schedule independently draws inter-query periods $T_i\sim\mathcal U(1/15,1/5)$~s and reference-action-query latencies $L_i\sim\mathcal U(0.05,0.30)$~s. Query samples are first selected greedily from the recorded timestamps. We then add random offsets $J_i\sim\mathcal U(-0.01,0.01)$~s so that reference actions are interpolated between recorded samples. Correction queries may start more frequently at deployment; the actual correction-update rate is measured directly rather than inferred from the action-sample rate within a chunk.
 
 \subsection{Force-Agnostic Mode Optimization}
 
@@ -82,13 +82,13 @@ Thus, $\beta<1$ emphasizes near-term corrections, $\beta=1$ weights all steps eq
 
 \subsection{Reference-Action Updates}
 
-A reference-action query $k$, started at $t_k$ from state $S_k$, publishes the immutable reference-action update $(A_{T,k,1:H}^{\mathrm{ref}},\bar E_k,\bar m_k,S_k,t_k,\bar t_k)$ when its result becomes available at $\bar t_k$. Its samples carry intended execution times
+A reference-action query $k$, started at $t_k$ from state $S_k$, stores the reference-action update $(A_{T,k,1:H}^{\mathrm{ref}},\bar E_k,\bar m_k,S_k,t_k,\bar t_k)$ when its result becomes available at $\bar t_k$. This stored update is kept unchanged. Its samples have intended execution times
 \begin{equation}
     t_{k,n}^{\mathrm{ref}}=t_k+(n-1)/f_A,
     \qquad n=1,\ldots,H.
     \label{eq:supp_reference_timestamps}
 \end{equation}
-At time $t$, the active reference action is the freshest completed, non-superseded query,
+At time $t$, the active reference action is the completed query with the latest start time,
 \begin{equation}
     k^*(t)=\arg\max_{k:\,\bar t_k\leq t}t_k.
     \label{eq:supp_active_reference}
@@ -111,7 +111,7 @@ Here $f_A$ defines the spacing between correction samples within a chunk; correc
 \end{aligned}
     \label{eq:supp_active_correction_step}
 \end{equation}
-Any prefix that expires during inference is therefore skipped, while the remaining valid steps execute sequentially until a newer correction chunk completes. Let $j^*=j(t;q^*)$. Within the selected interval, Eq.~(1) of the main paper is evaluated using the selected correction query time and active step:
+Any initial correction steps whose execution times have passed during inference are therefore skipped, while the remaining valid steps execute sequentially until a newer correction chunk completes. Let $j^*=j(t;q^*)$. Within the selected interval, Eq.~(1) of the main paper is evaluated using the selected correction query time and active step:
 \begin{equation}
 \begin{aligned}
     \mathcal P(A^{\mathrm{cmd}}(t))
@@ -123,7 +123,7 @@ Any prefix that expires during inference is therefore skipped, while the remaini
 \end{aligned}
     \label{eq:supp_active_correction}
 \end{equation}
-The two corrections are clipped independently and element-wise in normalized delta-action coordinates before composition. The composed command remains referenced to $S_{k_{q^*}}$ and is converted to an absolute robot command as described above. A correction chunk that completes after $t_q^F+K/f_A$ is rejected. If no valid correction chunk remains, the executor invokes the platform's safe hold or abort policy. \assumed{The final implementation record will specify gripper sampling and behavior beyond the last valid reference-action timestamp.}
+The two corrections are clipped independently and element-wise in normalized delta-action coordinates before composition. The composed command remains referenced to $S_{k_{q^*}}$ and is converted to an absolute robot command as described above. A correction chunk that completes after $t_q^F+K/f_A$ is rejected. If no valid correction chunk remains, the executor uses the platform's safe hold or abort policy. \assumed{The final implementation record will specify gripper sampling and behavior beyond the last valid reference-action timestamp.}
 
 \section{Additional Evaluation Protocols}
 
@@ -135,21 +135,21 @@ The task-specific success criteria are summarized in Table~\ref{tab:supp_task_cr
     \centering
     \small
     \setlength{\tabcolsep}{5pt}
-    \caption{Task success criteria. Red entries are provisional thresholds.}
+    \caption{Task success criteria. Red entries are thresholds that still need to be confirmed.}
     \label{tab:supp_task_criteria}
     \begin{tabularx}{0.94\textwidth}{ll>{\raggedright\arraybackslash}X}
         \toprule
         \textbf{Platform} & \textbf{Task} & \textbf{Success criterion} \\
         \midrule
         Single-arm & Object Flipping & \assumed{Object rotated by at least $150^{\circ}$ and left stable} \\
-        Single-arm & USB Insertion & \assumed{Connector seated to within $2$~mm of its terminal depth} \\
+        Single-arm & USB Insertion & \assumed{Connector inserted to within $2$~mm of its final depth} \\
         Single-arm & Cabinet Opening & \assumed{Door opened beyond $60^{\circ}$} \\
-        Single-arm & Button Pressing & \assumed{Button fully actuated} \\
+        Single-arm & Button Pressing & \assumed{Button fully pressed} \\
         Single-arm & Whiteboard Wiping & \assumed{At least $90\%$ of the marked region removed} \\
         \midrule
         Bimanual & Plug Removal & \assumed{Plug fully separated without dropping either component} \\
         Bimanual & Plug Insertion & \assumed{Plug fully seated while the second arm stabilizes the socket} \\
-        Bimanual & Drawer Opening & \assumed{Drawer translated by at least $15$~cm} \\
+        Bimanual & Drawer Opening & \assumed{Drawer opened by at least $15$~cm} \\
         Bimanual & Whiteboard Wiping & \assumed{At least $90\%$ of the marked region removed while the left arm stabilizes the board and the right arm wipes} \\
         \bottomrule
     \end{tabularx}

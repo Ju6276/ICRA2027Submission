@@ -1,90 +1,85 @@
 #!/usr/bin/env python3
-"""Illustrative local timing around one reference publication, not a robot trace."""
+"""Single-column execution timeline, styled consistently with Figures 1 and 2."""
+from html import escape
 from pathlib import Path
-import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle, FancyArrowPatch
+import fitz
 
-ROOT = Path(__file__).resolve().parent
-OLD = '#E1E4E6'
-NEW = '#C4DDE8'
-INK = '#202A30'
-EDGE = '#687680'
-# User-confirmed fast rate: 100 Hz. Illustrative compute time rounds the
-# reported 2.43-ms mean; it is not a measured per-query latency trace.
-STARTS = [-1.0, 9.0, 19.0]
-COMPUTE_MS = 2.4
-READY_MS = 0.0
-LEFT, RIGHT = -8.0, 25.0
+OUT = Path(__file__).resolve().parent / 'fig03_async_execution'
+W, H = 900, 520
+INK, EDGE = '#202A30', '#586B74'
+BLUE, CREAM = '#BFD6DF', '#F4EEDC'
+s = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">',
+     f'<rect width="{W}" height="{H}" fill="white"/>']
 
 
-def reference_at_start(t):
-    return 'Previous' if t < READY_MS else 'New'
+def text(x, y, label, size=22, anchor='start', weight='normal', color=INK):
+    s.append(f'<text x="{x}" y="{y}" font-family="Arial,Helvetica,sans-serif" font-size="{size}" font-weight="{weight}" fill="{color}" text-anchor="{anchor}">{escape(label)}</text>')
 
 
-def main():
-    plt.rcParams.update({'font.family': 'Arial', 'mathtext.fontset': 'dejavusans'})
-    fig, ax = plt.subplots(figsize=(3.45, 2.70))
-    fig.subplots_adjust(left=.235, right=.98, top=.87, bottom=.23)
-    ax.set(xlim=(LEFT, RIGHT), ylim=(-.35, 3.65))
-    ax.axis('off')
-    fig.text(.5, .975, 'One reference update · correction period: 10 ms',
-             ha='center', va='top', fontsize=7.2, color=INK)
-
-    def bar(a, b, y, text, color):
-        ax.add_patch(Rectangle((a, y-.19), b-a, .38,
-                              facecolor=color, edgecolor=EDGE, lw=.65, zorder=3))
-        if text:
-            ax.text((a+b)/2, y, text, ha='center', va='center',
-                    fontsize=7, color=INK, zorder=4)
-
-    lanes=[(3.2, 'Slow\ncomputation'), (2.3, 'Available\nreference'),
-           (1.25, 'Fast\ncomputation'), (.15, 'Reference\nused in output')]
-    for y, label in lanes:
-        ax.text(LEFT-1, y, label, ha='right', va='center', fontsize=6.9, color=INK)
-        if y != 3.2:
-            ax.plot([LEFT,RIGHT],[y,y],color=EDGE,lw=.5,zorder=0)
-
-    # The slow computation starts before this cropped time window.
-    bar(LEFT, 0, 3.2, '', NEW)
-    ax.text(-4, 3.52, '…', ha='center', fontsize=9, color=INK)
-    ax.plot([0,0],[-.1,3.5],color='#39738F',lw=.85,ls='--',zorder=1)
-    ax.scatter([0],[3.2],s=15,color='#39738F',zorder=5)
-    ax.text(1.1,3.2,'New reference ready',ha='left',va='center',fontsize=7,color=INK)
-
-    bar(LEFT,0,2.3,'Previous',OLD)
-    bar(0,RIGHT,2.3,'New',NEW)
-
-    ends=[start+COMPUTE_MS for start in STARTS]
-    for i,(start,end) in enumerate(zip(STARTS,ends),1):
-        ref=reference_at_start(start)
-        color=OLD if ref=='Previous' else NEW
-        bar(start,end,1.25,'',color)
-        ax.text((start+end)/2,1.72,f'Update {i}',ha='center',fontsize=6.8,color=INK)
-        # Circle: input/reference read. Square: result becomes available.
-        ax.scatter([start],[1.25],s=12,facecolors='white',edgecolors=INK,lw=.65,zorder=5)
-        ax.scatter([end],[1.25],s=10,marker='s',color=INK,zorder=5)
-        ax.plot([end,end],[1.03,.36],color=EDGE,ls=':',lw=.7,zorder=1)
-
-    # Display the reference used in composed commands, not chunk step indices.
-    # Update 1 starts before publication and retains the previous reference;
-    # the new reference first affects output when Update 2 finishes.
-    switch=ends[1]
-    bar(LEFT,switch,.15,'Previous',OLD)
-    bar(switch,RIGHT,.15,'New',NEW)
-    ax.annotate('',xy=(switch,.38),xytext=(switch,.87),
-                arrowprops=dict(arrowstyle='-|>',color='#39738F',lw=.8))
-
-    axis_y=-.29
-    ax.plot([LEFT,RIGHT],[axis_y,axis_y],color=EDGE,lw=.65,clip_on=False)
-    for t in [0,10,20]:
-        ax.plot([t,t],[axis_y,axis_y-.07],color=EDGE,lw=.65,clip_on=False)
-        ax.text(t,axis_y-.12,str(t),ha='center',va='top',fontsize=7,color=INK)
-    fig.text(.61,.115,'Time relative to reference publication (ms)',ha='center',fontsize=6.4,color=INK)
-    fig.text(.5,.047,'○ Read inputs / start     ■ Result ready',ha='center',fontsize=7,color=INK)
-    for suffix in ['pdf','png']:
-        fig.savefig(ROOT/f'fig03_async_execution.{suffix}',dpi=240,bbox_inches='tight',pad_inches=.035)
-    plt.close(fig)
+def rect(x, y, w, h, fill, stroke=EDGE, radius=7, width=1.5):
+    s.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="{radius}" fill="{fill}" stroke="{stroke}" stroke-width="{width}"/>')
 
 
-if __name__=='__main__':
-    main()
+def line(points, color=EDGE, width=1.5, dash=None, arrow=False):
+    pts = ' '.join(f'{x},{y}' for x,y in points)
+    dashed = f' stroke-dasharray="{dash}"' if dash else ''
+    s.append(f'<polyline points="{pts}" fill="none" stroke="{color}" stroke-width="{width}" stroke-linejoin="round"{dashed}/>')
+    if arrow:
+        x,y=points[-1]; px,py=points[-2]
+        dx,dy=x-px,y-py; n=(dx*dx+dy*dy)**.5
+        ux,uy=dx/n,dy/n
+        p=[(x,y),(x-8*ux+4*uy,y-8*uy-4*ux),(x-8*ux-4*uy,y-8*uy+4*ux)]
+        s.append(f'<polygon points="{" ".join(f"{a},{b}" for a,b in p)}" fill="{color}"/>')
+
+
+# Soft bands, thin outlines, and typography follow the method architecture.
+for y,h,fill in [(55,122,'#E8F1F4'),(191,174,'#EDF6E9'),(379,91,'#F5F7F8')]:
+    rect(12,y,876,h,fill,stroke='none',radius=12,width=0)
+
+rect(223,13,24,18,BLUE,radius=3)
+text(258,30,'Previous reference',21)
+rect(572,13,24,18,CREAM,radius=3)
+text(607,30,'New reference',21)
+
+text(30,93,'Reference',23,weight='bold')
+text(30,121,'generation',23,weight='bold')
+text(30,153,'≈6 Hz',21,color=EDGE)
+text(30,243,'Correction',23,weight='bold')
+text(30,271,'inference',23,weight='bold')
+text(30,416,'Robot commands',22,weight='bold')
+text(30,446,'100 Hz',21,color=EDGE)
+
+# Only one reference handover is expanded; no assumed query period is shown.
+text(611,88,'Reference ready',21,anchor='middle')
+rect(223,111,388,40,CREAM)
+text(417,138,'Generate new reference',22,anchor='middle')
+line([(611,97),(611,109)],arrow=True)
+line([(611,151),(611,207)],dash='5 4')
+line([(611,239),(611,288)],dash='5 4')
+text(545,228,'Read current state + recent force history',21,anchor='middle')
+
+for x,fill in [(250,BLUE),(410,BLUE),(580,BLUE),(748,CREAM)]:
+    line([(x,239),(x,251)],arrow=True)
+    rect(x,254,62,34,fill,radius=5)
+
+# These labels make reference binding visible without introducing new indices.
+line([(611,290),(611,302)],arrow=True)
+text(598,327,'Keep previous',21,anchor='middle')
+text(598,351,'reference',21,anchor='middle')
+line([(779,290),(779,302)],arrow=True)
+text(779,327,'Adopt new',21,anchor='middle')
+text(779,351,'reference',21,anchor='middle')
+
+# Uniform cells are command transmissions, not action-chunk samples.
+for x in range(223,864,24):
+    rect(x,412,18,26,BLUE if x<823 else CREAM,radius=2,width=1)
+line([(223,490),(877,490)],width=1.3,arrow=True)
+text(223,514,'Schematic; not to scale',19,color=EDGE)
+text(877,514,'Time',20,anchor='end')
+
+s.append('</svg>')
+OUT.with_suffix('.svg').write_text('\n'.join(s))
+doc=fitz.open(OUT.with_suffix('.svg'))
+pdf=fitz.open('pdf',doc.convert_to_pdf())
+pdf.save(OUT.with_suffix('.pdf'))
+pdf[0].get_pixmap(matrix=fitz.Matrix(1.6,1.6),alpha=False).save(OUT.with_suffix('.png'))
