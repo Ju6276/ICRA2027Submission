@@ -1,7 +1,7 @@
 \begin{figure*}[!t]
     \centering
     \includegraphics[width=0.98\textwidth]{figures/fig02_architecture.pdf}
-    \caption{ForceDelta-VLA architecture. Top: two teacher predictions at the current state define the force target. The current force-agnostic prediction, previous reference action, and reference-state alignment define the delay target. Dashed arrows indicate supervision. Middle: two forward passes share attention parameters; only the delay pass masks the force input. Bottom: both corrections are added to the reference pose. Reference-state alignment is included in delay supervision, not added again during execution.}
+    \caption{Teacher supervision and dual-correction policy. (a) Paired teacher queries share cached context, current state, and noise. Signed sums define the force and delay targets; $\Gamma$ aligns reference states. (b) Two passes share attention weights and use separate output heads; only the delay pass masks force input. The two pose corrections are added to the reference pose before conversion to an absolute command using $S_k$. Dashed arrows indicate supervision.}
     \label{fig:network_structure}
 \end{figure*}
 
