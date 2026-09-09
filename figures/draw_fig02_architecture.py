@@ -8,7 +8,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.patches import FancyBboxPatch, FancyArrowPatch, Polygon, Rectangle, Circle
+from matplotlib.patches import FancyBboxPatch, FancyArrowPatch, Polygon, Circle
 from PIL import Image
 
 OUT = Path(__file__).resolve().parent
@@ -124,32 +124,6 @@ def state(x, y, w=128, h=48):
             panel(x+68, y+9+i*12, ww, 5, '#636363', radius=2)
 
 
-def condition_tokens(cx, y, masked=False, scale=1):
-    # The context is a token group; the remaining conditions each use a token.
-    # A flattened K-step action segment is projected to ONE reference token.
-    colors = [NEUTRAL, FORCE, NEUTRAL, REFERENCE, NEUTRAL]
-    labels = [r'$\mathrm{ctx}\,\cdots$', r'$F$', r'$S$', r'$A$', r'$\xi$']
-    widths = [60*scale, *([32*scale]*4)]
-    h, gap = 32*scale, 6*scale
-    xx = cx-(sum(widths)+4*gap)/2
-    for i, (color, lab, w) in enumerate(zip(colors, labels, widths)):
-        panel(xx, y, w, h, color, NEUTRAL_STROKE, radius=3, lw=.7, z=3)
-        if masked and i == 1:
-            p = Rectangle((xx+1, y+1), w-2, h-2, facecolor='#F4F4F4',
-                          edgecolor=DELAY_EDGE, hatch='////', lw=0, zorder=4)
-            ax.add_patch(p)
-            text(xx+w/2, y+h/2, lab, size=17*scale, color=DELAY_EDGE,
-                 ha='center', z=5)
-        else:
-            text(xx+w/2, y+h/2, lab, size=17*scale, ha='center', z=5)
-        xx += w+gap
-
-
-def output(cx, y, s, fill, edge, width=244):
-    panel(cx-width/2, y, width, 47, fill, edge, radius=7, lw=1.05, z=4)
-    text(cx, y+23, s, size=22, ha='center', color=edge)
-
-
 def route(points, color=EDGE, lw=1.25, scale=9):
     if len(points) > 2:
         line(points[:-1], color, lw)
@@ -180,114 +154,112 @@ def token(cx, y, label, fill=NEUTRAL, edge=NEUTRAL_STROKE, w=43, h=31):
 # previously learned token/adapter, and the correction policy being trained.
 # The depicted data flow remains correction distillation, not teacher fitting.
 text(35, 130, '(a) Teacher-defined correction targets', size=24, weight='bold')
-text(1760, 130, r'Reference query $k$ from schedule replay', size=17,
-     color=EDGE, ha='right')
 
 # The visual-language prefix is produced from the earlier reference query,
 # then reused in both current teacher calls. It is not a new raw modality.
-views(42, 191, 180, 61)
-text(132, 275, r'Images $V_k$', size=19, ha='center')
-panel(46, 300, 177, 37, 'white', '#8A8A8A', radius=3, lw=.8)
-text(134, 318, '“Insert the plug”', size=17, ha='center')
-text(134, 363, r'Instruction $L$', size=19, ha='center')
-arrow((228, 221), (259, 221))
-arrow((228, 318), (259, 318))
+text(132, 185, r'Images $V_k$', size=20, ha='center')
+views(42, 207, 180, 43)
+text(132, 274, r'Instruction $L$', size=20, ha='center')
+panel(46, 294, 177, 32, 'white', '#8A8A8A', radius=3, lw=.8)
+# A text-input placeholder, not a claimed instruction from the dataset.
+for yy, width in [(303, 136), (311, 112), (319, 124)]:
+    line([(65, yy), (65+width, yy)], color=NEUTRAL_STROKE, lw=1)
+arrow((228, 228), (268, 228))
+arrow((228, 310), (268, 310))
 panel(272, 211, 208, 128, 'white', EDGE, radius=4)
 panel(268, 207, 208, 128, 'white', EDGE, radius=4, lw=1.2, z=2)
-text(372, 256, 'Vision–language', size=19, ha='center')
-text(372, 285, 'encoder', size=19, ha='center')
-text(372, 316, r'Pretrained $\theta$', size=16, color=EDGE, ha='center')
+text(372, 257, 'Vision–language', size=20, ha='center')
+text(372, 287, 'encoder', size=20, ha='center')
 snowflake(454, 225, 9)
 arrow((486, 255), (522, 255))
-sequence(533, 244, 165, n=6, h=22, color=NEUTRAL, edge=NEUTRAL_STROKE)
+sequence(533, 244, 108, n=3, h=22, color=NEUTRAL, edge=NEUTRAL_STROKE)
+text(675, 255, r'$\cdots$', size=22, color=EDGE, ha='center')
 text(615, 213, r'$E_k$', size=25, ha='center')
-text(615, 288, r'Saved at $k$, reused at $t$', size=18, color=EDGE, ha='center')
-route([(615, 306), (615, 358), (644, 358)])
+text(615, 288, r'Context from $k$', size=20, color=EDGE, ha='center')
 
 # Current state is a shared input to both teacher modes, distinct from the
 # stored reference's query state S_k used in reference-state alignment.
-panel(748, 198, 221, 103, 'white', EDGE, radius=4, lw=1.2)
-text(858, 221, r'Current state $S_t$', size=19, ha='center')
-state(801, 243, 126, 46)
-arrow((858, 301), (858, 327), color=INK, lw=1.5, scale=11)
+text(132, 349, r'State $S_t$', size=20, ha='center')
+state(75, 365, 126, 42)
+# Context and state merge only at the shared-input junction. State does not
+# enter the vision-language encoder or the learned missing-force token.
+line([(223, 385), (615, 385)], color=INK, lw=1.4)
+line([(615, 305), (615, 385)], color=INK, lw=1.4)
+ax.add_patch(Circle((615, 385), 3, fc=INK, ec='none', zorder=5))
+arrow((615, 385), (650, 385), color=INK, lw=1.4)
 
 # Shared action-expert weights; the adapter appears only in the learned
 # force-agnostic mode. The measured history enters only the conditioned call.
-panel(650, 327, 320, 234, 'white', EDGE, radius=5, lw=1.25)
-text(804, 350, 'Pretrained action expert', size=17, weight='bold', ha='center')
-text(807, 379, r'Shared $E_k$, $S_t$, $\epsilon_k$', size=18, color=EDGE, ha='center')
-snowflake(957, 338, 7)
-panel(668, 401, 280, 44, 'white', EDGE, radius=3, lw=.9)
-text(809, 423, 'Force-conditioned', size=19, ha='center')
-panel(668, 484, 280, 69, 'white', EDGE, radius=3, lw=.9)
-text(809, 504, 'Force-agnostic', size=19, ha='center')
-panel(722, 525, 174, 22, 'white', NEUTRAL_STROKE, radius=2, lw=.8)
-text(809, 536, 'Pose adapter', size=16, color=INK, ha='center')
+panel(650, 331, 320, 256, 'white', EDGE, radius=5, lw=1.25)
+text(804, 352, 'Action expert', size=21, weight='bold', ha='center')
+text(807, 385, r'Shared $E_k$, $S_t$, $\epsilon_k$', size=20, color=EDGE, ha='center')
+snowflake(947, 351, 9)
+panel(668, 436, 280, 55, 'white', EDGE, radius=3, lw=.9)
+text(809, 464, 'Force-conditioned', size=20, ha='center')
+panel(668, 507, 280, 71, 'white', EDGE, radius=3, lw=.9)
+text(809, 529, 'Force-agnostic', size=20, ha='center')
+panel(722, 548, 174, 25, 'white', NEUTRAL_STROKE, radius=2, lw=.8)
+text(809, 560, 'Pose adapter', size=17, color=INK, ha='center')
 
-force_history(43, 404, 171, 45)
-text(128, 477, r'Force history $\mathcal{F}_t$', size=19, ha='center')
-arrow((222, 423), (255, 423))
-transform(263, 393, 167, 60, ('Causal force', 'encoder'),
-          color=FORCE_MODULE, edge=FORCE_EDGE, size=18)
-snowflake(420, 387, 7)
-arrow((437, 423), (469, 423))
-token(507, 407, r'$z_t^F$', FORCE, FORCE_EDGE, w=61)
-arrow((545, 423), (662, 423))
-text(462, 518, 'Learned token', size=19, ha='right', color=EDGE)
-token(507, 502, r'$z_{\varnothing F}$', NEUTRAL, NEUTRAL_STROKE, w=67)
-snowflake(553, 490, 6)
-arrow((549, 518), (662, 518), color=EDGE)
-text(435, 580, r'Token + adapter learned with $\theta$ fixed', size=16.5,
-     ha='center', color=EDGE)
+text(132, 429, r'Force history $\mathcal{F}_t$', size=20, ha='center')
+force_history(43, 446, 171, 36)
+arrow((222, 464), (255, 464))
+transform(263, 434, 167, 60, ('Force', 'encoder'),
+          color=FORCE_MODULE, edge=FORCE_EDGE, size=20)
+snowflake(420, 424, 7)
+arrow((437, 464), (469, 464))
+token(507, 448, r'$z_t^F$', FORCE, FORCE_EDGE, w=61)
+arrow((545, 464), (668, 464))
+text(462, 543, 'Learned token', size=20, ha='right', color=EDGE)
+token(507, 527, r'$z_{\varnothing F}$', NEUTRAL, NEUTRAL_STROKE, w=67)
+snowflake(553, 515, 6)
+arrow((549, 543), (668, 543), color=EDGE)
 
 # All three glyphs below are K-step pose-action segments at matching times.
 # The stored segment is a separate input; it is NOT produced by a current call.
-text(1116, 335, 'Pose action chunks', size=19, color=EDGE, ha='center')
 pose_chunks = [
-    (423, r'$\mathcal{P}(A^{\mathrm{cond}}_{T,t|k,1:K})$', '#F4F4F4', EDGE),
-    (518, r'$\mathcal{P}(A^{\mathrm{ref}}_{T,t|k,1:K})$', 'white', REFERENCE_EDGE),
-    (609, r'$\mathcal{P}(A^{\mathrm{ref}}_k(t_{1:K}))$', REFERENCE, REFERENCE_EDGE),
+    (464, r'$\mathcal{P}(A^{\mathrm{cond}}_{T,t|k,1:K})$', '#F4F4F4', EDGE),
+    (543, r'$\mathcal{P}(A^{\mathrm{ref}}_{T,t|k,1:K})$', 'white', REFERENCE_EDGE),
+    (631, r'$\mathcal{P}(A^{\mathrm{ref}}_k(t_{1:K}))$', REFERENCE, REFERENCE_EDGE),
 ]
 for y, label, fill, edge in pose_chunks:
-    text(1116, y-40, label, size=23, ha='center', color=edge)
+    text(1116, y-40, label, size=21, ha='center', color=edge)
     sequence(1020, y-12, 193, h=24, color=fill, edge=edge)
-arrow((976, 423), (1013, 423))
-arrow((976, 518), (1013, 518), color=REFERENCE_EDGE)
-text(807, 586, r'Reference query $k$', size=19, color=REFERENCE_EDGE, ha='center')
-text(807, 615, r'Stored $A_k^{\mathrm{ref}}$ at $S_k$', size=18,
+arrow((976, 464), (1013, 464))
+arrow((976, 543), (1013, 543), color=REFERENCE_EDGE)
+text(807, 631, r'Reference stored at $S_k$', size=20,
      color=REFERENCE_EDGE, ha='center')
-arrow((974, 609), (1013, 609), color=REFERENCE_EDGE)
+arrow((974, 631), (1013, 631), color=REFERENCE_EDGE)
 
 # Signed inputs make the order of the two differences explicit.
-operation(1300, 458)
-operation(1300, 575)
-route([(1219, 423), (1300, 423), (1300, 438)], color=EDGE)
-text(1283, 437, '+', size=17, ha='right')
-line([(1219, 518), (1300, 518)], color=REFERENCE_EDGE)
-ax.add_patch(Circle((1300, 518), 2.3, fc=REFERENCE_EDGE, ec='none', zorder=5))
-arrow((1300, 512), (1300, 478), color=REFERENCE_EDGE)
-text(1283, 488, '−', size=18, ha='right', color=REFERENCE_EDGE)
-arrow((1300, 524), (1300, 555), color=REFERENCE_EDGE)
-text(1283, 545, '+', size=17, ha='right', color=REFERENCE_EDGE)
-route([(1219, 609), (1300, 609), (1300, 595)], color=REFERENCE_EDGE)
-text(1283, 601, '−', size=18, ha='right', color=REFERENCE_EDGE)
+operation(1300, 501)
+operation(1300, 585)
+route([(1219, 464), (1300, 464), (1300, 481)], color=EDGE)
+text(1283, 478, '+', size=17, ha='right')
+line([(1219, 543), (1300, 543)], color=REFERENCE_EDGE)
+ax.add_patch(Circle((1300, 543), 2.3, fc=REFERENCE_EDGE, ec='none', zorder=5))
+arrow((1300, 537), (1300, 521), color=REFERENCE_EDGE)
+text(1283, 528, '−', size=18, ha='right', color=REFERENCE_EDGE)
+arrow((1300, 549), (1300, 565), color=REFERENCE_EDGE)
+text(1283, 558, '+', size=17, ha='right', color=REFERENCE_EDGE)
+route([(1219, 631), (1300, 631), (1300, 605)], color=REFERENCE_EDGE)
+text(1283, 616, '−', size=18, ha='right', color=REFERENCE_EDGE)
 
-arrow((1320, 458), (1580, 458), color=FORCE_EDGE)
-arrow((1320, 575), (1353, 575), color=DELAY_EDGE)
-panel(1360, 552, 175, 46, '#FCEAF1', DELAY_EDGE, radius=3, lw=1.1)
-text(1447, 575, r'$+\;\Gamma(S_t,S_k)$', size=22, color=INK, ha='center')
-text(1447, 620, 'Reference-state alignment', size=17,
+arrow((1320, 501), (1580, 501), color=FORCE_EDGE)
+arrow((1320, 585), (1353, 585), color=DELAY_EDGE)
+panel(1360, 562, 175, 46, '#FCEAF1', DELAY_EDGE, radius=3, lw=1.1)
+text(1447, 585, r'$+\;\Gamma(S_t,S_k)$', size=22, color=INK, ha='center')
+text(1447, 636, 'Reference-state alignment', size=18,
      color=DELAY_EDGE, ha='center')
-arrow((1542, 575), (1580, 575), color=DELAY_EDGE)
+arrow((1542, 585), (1580, 585), color=DELAY_EDGE)
 
 target_force = r'$\Delta A^{\mathrm{force}}_{T,t|k,1:K}$'
 target_delay = r'$\Delta A^{\mathrm{delay}}_{T,k\rightarrow t,1:K}$'
-for cy, label, title, fill, edge in [
-    (458, target_force, 'Force target', FORCE, FORCE_EDGE),
-    (575, target_delay, 'Delay target', DELAY, DELAY_EDGE),
+for cy, title, fill, edge in [
+    (501, 'Force target', FORCE, FORCE_EDGE),
+    (585, 'Delay target', DELAY, DELAY_EDGE),
 ]:
-    text(1447, cy-42, title, size=20, color=edge, ha='center', weight='bold')
-    text(1674, cy-43, label, size=24, color=edge, ha='center')
+    text(1674, cy-42, title, size=22, color=edge, ha='center', weight='bold')
     sequence(1588, cy-12, 172, color=fill, edge=edge, h=24)
 
 line([(35, 655), (1765, 655)], color=RULE, lw=.8)
@@ -299,20 +271,22 @@ text(35, 686, '(b) Train the correction policy', size=24, weight='bold')
 centers = [125, 322, 503, 684, 847]
 for cx, title in zip(centers, ['Pooled context', 'Force history', 'State', 'Reference', 'Timing']):
     text(cx, 732, title, size=18, ha='center')
-sequence(52, 763, 146, n=6, color=NEUTRAL, edge=NEUTRAL_STROKE, h=17)
+sequence(52, 763, 106, n=3, color=NEUTRAL, edge=NEUTRAL_STROKE, h=17)
+text(182, 772, r'$\cdots$', size=19, color=EDGE, ha='center')
 force_history(253, 748, 140, 36)
 state(462, 746, 93, 38)
 sequence(615, 764, 139, h=20)
-text(847, 771, 'Age + phase', size=17, color=EDGE, ha='center')
 for cx, lab in zip(centers, [r'$(\bar E_k,\bar m_k)$', r'$\mathcal{F}_t$', r'$S_t$',
                             r'$A_k^{\mathrm{ref}}(t_{1:K})$', r'$\xi_{t,k}$']):
     text(cx, 807, lab, size=21, ha='center')
     arrow((cx, 827), (cx, 834), scale=7)
-transform(45, 840, 160, 74, ('Context', 'projection'), size=17)
-transform(244, 840, 156, 74, ('Causal force', 'encoder'),
-          color=FORCE_MODULE, edge=FORCE_EDGE, size=17)
+# P_ctx produces Z_k^ctx (supplement); P_Z maps it to conditioning tokens
+# (eq:conditioning_set). The arrow denotes this existing sequential mapping.
+transform(40, 840, 170, 74, r'$P_{\mathrm{ctx}}\!\rightarrow\!P_Z$', size=23)
+transform(244, 840, 156, 74, ('Force', 'encoder'),
+          color=FORCE_MODULE, edge=FORCE_EDGE, size=20)
 transform(458, 840, 90, 74, r'$P_S$', size=23)
-transform(606, 840, 156, 74, ('Flatten', r'Project $P_A$'), size=16.5)
+transform(606, 840, 156, 74, ('Flatten', r'$P_A$'), size=20)
 transform(801, 840, 92, 74, r'$P_\xi$', size=23)
 for cx in centers:
     arrow((cx, 920), (cx, 934), scale=8)
@@ -320,57 +294,67 @@ for cx in centers:
 # A context token group, and one token each for force, state, reference, timing.
 panel(74, 946, 78, 30, NEUTRAL, NEUTRAL_STROKE, radius=2, lw=.8)
 panel(79, 941, 78, 30, NEUTRAL, NEUTRAL_STROKE, radius=2, lw=.8, z=3)
-text(118, 956, r'$\mathrm{ctx}$', size=19, ha='center')
 text(178, 956, r'$\cdots$', size=21, color=EDGE, ha='center')
 token(322, 941, r'$u_t^F$', FORCE, FORCE_EDGE, w=58)
-token(503, 941, r'$S$', w=43)
-token(684, 941, r'$A$', REFERENCE, REFERENCE_EDGE, w=43)
-token(847, 941, r'$\xi$', w=43)
-line([(45, 984), (45, 993), (894, 993), (894, 984)], color=NEUTRAL_STROKE, lw=.9)
-text(470, 1016, r'Condition tokens $\mathcal{C}_t$', size=20, color=EDGE, ha='center')
+# Unnamed glyphs are the outputs of the labeled projections above, not new
+# aliases for raw state, action, or timing inputs. The bracket groups all C_t.
+token(503, 941, '', w=43)
+token(684, 941, '', REFERENCE, REFERENCE_EDGE, w=43)
+token(847, 941, '', w=43)
+line([(45, 934), (35, 934), (35, 993), (894, 993), (894, 934), (884, 934)],
+     color=NEUTRAL_STROKE, lw=.9)
+text(470, 1016, r'$\mathcal{C}_t$', size=23, color=EDGE, ha='center')
 
 # Same direction for both student evaluations. The operator masks only the
 # force token in C_t; it does not mask the force encoder during teacher queries.
-arrow((902, 956), (949, 956))
-line([(949, 956), (962, 956), (962, 850), (1051, 850)])
-arrow((1034, 850), (1056, 850))
+arrow((894, 956), (949, 956))
+line([(949, 956), (962, 956), (962, 850), (1040, 850)])
+arrow((1040, 850), (1060, 850))
 text(1009, 823, r'$\mathcal{C}_t$', size=23, ha='center', color=EDGE)
 line([(962, 956), (962, 1007), (973, 1007)])
 panel(978, 988, 67, 38, '#FCEAF1', DELAY_EDGE, radius=3, lw=1)
 text(1012, 1007, r'$\mathrm{Mask}_F$', size=18, ha='center', color=DELAY_EDGE)
-arrow((1048, 1007), (1056, 1007), color=DELAY_EDGE, scale=7)
-text(1012, 1064, 'Force token masked', size=16, color=DELAY_EDGE, ha='center')
+arrow((1045, 1007), (1060, 1007), color=DELAY_EDGE, scale=7)
 
-text(1142, 778, 'Shared attention', size=20, ha='center', weight='bold')
-panel(1045, 807, 196, 241, SHARED_FILL, SHARED_EDGE, radius=4, lw=1.1)
-panel(1053, 808, 180, 5, SHARED_ACCENT, radius=1, z=2)
-text(1142, 931, 'Shared weights', size=17, color=EDGE, ha='center')
-for cy, head, pred, fill, edge in [
-    (850, 'Force head', r'$\Delta\hat A^{\mathrm{force}}_{t,1:K}$', FORCE, FORCE_EDGE),
-    (1007, 'Delay head', r'$\Delta\hat A^{\mathrm{delay}}_{t,1:K}$', DELAY, DELAY_EDGE),
+text(1142, 778, 'Shared attention', size=21, ha='center', weight='bold')
+# One parameterized module, evaluated separately along the two horizontal
+# paths. The query-output glyphs and separate heads lie outside its boundary.
+panel(1060, 807, 164, 241, SHARED_FILL, SHARED_EDGE, radius=4, lw=1.1)
+panel(1068, 808, 148, 5, SHARED_ACCENT, radius=1, z=2)
+text(1142, 927, r'$\Phi$', size=37, color=SHARED_EDGE, ha='center')
+# q_corr is a learned INPUT shared by both calls (eq:force_output/delay_output).
+# It is appended after the delay branch masks C_t's force token.
+panel(980, 910, 69, 34, 'white', EDGE, radius=2, lw=.9)
+text(1014, 927, r'$q_{\mathrm{corr}}$', size=20, ha='center')
+line([(1049, 927), (1081, 927)], color=EDGE, lw=1.1)
+ax.add_patch(Circle((1081, 927), 2.3, fc=EDGE, ec='none', zorder=5))
+arrow((1081, 927), (1081, 850), color=EDGE, lw=1.1, scale=8)
+arrow((1081, 927), (1081, 1007), color=EDGE, lw=1.1, scale=8)
+for cy, head, weight, pred, fill, edge in [
+    (850, 'Force head', r'$W_{\mathrm{force}}$', r'$\Delta\hat A^{\mathrm{force}}_{t,1:K}$', FORCE, FORCE_EDGE),
+    (1007, 'Delay head', r'$W_{\mathrm{delay}}$', r'$\Delta\hat A^{\mathrm{delay}}_{t,1:K}$', DELAY, DELAY_EDGE),
 ]:
-    panel(1062, cy-31, 162, 62, 'white', NEUTRAL_STROKE, radius=3, lw=.8)
-    text(1143, cy-11, r'Attention $\Phi$', size=18, ha='center')
-    text(1143, cy+16, r'Query $q_{\mathrm{corr}}$', size=18, color=EDGE, ha='center')
-    arrow((1230, cy), (1247, cy), scale=8)
-    transform(1253, cy-27, 134, 54, head, fill, edge, size=17)
-    arrow((1393, cy), (1412, cy), color=edge, scale=8)
-    text(1484, cy-40, pred, size=24, color=edge, ha='center')
-    sequence(1420, cy-12, 128, h=24, color=fill, edge=edge)
-    arrow((1554, cy), (1645, cy), color=edge)
-    operation(1674, cy, r'$\ell_{\mathrm{pose}}$', edge=edge, radius=24)
+    arrow((1060, cy), (1235, cy), color=SHARED_EDGE, scale=8)
+    panel(1240, cy-14, 30, 28, SHARED_ACCENT, SHARED_EDGE, radius=2, lw=.8)
+    # Brackets denote selection of the query-position feature, as in Phi(...)[q].
+    text(1255, cy-36, r'$[q_{\mathrm{corr}}]$', size=20, color=EDGE, ha='center')
+    arrow((1275, cy), (1290, cy), scale=8)
+    transform(1296, cy-38, 134, 76, (head, weight), fill, edge, size=17)
+    arrow((1436, cy), (1453, cy), color=edge, scale=8)
+    text(1524, cy-40, pred, size=24, color=edge, ha='center')
+    sequence(1460, cy-12, 128, h=24, color=fill, edge=edge)
+    arrow((1594, cy), (1671, cy), color=edge)
+    operation(1700, cy, r'$\ell_{\mathrm{pose}}$', edge=edge, radius=24)
 
-# Repeat the exact target symbols beside the local losses. This avoids long
-# inter-panel wires while identifying their origin unambiguously.
-text(1674, 686, 'Targets from (a)', size=18, ha='center', color=EDGE)
+# Matching target chunks identify supervision without repeating long formulae.
+# Their colors and vertical order agree with the named targets in panel (a).
+text(1664, 744, 'Targets from (a)', size=20, ha='center', color=EDGE)
 for cy, lab, fill, edge in [
     (850, target_force, FORCE, FORCE_EDGE),
     (1007, target_delay, DELAY, DELAY_EDGE),
 ]:
-    text(1674, cy-111, lab, size=23, color=edge, ha='center')
-    sequence(1607, cy-69, 134, h=22, color=fill, edge=edge)
-    arrow((1674, cy-40), (1674, cy-30), color=edge, scale=8)
-text(1674, 1056, 'Stepwise pose loss', size=17, color=EDGE, ha='center')
+    sequence(1633, cy-69, 134, h=22, color=fill, edge=edge)
+    arrow((1700, cy-40), (1700, cy-30), color=edge, scale=8)
 
 for suffix in ['png', 'pdf', 'svg']:
     fig.savefig(OUT / f'fig02_architecture.{suffix}', dpi=150, facecolor='white')

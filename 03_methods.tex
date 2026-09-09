@@ -1,7 +1,7 @@
 \begin{figure*}[!t]
     \centering
     \includegraphics[width=0.98\textwidth]{figures/fig02_architecture.pdf}
-    \caption{Teacher supervision and dual-correction policy. (a) Frozen teacher queries share $E_k$, $S_t$, and $\epsilon_k$. The force target compares the paired pose predictions; the delay target compares the force-agnostic prediction with the stored reference and includes reference-state alignment. (b) Two evaluations share attention weights, with the force token masked for the delay output.}
+    \caption{Correction distillation (training stage 3). (a) Frozen teacher queries reuse visual--language context $E_k$ from reference query $k$ and share $S_t$ and $\epsilon_k$. The force target compares paired pose predictions; the delay target compares the force-agnostic prediction with the stored reference and includes reference-state alignment. (b) Two evaluations of $\Phi$ share the learned query $q_{\mathrm{corr}}$; the delay evaluation masks the force token. Heads $W_{\mathrm{force}}$ and $W_{\mathrm{delay}}$ read the respective outputs at $q_{\mathrm{corr}}$ and receive stepwise pose supervision.}
     \label{fig:network_structure}
 \end{figure*}
 
