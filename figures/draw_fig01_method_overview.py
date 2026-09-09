@@ -19,6 +19,7 @@ from figure_palette import (INK, EDGE, NEUTRAL, BACKGROUND, REFERENCE, FORCE,
 ROOT = Path(__file__).resolve().parent
 OUTPUT_PDF = ROOT / "fig01_method_overview.pdf"
 OUTPUT_PNG = ROOT / "fig01_method_overview.png"
+OUTPUT_SVG = ROOT / "fig01_method_overview.svg"
 
 COMPARISON_IMAGES = [None, None]
 
@@ -39,6 +40,7 @@ PLACEHOLDER = "#ECECE8"
 plt.rcParams.update({
     "font.family": "Arial",
     "mathtext.fontset": "dejavusans",
+    "svg.fonttype": "none",
     "axes.linewidth": 0.8,
 })
 
@@ -301,8 +303,9 @@ def main():
             ax.add_patch(Rectangle((.698,y+.045),.262,.33,facecolor=PLACEHOLDER,edgecolor="#B8B8B0",linewidth=.7,linestyle=(0,(3,2)),zorder=3))
             label(ax,.829,y+.21,"same task and initial condition",size=7.2,color="#888884")
         label(ax,.829,y+.022,title,size=9.2,weight="bold",color=color)
-    for out in (OUTPUT_PDF,OUTPUT_PNG):
+    for out in (OUTPUT_PDF,OUTPUT_PNG,OUTPUT_SVG):
         fig.savefig(out,dpi=240,bbox_inches="tight",pad_inches=0,facecolor="white")
+    OUTPUT_SVG.write_text("\n".join(line.rstrip() for line in OUTPUT_SVG.read_text().splitlines()) + "\n")
     plt.close(fig)
 
 if __name__ == "__main__":
