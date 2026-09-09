@@ -13,7 +13,7 @@ from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
 from figure_palette import (
     INK, EDGE, REFERENCE, REFERENCE_EDGE,
-    JOINT_CORRECTION, JOINT_CORRECTION_EDGE,
+    JOINT_CORRECTION, JOINT_CORRECTION_EDGE, COMMAND,
 )
 
 OUT = Path(__file__).resolve().parent / 'fig03_async_execution'
@@ -136,12 +136,12 @@ for q in QUERIES:
 # Only selected valid steps reach the bottom lane. Inference and preemption
 # can shorten a step; a full K-step chunk is not assumed to execute.
 for a, b, q, j in selected_steps:
-    step(a, b, 10, '#85A771', height=9)
+    step(a, b, 10, COMMAND, height=9)
 
 # Short vertical links map each selected interval to its executed action steps.
 for q in QUERIES:
     mid=(q['selected_start']+q['selected_end'])/2
-    arrow(mid,q['y']-6,mid,19,color=JOINT_CORRECTION)
+    arrow(mid,q['y']-6,mid,19,color=JOINT_CORRECTION_EDGE)
 
 # Show where the newer completed result replaces the earlier result.
 for q in QUERIES[1:]:

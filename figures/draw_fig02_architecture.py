@@ -13,18 +13,15 @@ from PIL import Image
 
 OUT = Path(__file__).resolve().parent
 PAPER = OUT.parent
-from figure_palette import snowflake_segments
+from figure_palette import (
+    snowflake_segments, FORCE, DELAY, REFERENCE,
+    FORCE_EDGE, DELAY_EDGE, REFERENCE_EDGE, STUDENT_FILL, STUDENT_ACCENT,
+)
 
 # Pastel palette inspired by the user's reference figure. Pale blue marks
 # visual-language/context modules, green the teacher action expert, yellow
 # force modules/targets, lavender delay targets, and peach shared attention.
 # Dark text and outlines preserve contrast; data-flow and symbols are unchanged.
-FORCE = '#FFE699'
-DELAY = '#D7D0E7'
-REFERENCE = '#9DC3E6'
-FORCE_EDGE = '#806722'
-DELAY_EDGE = '#695781'
-REFERENCE_EDGE = '#38688B'
 INK = '#202020'
 EDGE = '#383838'
 NEUTRAL = '#FFFFFF'
@@ -36,8 +33,8 @@ ACTION_INNER = '#C6E0B4'
 FORCE_MODULE = '#FFF2CC'
 DELAY_MODULE = '#EEEAF4'
 GENERIC_MODULE = '#F2F2F2'
-SHARED_ACCENT = '#E7AE88'
-SHARED_FILL = '#F8CBAD'
+SHARED_ACCENT = STUDENT_ACCENT
+SHARED_FILL = STUDENT_FILL
 SHARED_EDGE = EDGE
 
 plt.rcParams.update({
@@ -143,10 +140,10 @@ def operation(cx, cy, symbol='+', edge=EDGE, radius=14):
     text(cx, cy, symbol, size=18, color=edge, ha='center', z=6)
 
 
-def transform(x, y, w, h, label, color=NEUTRAL, edge=EDGE, size=18, direction='right'):
+def transform(x, y, w, h, label, color=NEUTRAL, edge=EDGE, size=18, direction='right', taper=7):
     points = ([(x,y), (x+w,y), (x+w-8,y+h), (x+8,y+h)]
               if direction == 'down' else
-              [(x,y), (x+w,y+7), (x+w,y+h-7), (x,y+h)])
+              [(x,y), (x+w,y+taper), (x+w,y+h-taper), (x,y+h)])
     ax.add_patch(Polygon(points,
                          fc=color, ec=edge, lw=1.1, zorder=3))
     if isinstance(label, tuple):
@@ -299,7 +296,7 @@ for cy, title, lab in zip(
 
 # P_ctx -> P_Z denotes the sequential context mappings in the supplement
 # and eq:conditioning_set; the remaining projections retain their symbols.
-transform(300, 743, 185, 66, r'$P_{\mathrm{ctx}}\!\rightarrow\!P_Z$', color=VLM_MODULE, size=23)
+transform(300, 743, 185, 66, r'$P_{\mathrm{ctx}}\!\rightarrow\!P_Z$', color=VLM_MODULE, size=23, taper=13)
 transform(300, 835, 185, 66, ('Force', 'encoder'),
           color=FORCE_MODULE, edge=EDGE, size=20)
 transform(300, 927, 185, 66, r'$P_S$', color=GENERIC_MODULE, size=23)
@@ -329,8 +326,8 @@ line([(663, 741), (678, 741), (678, 1179), (663, 1179)],
 
 # The complete condition set branches into the two shared-weight evaluations.
 # Mask_F remains upstream of attention and only on the delay evaluation.
-# The common learned query and query-position readout are abstracted here;
-# their exact input/output definitions remain in the manuscript equations.
+# The caption specifies the two separate evaluations, shared learned query,
+# and query-position readout. A single silhouette denotes the shared module.
 arrow((678, 960), (717, 960), scale=9)
 line([(717, 900), (717, 1020)])
 arrow((717, 900), (850, 900), scale=9)
@@ -339,14 +336,16 @@ panel(741, 1002, 88, 36, 'white', NEUTRAL_STROKE, radius=3, lw=1)
 text(785, 1020, r'$\mathrm{Mask}_F$', size=19, ha='center')
 arrow((835, 1020), (850, 1020), scale=8)
 
+# Approved option A: input arrows stop at the shared module; output arrows
+# begin at its right boundary. No data-flow lines cross the box interior.
 panel(850, 860, 260, 200, SHARED_FILL, SHARED_EDGE, radius=5, lw=1.1)
-panel(858, 861, 244, 5, SHARED_ACCENT, radius=1, z=2)
-text(980, 960, r'Shared attention $\Phi$', size=18, ha='center', weight='bold')
+text(980, 947, 'Shared attention', size=20, ha='center', weight='bold')
+text(980, 986, r'$\Phi$', size=30, ha='center')
 for cy, head, weight, pred, fill, edge in [
     (900, 'Force head', r'$W_{\mathrm{force}}$', r'$\Delta\hat A^{\mathrm{force}}_{t,1:K}$', FORCE, FORCE_EDGE),
     (1020, 'Delay head', r'$W_{\mathrm{delay}}$', r'$\Delta\hat A^{\mathrm{delay}}_{t,1:K}$', DELAY, DELAY_EDGE),
 ]:
-    arrow((850, cy), (1142, cy), color=SHARED_EDGE, scale=9)
+    arrow((1110, cy), (1142, cy), color=SHARED_EDGE, scale=9)
     transform(1150, cy-38, 150, 76, (head, weight), fill, edge, size=18)
     arrow((1307, cy), (1353, cy), color=edge, scale=9)
     sequence(1360, cy-12, 168, h=24, color=fill, edge=edge)

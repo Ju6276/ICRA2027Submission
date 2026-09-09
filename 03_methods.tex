@@ -1,7 +1,7 @@
 \begin{figure*}[!t]
     \centering
     \includegraphics[width=0.98\textwidth]{figures/fig02_architecture.pdf}
-    \caption{Correction distillation (training stage 3). (a) The frozen vision--language model (VLM) produces $E_k$ at reference query $k$. Teacher queries reuse this context and share $S_t$ and $\epsilon_k$. Their predictions and the stored reference define the two correction targets, with reference-state alignment included in the delay target. (b) The student uses pooled context $(\bar E_k,\bar m_k)$ derived from $E_k$. Shared attention $\Phi$ is evaluated separately for force and delay corrections, with the force token masked for delay. The teacher targets supervise both student outputs through $\mathcal L_{\mathrm{distill}}$.}
+    \caption{Correction distillation (training stage 3). (a) The frozen vision--language model (VLM) produces $E_k$ at reference query $k$. Teacher queries reuse this context and share $S_t$ and $\epsilon_k$. Their predictions and the stored reference define the two correction targets, with reference-state alignment included in the delay target. (b) The student uses pooled context $(\bar E_k,\bar m_k)$ derived from $E_k$. The two evaluations of $\Phi$ share weights and append the same learned query token $q_{\mathrm{corr}}$ to their inputs, with the force token masked only for delay. Each head reads its corresponding output at $q_{\mathrm{corr}}$. The teacher targets supervise both student outputs through $\mathcal L_{\mathrm{distill}}$.}
     \label{fig:network_structure}
 \end{figure*}
 

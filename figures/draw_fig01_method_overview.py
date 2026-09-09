@@ -11,9 +11,10 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Circle, FancyArrowPatch, FancyBboxPatch, Rectangle, PathPatch
 from matplotlib.path import Path as MplPath
 from PIL import Image, ImageOps
-from figure_palette import (INK, EDGE, NEUTRAL, BACKGROUND, REFERENCE, FORCE,
+from figure_palette import (INK, EDGE, NEUTRAL, BACKGROUND, REFERENCE, REFERENCE_EDGE, FORCE,
                             FORCE_ACCENT, FORCE_EDGE, DELAY, DELAY_ACCENT,
-                            DELAY_EDGE, JOINT_CORRECTION, COMMAND, snowflake_segments)
+                            DELAY_EDGE, JOINT_CORRECTION, JOINT_CORRECTION_EDGE,
+                            STUDENT_FILL, COMMAND, COMMAND_EDGE, snowflake_segments)
 
 
 ROOT = Path(__file__).resolve().parent
@@ -94,9 +95,9 @@ def robot_arm_icon(ax, x, y, scale=.00065):
         ax.add_patch(Ellipse(point(px,py),radius*scale,radius*scale*aspect,
                              facecolor=INK,edgecolor="none",zorder=8))
     # Simple, open parallel fingers in the reference blue.
-    stroke([(10,67),(29,67)],"#668C9C",2.0,z=7)
-    stroke([(10,67),(10,56),(14,52)],"#668C9C",1.8,z=7)
-    stroke([(29,67),(29,56),(25,52)],"#668C9C",1.8,z=7)
+    stroke([(10,67),(29,67)],REFERENCE_EDGE,2.0,z=7)
+    stroke([(10,67),(10,56),(14,52)],REFERENCE_EDGE,1.8,z=7)
+    stroke([(29,67),(29,56),(25,52)],REFERENCE_EDGE,1.8,z=7)
 
 
 def action_strip(ax, x, y, w, face, edge, count=5):
@@ -202,7 +203,7 @@ def main():
     ax.imshow(Image.open(ROOT/"icons/force.png"),extent=[.048,.075,.599,.658],aspect="auto",zorder=5)
     label(ax,.09,.628,"Force History",size=6.5,ha="left",color=FORCE_EDGE)
     for y, text, face, edge in [(.635,"ON",FORCE_PALE,FORCE_EDGE),
-                                 (.585,"OFF",PALE_BLUE,"#668C9C")]:
+                                 (.585,"OFF",PALE_BLUE,REFERENCE_EDGE)]:
         panel(ax,.174,y,.033,.026,face=face,edge=edge,lw=.7,radius=.012)
         label(ax,.1905,y+.013,text,size=6.3,color=edge,weight="bold")
     ax.plot([.217,.224,.224,.217],[.874,.874,.583,.583],color=EDGE,lw=.8,zorder=3)
@@ -227,9 +228,9 @@ def main():
     ax.plot(.482,.636,marker="o",markersize=1.6,color=DELAY_EDGE,zorder=6)
     arrow(ax,(.42,.762),(.455,.762),scale=8)
     arrow(ax,(.42,.675),(.455,.675),scale=7)
-    action_strip(ax,.302,.604,.056,PALE_BLUE,"#668C9C")
-    label(ax,.33,.573,r"$A^{\mathrm{ref}}$",size=9,color="#668C9C")
-    arrow(ax,(.33,.66),(.33,.634),color="#668C9C",scale=6)
+    action_strip(ax,.302,.604,.056,PALE_BLUE,REFERENCE_EDGE)
+    label(ax,.33,.573,r"$A^{\mathrm{ref}}$",size=9,color=REFERENCE_EDGE)
+    arrow(ax,(.33,.66),(.33,.634),color=REFERENCE_EDGE,scale=6)
     arrow(ax,(.363,.6165),(.455,.6165),scale=7)
 
     label(ax,.032,.505,"Slow reference + fast correction",size=10.5,weight="bold",ha="left")
@@ -238,7 +239,7 @@ def main():
     label(ax,.31,.393,"Force history + state",size=6.5,weight="bold")
     label(ax,.31,.358,"Cached task context",size=6.8)
     arrow(ax,(.395,.38),(.435,.38),scale=7)
-    panel(ax,.44,.335,.175,.09,face=NEUTRAL)
+    panel(ax,.44,.335,.175,.09,face=STUDENT_FILL)
     ax.imshow(Image.open(ROOT/"icons/student.png"),extent=[.45,.475,.347,.405],aspect="auto",zorder=5)
     label(ax,.549,.393,"Fast student",size=7.8,weight="bold")
     label(ax,.549,.357,"Correction policy",size=6.5,color=SUBTLE)
@@ -250,14 +251,14 @@ def main():
     label(ax,.143,.262,"Slow teacher",size=7.2,weight="bold")
     # Only the learned force-agnostic mode generates execution references.
     for y, text, face, edge in [(.213,"ON","#F6F7F8","#BCC4C9"),
-                                 (.174,"OFF",PALE_BLUE,"#668C9C")]:
+                                 (.174,"OFF",PALE_BLUE,REFERENCE_EDGE)]:
         panel(ax,.109,y,.068,.025,face=face,edge=edge,lw=.65,radius=.012)
         label(ax,.143,y+.0125,text,size=6.1,color=edge,weight="bold")
     label(ax,.125,.145,"~6 Hz",size=6.8,color=SUBTLE)
     # One local trajectory panel receives the reference and the joint correction.
     panel(ax,.26,.132,.28,.152,face="#FBFDFC",edge="#91A7AF",lw=.85,radius=.011)
-    arrow(ax,(.204,.208),(.255,.208),color="#668C9C",lw=1.1,scale=7)
-    arrow(ax,(.49,.331),(.49,.289),color=JOINT_CORRECTION,lw=1.1,scale=7)
+    arrow(ax,(.204,.208),(.255,.208),color=REFERENCE_EDGE,lw=1.1,scale=7)
+    arrow(ax,(.49,.331),(.49,.289),color=JOINT_CORRECTION_EDGE,lw=1.1,scale=7)
     import numpy as np
     def trajectory_points(u):
         # A spatial sketch of paired reference and corrected poses. The two
@@ -272,16 +273,16 @@ def main():
 
     u = np.linspace(0,1,240)
     ref_x,ref_y,adjusted_x,adjusted_y = trajectory_points(u)
-    ax.plot(ref_x,ref_y,color="#668C9C",lw=1.25,
+    ax.plot(ref_x,ref_y,color=REFERENCE_EDGE,lw=1.25,
             linestyle=(0,(1.4,1.7)),zorder=4)
-    ax.plot(adjusted_x,adjusted_y,color="#4E8A45",lw=1.65,zorder=5)
+    ax.plot(adjusted_x,adjusted_y,color=COMMAND_EDGE,lw=1.65,zorder=5)
     # One arrow color denotes the student's joint force-and-delay correction;
     # the arrows point from each reference pose to its adjusted counterpart.
     for position in [.15,.25,.35,.64,.75,.86]:
         rx,ry,cx,cy = trajectory_points(position)
-        arrow(ax,(rx,ry),(cx,cy),color=JOINT_CORRECTION,lw=.8,scale=4.5,z=6)
-    label(ax,.303,.157,r"$A^{\mathrm{ref}}$",size=8.3,color="#668C9C")
-    label(ax,.424,.266,"Adjusted trajectory",size=6.6,color="#4E8A45")
+        arrow(ax,(rx,ry),(cx,cy),color=JOINT_CORRECTION_EDGE,lw=.8,scale=4.5,z=6)
+    label(ax,.303,.157,r"$A^{\mathrm{ref}}$",size=8.3,color=REFERENCE_EDGE)
+    label(ax,.424,.266,"Adjusted trajectory",size=6.6,color=COMMAND_EDGE)
     arrow(ax,(.544,.208),(.57,.208),color=INK,lw=1.1,scale=7)
     # Robot output with command transmission rate.
     robot_arm_icon(ax,.57,.145)
@@ -290,7 +291,7 @@ def main():
     # Both targets feed one short supervision connection to the student below.
     ax.plot([.619,.628,.628,.535],[.762,.762,.565,.565],color=FORCE_ACCENT,lw=.85,linestyle=(0,(3,2)),zorder=6)
     ax.plot([.535,.535],[.584,.565],color=DELAY_ACCENT,lw=.85,linestyle=(0,(3,2)),zorder=6)
-    arrow(ax,(.535,.565),(.535,.431),color=JOINT_CORRECTION,dashed=True,lw=.85,scale=6,z=6)
+    arrow(ax,(.535,.565),(.535,.431),color=JOINT_CORRECTION_EDGE,dashed=True,lw=.85,scale=6,z=6)
     label(ax,.522,.514,"Correction supervision",size=6.4,color=SUBTLE,ha="right")
 
     for y,title,color,path in [(.535,"ForceVLA failure",ACCENT_RED,COMPARISON_IMAGES[0]),(.09,"ForceDelta-VLA success","#4E8A45",COMPARISON_IMAGES[1])]:
