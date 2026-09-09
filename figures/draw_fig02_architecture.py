@@ -1,195 +1,379 @@
-#!/usr/bin/env python3
-"""Paper-native vector figure: paired supervision and dual-correction policy.
+"""Fig. 2: teacher-defined correction targets and correction-policy training.
 
-Coordinates are schematic. Curves illustrate input types, not measured data.
-Teacher queries share cached E_k, current S_t and noise; Gamma supervises delay.
-The student is shown right-to-left to align its outputs with supervision targets.
+Run this script to regenerate the manuscript PDF, PNG, and editable SVG.
+Optional input thumbnails are loaded from figures/inputs/; missing assets use
+illustrative placeholders.
 """
-from html import escape
 from pathlib import Path
-import math
-import fitz
 
-OUT = Path(__file__).resolve().parent / 'fig02_architecture'
-W,H=1900,800
-from figure_palette import (INK, EDGE, NEUTRAL, REFERENCE as BLUE,
-                            REFERENCE_EDGE as BLUE_D, FORCE as ORANGE,
-                            FORCE_EDGE as ORANGE_D, DELAY as PURPLE,
-                            DELAY_EDGE as PURPLE_D, COMMAND as GREEN,
-                            snowflake_segments)
-s=[f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">',f'<rect width="{W}" height="{H}" fill="white"/>']
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.patches import FancyBboxPatch, FancyArrowPatch, Polygon, Rectangle, Circle
+from PIL import Image
 
-def text(x,y,v,size=23,anchor='middle',weight='normal',color=INK):
-    s.append(f'<text x="{x}" y="{y}" font-family="Arial,Helvetica,sans-serif" font-size="{size}" font-weight="{weight}" fill="{color}" text-anchor="{anchor}">{escape(v)}</text>')
-def rect(x,y,w,h,fill='white',stroke=EDGE,r=5,width=1.5):
-    s.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="{r}" fill="{fill}" stroke="{stroke}" stroke-width="{width}"/>')
-def circle(x,y,r,fill='white',stroke=EDGE):
-    s.append(f'<circle cx="{x}" cy="{y}" r="{r}" fill="{fill}" stroke="{stroke}" stroke-width="1.7"/>')
-def line(points,color=EDGE,width=1.8,dash=None,arrow=False):
-    if dash:
-        # Explicit dash segments survive SVG-to-PDF conversion in MuPDF.
-        for (ax,ay),(bx,by) in zip(points,points[1:]):
-            length=math.hypot(bx-ax,by-ay)
-            for offset in range(0,int(length),13):
-                end=min(offset+7,length)
-                line([(ax+(bx-ax)*offset/length,ay+(by-ay)*offset/length),
-                      (ax+(bx-ax)*end/length,ay+(by-ay)*end/length)],color,width)
-        if arrow:
-            bx,by=points[-1]; ax,ay=points[-2]; length=math.hypot(bx-ax,by-ay)
-            line([(bx-(bx-ax)*2/length,by-(by-ay)*2/length),(bx,by)],color,width,arrow=True)
-        return
-    ds=''
-    s.append(f'<polyline points="{" ".join(f"{x},{y}" for x,y in points)}" fill="none" stroke="{color}" stroke-width="{width}" stroke-linejoin="round" stroke-linecap="round"{ds}/>')
-    if arrow:
-        x,y=points[-1];px,py=points[-2];dx,dy=x-px,y-py;n=max(math.hypot(dx,dy),1)
-        ux,uy=dx/n,dy/n
-        pts=[(x,y),(x-9*ux+4*uy,y-9*uy-4*ux),(x-9*ux-4*uy,y-9*uy+4*ux)]
-        s.append(f'<polygon points="{" ".join(f"{a},{b}" for a,b in pts)}" fill="{color}"/>')
-def tokens(x,y,fill,n=6,w=17,h=30):
-    for i in range(n):rect(x+i*(w+4),y,w,h,fill,r=2,width=1)
-def curve(x,y,w=125,h=35,color=ORANGE_D):
-    line([(x,y),(x,y+h),(x+w,y+h)],color='#B7C1C6',width=1)
-    points=[(x+i*w/40,y+h*.55+h*.24*math.sin(i*.42)+h*.12*math.sin(i*1.3)) for i in range(41)]
-    line(points,color=color,width=2)
-def state(x,y):
-    line([(x-45,y+17),(x,y-6),(x+32,y+17),(x+53,y-4)],width=3)
-    for a,b in [(x-45,y+17),(x,y-6),(x+32,y+17)]:circle(a,b,5,NEUTRAL)
-    line([(x+45,y-11),(x+60,y+3)],width=2)
-def clock(x,y):
-    circle(x,y,17);line([(x,y-11),(x,y),(x+10,y)],width=2)
+OUT = Path(__file__).resolve().parent
+PAPER = OUT.parent
+from figure_palette import snowflake_segments
 
-text(25,36,'(a) Teacher supervision',29,anchor='start',weight='bold')
-text(1010,36,'(b) Dual-correction policy',29,anchor='start',weight='bold')
-line([(977,62),(977,737)],color='#CDD5D9',width=1)
+# Palette C hues with increased saturation for small data glyphs. Blue marks
+# reference actions; orange marks force corrections, rose delay corrections,
+# and coral the shared student module. Generic modules have white faces.
+FORCE = '#E99D4D'
+DELAY = '#CF638F'
+REFERENCE = '#639AC5'
+FORCE_EDGE = '#A96017'
+DELAY_EDGE = '#9E3561'
+REFERENCE_EDGE = '#2F6793'
+INK = '#202020'
+EDGE = '#383838'
+NEUTRAL = '#FFFFFF'
+NEUTRAL_STROKE = '#666666'
+FORCE_MODULE = '#FFF0DF'
+SHARED_ACCENT = '#DC806E'
+SHARED_FILL = '#FCECE7'
+SHARED_EDGE = '#AD503C'
 
-# Image and language pictograms describe the cached prefix source, not fresh input.
-rect(45,82,111,72,NEUTRAL,r=3)
-line([(57,144),(81,114),(111,137),(143,103)],color=BLUE_D,width=2)
-circle(130,97,6,'white',BLUE_D)
-text(101,183,'Query-time images',20)
-rect(194,88,157,57,NEUTRAL,r=9)
-line([(209,145),(207,155),(223,145)],width=1.5)
-text(272,121,'“Insert the plug”',20)
-text(272,183,'Instruction',20)
-line([(101,190),(101,213),(166,213),(166,225)],arrow=True)
-line([(272,190),(272,213),(229,213),(229,225)],arrow=True)
-# Blue visual tokens and cream language tokens explicitly form cached E_k.
-rect(123,223,146,37,'#F7FAFB',stroke='#AFC0C7',r=5,width=1)
-for i in range(6):
-    rect(132+i*21,230,15,23,'#DDE3E7' if i<3 else '#F5F6F7',r=2,width=1)
-text(196,283,'Cached context Eₖ',22)
-line([(273,241),(361,241),(361,261)],arrow=True)
-text(500,194,'Shared noise εₖ',21)
-line([(475,207),(475,260)],arrow=True)
+plt.rcParams.update({
+    'font.family': 'Arial',
+    'mathtext.fontset': 'stix',
+    'svg.fonttype': 'none',
+})
+fig = plt.figure(figsize=(18, 9.88), facecolor='white')
+ax = fig.add_axes([0, 0, 1, 1])
+ax.set(xlim=(0, 1800), ylim=(1080, 92))
+ax.axis('off')
+QUIET = '#595959'
+RULE = '#BDBDBD'
 
-# Current state and the two alternative force inputs are explicit.
-state(120,305); text(122,354,'Current state Sₜ',23)
-line([(194,314),(298,314)],arrow=True)
-curve(57,390);text(122,458,'Force history ℱₜ',23,color=ORANGE_D)
-line([(194,416),(298,416)],color=ORANGE_D,arrow=True)
-circle(119,511,15,'#E6EBED');text(119,518,'z',21)
-text(124,554,'Learned token',23)
-line([(194,512),(273,512),(273,476),(298,476)],arrow=True)
 
-# One frozen teacher, two modes; avoid expanding the encoder and adapter.
-rect(300,265,205,240,NEUTRAL,r=13)
-text(402,345,'VLA teacher',27,weight='bold')
-for pts in snowflake_segments(402,297,15):line(pts,width=1.8)
-line([(324,382),(480,382)],color='#A6BBC4',width=1)
-text(402,417,'Paired queries',23)
-text(402,452,'Two input modes',20,color=EDGE)
-text(246,467,'or',20,color=EDGE)
+def text(x, y, s, size=19, color=INK, ha='left', weight='normal', z=8):
+    ax.text(x, y, s, fontsize=size, color=color, ha=ha, va='center',
+            weight=weight, zorder=z)
 
-# Predictions: colored sequence glyphs, not processing boxes.
-text(641,249,'Force-conditioned',22,color=ORANGE_D)
-tokens(578,266,ORANGE)
-text(641,321,'Current state Sₜ',20,color=EDGE)
-line([(505,322),(546,322),(546,281),(572,281)],arrow=True)
-text(641,374,'Force-agnostic',22)
-tokens(578,391,'#E6EBED')
-text(641,447,'Current state Sₜ',20,color=EDGE)
-line([(505,445),(540,445),(540,406),(572,406)],arrow=True)
-text(641,532,'Previous reference',22,color=BLUE_D)
-tokens(578,549,BLUE)
-text(641,607,'From Sₖ; time-aligned',20,color=EDGE)
 
-# Signed nodes explicitly implement conditioned-agnostic and agnostic-ref+Gamma.
-circle(811,281,23,ORANGE)
-text(811,289,'Σ',24)
-line([(704,281),(786,281)],color=ORANGE_D,arrow=True);text(763,269,'+',21)
-line([(704,406),(741,406),(741,318),(795,300)],arrow=True);text(768,330,'−',23)
-line([(835,281),(857,281)],color=ORANGE_D,arrow=True)
-text(903,249,'Force',23,weight='bold',color=ORANGE_D)
-text(903,274,'target',23,weight='bold',color=ORANGE_D)
-tokens(870,292,ORANGE,n=6,w=8,h=25)
+def panel(x, y, w, h, face='white', edge='none', radius=8, lw=1, z=1):
+    p = FancyBboxPatch((x, y), w, h,
+                      boxstyle=f'round,pad=0,rounding_size={radius}',
+                      facecolor=face, edgecolor=edge, lw=lw, zorder=z)
+    ax.add_patch(p)
+    return p
 
-circle(811,465,23,PURPLE);text(811,473,'Σ',24)
-line([(704,406),(766,406),(798,445)],arrow=True);text(782,421,'+',21)
-line([(704,564),(753,564),(796,485)],arrow=True);text(756,526,'−',23)
-text(811,648,'Γ(Sₜ, Sₖ)',25,color=PURPLE_D)
-text(780,680,'Reference-state',21,color=PURPLE_D)
-text(780,707,'alignment',21,color=PURPLE_D)
-line([(811,621),(811,491)],color=PURPLE_D,arrow=True);text(830,535,'+',21,color=PURPLE_D)
-line([(835,465),(857,465)],color=PURPLE_D,arrow=True)
-text(903,435,'Delay',23,weight='bold',color=PURPLE_D)
-text(903,461,'target',23,weight='bold',color=PURPLE_D)
-tokens(870,478,PURPLE,n=6,w=8,h=25)
 
-# Panel (b) reads consistently left to right.
-# Teacher supervision runs above the policy, outside the input/data-flow paths.
-line([(941,305),(957,305),(957,71),(1566,71),(1566,286)],color=ORANGE_D,dash='6 5',arrow=True)
-line([(941,491),(968,491),(968,96),(1633,96),(1633,474),(1607,489)],color=PURPLE_D,dash='6 5',arrow=True)
-text(1270,134,'Teacher supervision',20,color=EDGE)
+def line(points, color=EDGE, lw=1.2, dash=False, z=3):
+    ax.plot(*zip(*points), color=color, lw=lw,
+            linestyle=(0, (3, 3)) if dash else '-',
+            solid_capstyle='round', solid_joinstyle='round', zorder=z)
 
-# Input bank: pooled E_k, current state, force history, reference and timing.
-tokens(1044,177,NEUTRAL);text(1108,229,'Pooled task context',21)
-state(1108,288);text(1108,337,'Current state Sₜ',21)
-curve(1044,377);text(1108,443,'Recent force history',21,color=ORANGE_D)
-tokens(1044,508,BLUE);text(1108,562,'Reference segment',21)
-clock(1108,613);text(1108,662,'Timing: age + phase',21)
-line([(1210,191),(1210,613)])
-for y in [191,298,401,523,613]:line([(1175,y),(1210,y)])
 
-# Shared attention evaluations and separate heads.
-for cy,fill,letter in [(305,ORANGE,'F'),(491,PURPLE,'D')]:
-    line([(1210,cy),(1254,cy)],arrow=True)
-    for i,color in enumerate([NEUTRAL,'#E6EBED',ORANGE,BLUE,'#E6EBED']):
-        x=1260+i*17
-        rect(x,cy-17,12,34,color if cy==305 or i!=2 else '#F5F5F5',r=2,width=1)
-        if cy==491 and i==2:
-            line([(x-2,cy-19),(x+14,cy+19)],color=PURPLE_D,width=2)
-            line([(x+14,cy-19),(x-2,cy+19)],color=PURPLE_D,width=2)
-    line([(1344,cy),(1362,cy)],arrow=True)
-    rect(1366,cy-36,85,72,NEUTRAL,r=9)
-    text(1408,cy+12,'Φ',39)
-    line([(1455,cy),(1471,cy)],arrow=True)
-    circle(1494,cy,19,fill);text(1494,cy+8,letter,23)
-    line([(1516,cy),(1532,cy)],arrow=True)
-    tokens(1537,cy-14,fill,n=6,w=8,h=28)
-line([(1408,345),(1408,451)],dash='6 5')
-circle(1408,398,17,'white',stroke='white');text(1408,407,'=',30,color=EDGE)
-text(1408,242,'Shared attention',22,weight='bold')
-text(1569,355,'Force correction',21,color=ORANGE_D)
-text(1569,543,'Delay correction',21,color=PURPLE_D)
+def arrow(a, b, color=EDGE, lw=1.3, scale=10, z=4):
+    ax.add_patch(FancyArrowPatch(a, b, arrowstyle='-|>', mutation_scale=scale,
+                                color=color, lw=lw, shrinkA=0, shrinkB=0,
+                                zorder=z))
 
-# Composition follows the two outputs; a lower branch carries the reference pose.
-line([(1610,305),(1720,305),(1720,372)],color=ORANGE_D,arrow=True)
-line([(1610,491),(1720,491),(1720,428)],color=PURPLE_D,arrow=True)
-line([(1040,523),(994,523),(994,712),(1668,712),(1668,400),(1692,400)],color=BLUE_D,arrow=True)
-text(1420,744,'Reference pose',22,color=BLUE_D)
-circle(1720,400,25,GREEN);text(1720,409,'+',30)
-line([(1748,400),(1796,400)],arrow=True)
-text(1829,313,'Absolute pose',21)
-text(1829,342,'using Sₖ',20,color=EDGE)
-# End-effector pose glyph: a simple parallel-jaw gripper.
-rect(1820,360,22,25,GREEN,r=3,width=2)
-rect(1799,385,65,22,GREEN,r=4,width=2)
-line([(1805,407),(1805,438),(1817,438)],width=4)
-line([(1858,407),(1858,438),(1846,438)],width=4)
-text(1829,477,'Commanded',21,weight='bold')
-text(1829,504,'pose',21,weight='bold')
-text(25,771,'Sequence glyphs and force curves are schematic.',19,anchor='start',color=EDGE)
 
-s.append('</svg>');OUT.with_suffix('.svg').write_text('\n'.join(s))
-doc=fitz.open(OUT.with_suffix('.svg'));pdf=fitz.open('pdf',doc.convert_to_pdf());pdf.save(OUT.with_suffix('.pdf'))
-pdf[0].get_pixmap(matrix=fitz.Matrix(1.15,1.15),alpha=False).save(OUT.with_suffix('.png'))
+def snowflake(x, y, r=10):
+    for pts in snowflake_segments(x, y, r):
+        line(pts, lw=1.3, z=5)
+
+
+def sequence(x, y, w=150, n=5, color=REFERENCE, edge=REFERENCE_EDGE, h=15):
+    gap = 5
+    stepw = (w-gap*(n-1))/n
+    for i in range(n):
+        panel(x+i*(stepw+gap), y, stepw, h, color, edge,
+              radius=2, lw=.85, z=4)
+
+
+def asset(name, x, y, w, h):
+    path = PAPER / 'figures' / 'inputs' / name
+    if not path.exists():
+        return False
+    im = Image.open(path)
+    scale = min(w/im.width, h/im.height)
+    ww, hh = im.width*scale, im.height*scale
+    xx, yy = x+(w-ww)/2, y+(h-hh)/2
+    ax.imshow(im, extent=[xx, xx+ww, yy+hh, yy], aspect='auto', zorder=4)
+    return True
+
+
+def views(x, y, w=155, h=58):
+    if not asset('fig02_multiview.png', x, y, w, h):
+        for i in range(3):
+            xx = x+i*(w+4)/3
+            panel(xx, y, (w-8)/3, h, 'white', '#8A8A8A', radius=4, lw=.9)
+            text(xx+(w-8)/6, y+h/2, f'View {i+1}', size=10.5,
+                 color=QUIET, ha='center')
+
+
+def force_history(x, y, w=155, h=50):
+    if not asset('fig02_force_history.png', x, y, w, h):
+        # Input placeholder, without numerical axes or empirical measurements.
+        line([(x, y+2), (x, y+h), (x+w, y+h)], color=NEUTRAL_STROKE, lw=.8)
+        t = np.linspace(0, 1, 120)
+        yy = y+h*(.68-.25*np.sin(2*np.pi*t)*np.exp(-.9*t)-.15*t)
+        line(list(zip(x+5+(w-10)*t, yy)), color=FORCE_EDGE, lw=1.7)
+
+
+def state(x, y, w=128, h=48):
+    if not asset('fig02_state.png', x, y, w, h):
+        ox, oy = x+24, y+29
+        arrow((ox, oy), (ox+32, oy), color=EDGE, scale=7, lw=1.1)
+        arrow((ox, oy), (ox, oy-24), color=EDGE, scale=7, lw=1.1)
+        arrow((ox, oy), (ox-16, oy+14), color=EDGE, scale=7, lw=1.1)
+        for i, ww in enumerate([45, 31, 39]):
+            panel(x+68, y+9+i*12, ww, 5, '#636363', radius=2)
+
+
+def condition_tokens(cx, y, masked=False, scale=1):
+    # The context is a token group; the remaining conditions each use a token.
+    # A flattened K-step action segment is projected to ONE reference token.
+    colors = [NEUTRAL, FORCE, NEUTRAL, REFERENCE, NEUTRAL]
+    labels = [r'$\mathrm{ctx}\,\cdots$', r'$F$', r'$S$', r'$A$', r'$\xi$']
+    widths = [60*scale, *([32*scale]*4)]
+    h, gap = 32*scale, 6*scale
+    xx = cx-(sum(widths)+4*gap)/2
+    for i, (color, lab, w) in enumerate(zip(colors, labels, widths)):
+        panel(xx, y, w, h, color, NEUTRAL_STROKE, radius=3, lw=.7, z=3)
+        if masked and i == 1:
+            p = Rectangle((xx+1, y+1), w-2, h-2, facecolor='#F4F4F4',
+                          edgecolor=DELAY_EDGE, hatch='////', lw=0, zorder=4)
+            ax.add_patch(p)
+            text(xx+w/2, y+h/2, lab, size=17*scale, color=DELAY_EDGE,
+                 ha='center', z=5)
+        else:
+            text(xx+w/2, y+h/2, lab, size=17*scale, ha='center', z=5)
+        xx += w+gap
+
+
+def output(cx, y, s, fill, edge, width=244):
+    panel(cx-width/2, y, width, 47, fill, edge, radius=7, lw=1.05, z=4)
+    text(cx, y+23, s, size=22, ha='center', color=edge)
+
+
+def route(points, color=EDGE, lw=1.25, scale=9):
+    if len(points) > 2:
+        line(points[:-1], color, lw)
+    arrow(points[-2], points[-1], color, lw, scale)
+
+
+def operation(cx, cy, symbol='+', edge=EDGE, radius=14):
+    ax.add_patch(Circle((cx, cy), radius, fc='white', ec=edge, lw=1.3, zorder=5))
+    text(cx, cy, symbol, size=18, color=edge, ha='center', z=6)
+
+
+def transform(x, y, w, h, label, color=NEUTRAL, edge=EDGE, size=18):
+    ax.add_patch(Polygon([(x,y), (x+w,y+7), (x+w,y+h-7), (x,y+h)],
+                         fc=color, ec=edge, lw=1.1, zorder=3))
+    if isinstance(label, tuple):
+        text(x+w/2, y+h/2-14, label[0], size=size, ha='center')
+        text(x+w/2, y+h/2+14, label[1], size=size, ha='center')
+    else:
+        text(x+w/2, y+h/2, label, size=size, ha='center')
+
+
+def token(cx, y, label, fill=NEUTRAL, edge=NEUTRAL_STROKE, w=43, h=31):
+    panel(cx-w/2, y, w, h, fill, edge, radius=2, lw=.8, z=4)
+    text(cx, y+h/2, label, size=20, ha='center', z=5)
+
+
+# Training history is shown locally: pretrained frozen teacher modules,
+# previously learned token/adapter, and the correction policy being trained.
+# The depicted data flow remains correction distillation, not teacher fitting.
+text(35, 130, '(a) Teacher-defined correction targets', size=24, weight='bold')
+text(1760, 130, r'Reference query $k$ from schedule replay', size=17,
+     color=EDGE, ha='right')
+
+# The visual-language prefix is produced from the earlier reference query,
+# then reused in both current teacher calls. It is not a new raw modality.
+views(42, 191, 180, 61)
+text(132, 275, r'Images $V_k$', size=19, ha='center')
+panel(46, 300, 177, 37, 'white', '#8A8A8A', radius=3, lw=.8)
+text(134, 318, '“Insert the plug”', size=17, ha='center')
+text(134, 363, r'Instruction $L$', size=19, ha='center')
+arrow((228, 221), (259, 221))
+arrow((228, 318), (259, 318))
+panel(272, 211, 208, 128, 'white', EDGE, radius=4)
+panel(268, 207, 208, 128, 'white', EDGE, radius=4, lw=1.2, z=2)
+text(372, 256, 'Vision–language', size=19, ha='center')
+text(372, 285, 'encoder', size=19, ha='center')
+text(372, 316, r'Pretrained $\theta$', size=16, color=EDGE, ha='center')
+snowflake(454, 225, 9)
+arrow((486, 255), (522, 255))
+sequence(533, 244, 165, n=6, h=22, color=NEUTRAL, edge=NEUTRAL_STROKE)
+text(615, 213, r'$E_k$', size=25, ha='center')
+text(615, 288, r'Saved at $k$, reused at $t$', size=18, color=EDGE, ha='center')
+route([(615, 306), (615, 358), (644, 358)])
+
+# Current state is a shared input to both teacher modes, distinct from the
+# stored reference's query state S_k used in reference-state alignment.
+panel(748, 198, 221, 103, 'white', EDGE, radius=4, lw=1.2)
+text(858, 221, r'Current state $S_t$', size=19, ha='center')
+state(801, 243, 126, 46)
+arrow((858, 301), (858, 327), color=INK, lw=1.5, scale=11)
+
+# Shared action-expert weights; the adapter appears only in the learned
+# force-agnostic mode. The measured history enters only the conditioned call.
+panel(650, 327, 320, 234, 'white', EDGE, radius=5, lw=1.25)
+text(804, 350, 'Pretrained action expert', size=17, weight='bold', ha='center')
+text(807, 379, r'Shared $E_k$, $S_t$, $\epsilon_k$', size=18, color=EDGE, ha='center')
+snowflake(957, 338, 7)
+panel(668, 401, 280, 44, 'white', EDGE, radius=3, lw=.9)
+text(809, 423, 'Force-conditioned', size=19, ha='center')
+panel(668, 484, 280, 69, 'white', EDGE, radius=3, lw=.9)
+text(809, 504, 'Force-agnostic', size=19, ha='center')
+panel(722, 525, 174, 22, 'white', NEUTRAL_STROKE, radius=2, lw=.8)
+text(809, 536, 'Pose adapter', size=16, color=INK, ha='center')
+
+force_history(43, 404, 171, 45)
+text(128, 477, r'Force history $\mathcal{F}_t$', size=19, ha='center')
+arrow((222, 423), (255, 423))
+transform(263, 393, 167, 60, ('Causal force', 'encoder'),
+          color=FORCE_MODULE, edge=FORCE_EDGE, size=18)
+snowflake(420, 387, 7)
+arrow((437, 423), (469, 423))
+token(507, 407, r'$z_t^F$', FORCE, FORCE_EDGE, w=61)
+arrow((545, 423), (662, 423))
+text(462, 518, 'Learned token', size=19, ha='right', color=EDGE)
+token(507, 502, r'$z_{\varnothing F}$', NEUTRAL, NEUTRAL_STROKE, w=67)
+snowflake(553, 490, 6)
+arrow((549, 518), (662, 518), color=EDGE)
+text(435, 580, r'Token + adapter learned with $\theta$ fixed', size=16.5,
+     ha='center', color=EDGE)
+
+# All three glyphs below are K-step pose-action segments at matching times.
+# The stored segment is a separate input; it is NOT produced by a current call.
+text(1116, 335, 'Pose action chunks', size=19, color=EDGE, ha='center')
+pose_chunks = [
+    (423, r'$\mathcal{P}(A^{\mathrm{cond}}_{T,t|k,1:K})$', '#F4F4F4', EDGE),
+    (518, r'$\mathcal{P}(A^{\mathrm{ref}}_{T,t|k,1:K})$', 'white', REFERENCE_EDGE),
+    (609, r'$\mathcal{P}(A^{\mathrm{ref}}_k(t_{1:K}))$', REFERENCE, REFERENCE_EDGE),
+]
+for y, label, fill, edge in pose_chunks:
+    text(1116, y-40, label, size=23, ha='center', color=edge)
+    sequence(1020, y-12, 193, h=24, color=fill, edge=edge)
+arrow((976, 423), (1013, 423))
+arrow((976, 518), (1013, 518), color=REFERENCE_EDGE)
+text(807, 586, r'Reference query $k$', size=19, color=REFERENCE_EDGE, ha='center')
+text(807, 615, r'Stored $A_k^{\mathrm{ref}}$ at $S_k$', size=18,
+     color=REFERENCE_EDGE, ha='center')
+arrow((974, 609), (1013, 609), color=REFERENCE_EDGE)
+
+# Signed inputs make the order of the two differences explicit.
+operation(1300, 458)
+operation(1300, 575)
+route([(1219, 423), (1300, 423), (1300, 438)], color=EDGE)
+text(1283, 437, '+', size=17, ha='right')
+line([(1219, 518), (1300, 518)], color=REFERENCE_EDGE)
+ax.add_patch(Circle((1300, 518), 2.3, fc=REFERENCE_EDGE, ec='none', zorder=5))
+arrow((1300, 512), (1300, 478), color=REFERENCE_EDGE)
+text(1283, 488, '−', size=18, ha='right', color=REFERENCE_EDGE)
+arrow((1300, 524), (1300, 555), color=REFERENCE_EDGE)
+text(1283, 545, '+', size=17, ha='right', color=REFERENCE_EDGE)
+route([(1219, 609), (1300, 609), (1300, 595)], color=REFERENCE_EDGE)
+text(1283, 601, '−', size=18, ha='right', color=REFERENCE_EDGE)
+
+arrow((1320, 458), (1580, 458), color=FORCE_EDGE)
+arrow((1320, 575), (1353, 575), color=DELAY_EDGE)
+panel(1360, 552, 175, 46, '#FCEAF1', DELAY_EDGE, radius=3, lw=1.1)
+text(1447, 575, r'$+\;\Gamma(S_t,S_k)$', size=22, color=INK, ha='center')
+text(1447, 620, 'Reference-state alignment', size=17,
+     color=DELAY_EDGE, ha='center')
+arrow((1542, 575), (1580, 575), color=DELAY_EDGE)
+
+target_force = r'$\Delta A^{\mathrm{force}}_{T,t|k,1:K}$'
+target_delay = r'$\Delta A^{\mathrm{delay}}_{T,k\rightarrow t,1:K}$'
+for cy, label, title, fill, edge in [
+    (458, target_force, 'Force target', FORCE, FORCE_EDGE),
+    (575, target_delay, 'Delay target', DELAY, DELAY_EDGE),
+]:
+    text(1447, cy-42, title, size=20, color=edge, ha='center', weight='bold')
+    text(1674, cy-43, label, size=24, color=edge, ha='center')
+    sequence(1588, cy-12, 172, color=fill, edge=edge, h=24)
+
+line([(35, 655), (1765, 655)], color=RULE, lw=.8)
+text(35, 686, '(b) Train the correction policy', size=24, weight='bold')
+
+# Inputs and their encoders remain outside the attention module. The context
+# uses a learned projector, the force history uses its own causal encoder;
+# state, flattened reference and timing use the manuscript's projections.
+centers = [125, 322, 503, 684, 847]
+for cx, title in zip(centers, ['Pooled context', 'Force history', 'State', 'Reference', 'Timing']):
+    text(cx, 732, title, size=18, ha='center')
+sequence(52, 763, 146, n=6, color=NEUTRAL, edge=NEUTRAL_STROKE, h=17)
+force_history(253, 748, 140, 36)
+state(462, 746, 93, 38)
+sequence(615, 764, 139, h=20)
+text(847, 771, 'Age + phase', size=17, color=EDGE, ha='center')
+for cx, lab in zip(centers, [r'$(\bar E_k,\bar m_k)$', r'$\mathcal{F}_t$', r'$S_t$',
+                            r'$A_k^{\mathrm{ref}}(t_{1:K})$', r'$\xi_{t,k}$']):
+    text(cx, 807, lab, size=21, ha='center')
+    arrow((cx, 827), (cx, 834), scale=7)
+transform(45, 840, 160, 74, ('Context', 'projection'), size=17)
+transform(244, 840, 156, 74, ('Causal force', 'encoder'),
+          color=FORCE_MODULE, edge=FORCE_EDGE, size=17)
+transform(458, 840, 90, 74, r'$P_S$', size=23)
+transform(606, 840, 156, 74, ('Flatten', r'Project $P_A$'), size=16.5)
+transform(801, 840, 92, 74, r'$P_\xi$', size=23)
+for cx in centers:
+    arrow((cx, 920), (cx, 934), scale=8)
+
+# A context token group, and one token each for force, state, reference, timing.
+panel(74, 946, 78, 30, NEUTRAL, NEUTRAL_STROKE, radius=2, lw=.8)
+panel(79, 941, 78, 30, NEUTRAL, NEUTRAL_STROKE, radius=2, lw=.8, z=3)
+text(118, 956, r'$\mathrm{ctx}$', size=19, ha='center')
+text(178, 956, r'$\cdots$', size=21, color=EDGE, ha='center')
+token(322, 941, r'$u_t^F$', FORCE, FORCE_EDGE, w=58)
+token(503, 941, r'$S$', w=43)
+token(684, 941, r'$A$', REFERENCE, REFERENCE_EDGE, w=43)
+token(847, 941, r'$\xi$', w=43)
+line([(45, 984), (45, 993), (894, 993), (894, 984)], color=NEUTRAL_STROKE, lw=.9)
+text(470, 1016, r'Condition tokens $\mathcal{C}_t$', size=20, color=EDGE, ha='center')
+
+# Same direction for both student evaluations. The operator masks only the
+# force token in C_t; it does not mask the force encoder during teacher queries.
+arrow((902, 956), (949, 956))
+line([(949, 956), (962, 956), (962, 850), (1051, 850)])
+arrow((1034, 850), (1056, 850))
+text(1009, 823, r'$\mathcal{C}_t$', size=23, ha='center', color=EDGE)
+line([(962, 956), (962, 1007), (973, 1007)])
+panel(978, 988, 67, 38, '#FCEAF1', DELAY_EDGE, radius=3, lw=1)
+text(1012, 1007, r'$\mathrm{Mask}_F$', size=18, ha='center', color=DELAY_EDGE)
+arrow((1048, 1007), (1056, 1007), color=DELAY_EDGE, scale=7)
+text(1012, 1064, 'Force token masked', size=16, color=DELAY_EDGE, ha='center')
+
+text(1142, 778, 'Shared attention', size=20, ha='center', weight='bold')
+panel(1045, 807, 196, 241, SHARED_FILL, SHARED_EDGE, radius=4, lw=1.1)
+panel(1053, 808, 180, 5, SHARED_ACCENT, radius=1, z=2)
+text(1142, 931, 'Shared weights', size=17, color=EDGE, ha='center')
+for cy, head, pred, fill, edge in [
+    (850, 'Force head', r'$\Delta\hat A^{\mathrm{force}}_{t,1:K}$', FORCE, FORCE_EDGE),
+    (1007, 'Delay head', r'$\Delta\hat A^{\mathrm{delay}}_{t,1:K}$', DELAY, DELAY_EDGE),
+]:
+    panel(1062, cy-31, 162, 62, 'white', NEUTRAL_STROKE, radius=3, lw=.8)
+    text(1143, cy-11, r'Attention $\Phi$', size=18, ha='center')
+    text(1143, cy+16, r'Query $q_{\mathrm{corr}}$', size=18, color=EDGE, ha='center')
+    arrow((1230, cy), (1247, cy), scale=8)
+    transform(1253, cy-27, 134, 54, head, fill, edge, size=17)
+    arrow((1393, cy), (1412, cy), color=edge, scale=8)
+    text(1484, cy-40, pred, size=24, color=edge, ha='center')
+    sequence(1420, cy-12, 128, h=24, color=fill, edge=edge)
+    arrow((1554, cy), (1645, cy), color=edge)
+    operation(1674, cy, r'$\ell_{\mathrm{pose}}$', edge=edge, radius=24)
+
+# Repeat the exact target symbols beside the local losses. This avoids long
+# inter-panel wires while identifying their origin unambiguously.
+text(1674, 686, 'Targets from (a)', size=18, ha='center', color=EDGE)
+for cy, lab, fill, edge in [
+    (850, target_force, FORCE, FORCE_EDGE),
+    (1007, target_delay, DELAY, DELAY_EDGE),
+]:
+    text(1674, cy-111, lab, size=23, color=edge, ha='center')
+    sequence(1607, cy-69, 134, h=22, color=fill, edge=edge)
+    arrow((1674, cy-40), (1674, cy-30), color=edge, scale=8)
+text(1674, 1056, 'Stepwise pose loss', size=17, color=EDGE, ha='center')
+
+for suffix in ['png', 'pdf', 'svg']:
+    fig.savefig(OUT / f'fig02_architecture.{suffix}', dpi=150, facecolor='white')
+svg_path = OUT / 'fig02_architecture.svg'
+svg_path.write_text('\n'.join(s.rstrip() for s in svg_path.read_text().splitlines())+'\n')
+print(OUT / 'fig02_architecture.png')

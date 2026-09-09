@@ -1,103 +1,158 @@
 #!/usr/bin/env python3
-"""Schematic execution events, with reference binding derived from query starts."""
+"""Three deployment lanes with timestamp-derived reference binding and steps.
+
+Horizontal positions are schematic multiples of the action-sample interval.
+The teacher lane shows a visible segment of one longer reference chunk.
+Student sequences show K-step predictions; dark portions are selected.
+The bottom lane shows pose-action steps, not individual 100 Hz transmissions.
+"""
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-from matplotlib.patches import FancyArrowPatch, Rectangle
+from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
-from figure_palette import INK, EDGE, REFERENCE_EDGE
+from figure_palette import (
+    INK, EDGE, REFERENCE, REFERENCE_EDGE,
+    JOINT_CORRECTION, JOINT_CORRECTION_EDGE,
+)
 
 OUT = Path(__file__).resolve().parent / 'fig03_async_execution'
-OLD_FILL, OLD_EDGE = '#E9EDF0', '#8597A1'
-NEW_FILL, NEW_EDGE = '#BCD8E5', REFERENCE_EDGE
-PALETTE = {0: (OLD_FILL, OLD_EDGE), 1: (NEW_FILL, NEW_EDGE)}
-
-# These are schematic event positions, not an experimental timing trace.
-# Reference 0 and an earlier correction are already available at the left edge.
-REFERENCES = [dict(key=0,start=-180,end=-130), dict(key=1,start=0,end=45)]
-QUERIES = [dict(start=-20,end=-10),dict(start=2,end=12),dict(start=17,end=27),
-           dict(start=32,end=52),dict(start=58,end=78)]
-COMMAND_TIMES = list(range(0,100,10))
+K = 5
+WINDOW_END = 7.4
+REFERENCES = [dict(index=0, start=-7, ready=-.2)]
+QUERIES = [
+    dict(start=0., ready=.3, y=65),
+    dict(start=2.4, ready=2.7, y=43),
+]
 
 
 def reference_at(t):
-    return max((r for r in REFERENCES if r['end'] <= t),key=lambda r:r['start'])['key']
+    return max((r for r in REFERENCES if r['ready'] <= t),
+               key=lambda r: r['start'])['index']
 
 
-for query in QUERIES:
-    query['reference'] = reference_at(query['start'])
+def query_at(t):
+    return max((q for q in QUERIES
+                if q['ready'] <= t < q['start'] + K),
+               key=lambda q: q['start'])
 
 
-def correction_at(t):
-    return max((q for q in QUERIES if q['end'] <= t),key=lambda q:q['start'])
+for i, q in enumerate(QUERIES):
+    q['reference'] = reference_at(q['start'])
+    q['selected_start'] = q['ready']
+    q['selected_end'] = min(
+        QUERIES[i + 1]['ready'] if i + 1 < len(QUERIES) else WINDOW_END,
+        q['start'] + K,
+    )
 
+# Both independent student updates reuse one completed reference. The next
+# student query starts before its result can replace the current result.
+assert [q['reference'] for q in QUERIES] == [0, 0]
+assert query_at(2.5) is QUERIES[0]
+assert query_at(2.8) is QUERIES[1]
 
-# The old-reference correction straddles availability; adoption and command
-# selection must follow their own event times rather than a shared vertical line.
-assert QUERIES[-2]['start'] < REFERENCES[1]['end'] < QUERIES[-2]['end']
-assert QUERIES[-2]['reference'] == 0 and QUERIES[-1]['reference'] == 1
-assert correction_at(50)['start'] == 17
-assert correction_at(60) is QUERIES[-2]
-assert correction_at(80) is QUERIES[-1]
+# Intersect each predicted sample interval with that query's selected interval.
+selected_steps = []
+for q in QUERIES:
+    for j in range(K):
+        a = max(q['start'] + j, q['selected_start'])
+        b = min(q['start'] + j + 1, q['selected_end'])
+        if a < b:
+            assert query_at((a + b) / 2) is q
+            selected_steps.append((a, b, q, j + 1))
+assert all(abs(a[1] - b[0]) < 1e-8
+           for a, b in zip(selected_steps, selected_steps[1:]))
 
-plt.rcParams.update({'font.family':'Times New Roman', 'mathtext.fontset':'stix', 'svg.fonttype':'none'})
-fig,ax = plt.subplots(figsize=(7.2,2.65))
-fig.subplots_adjust(left=.025,right=.975,top=.97,bottom=.04)
-ax.set(xlim=(-2,106),ylim=(-5,67))
+plt.rcParams.update({
+    'font.family': 'Times New Roman',
+    'mathtext.fontset': 'stix',
+    'svg.fonttype': 'none',
+})
+fig, ax = plt.subplots(figsize=(7.2, 2.55))
+fig.subplots_adjust(left=.015, right=.985, top=.965, bottom=.045)
+ax.set(xlim=(-2.9, 8.65), ylim=(-16, 116))
 ax.axis('off')
 
 
-def text(x,y,label,size=13,color=INK,ha='left',weight='normal'):
-    ax.text(x,y,label,fontsize=size,color=color,ha=ha,va='center',fontweight=weight,zorder=6)
+def text(x, y, label, size=14, color=INK, ha='left'):
+    ax.text(x, y, label, fontsize=size, color=color, ha=ha,
+            va='center', zorder=8)
 
 
-def block(x,y,w,h,fill,edge=None,lw=.7):
-    ax.add_patch(Rectangle((x,y),w,h,facecolor=fill,edgecolor=edge or 'none',lw=lw,zorder=3))
+def step(a, b, y, color, alpha=1, height=7, zorder=3):
+    """A separated action-step mark, without shared cell borders."""
+    gap = min(.075, (b-a)*.12)
+    ax.add_patch(FancyBboxPatch(
+        (a+gap, y-height/2), b-a-2*gap, height,
+        boxstyle='round,pad=0,rounding_size=.07',
+        mutation_aspect=9, facecolor=color, edgecolor='none',
+        alpha=alpha, zorder=zorder,
+    ))
 
 
-def arrow(x1,y1,x2,y2,color=EDGE):
-    ax.add_patch(FancyArrowPatch((x1,y1),(x2,y2),arrowstyle='-|>',mutation_scale=8,
-                                lw=.85,color=color,shrinkA=0,shrinkB=1,zorder=5))
+def arrow(x1, y1, x2, y2, color=EDGE):
+    ax.add_patch(FancyArrowPatch((x1, y1), (x2, y2), arrowstyle='-|>',
+                                mutation_scale=7, lw=.7, color=color,
+                                shrinkA=0, shrinkB=0, zorder=5))
 
 
-def bracket(left,right,y,label,color):
-    ax.plot([left,left,right,right],[y+1.5,y,y,y+1.5],color=color,lw=.8,zorder=4)
-    text((left+right)/2,y-4,label,size=13,color=color,ha='center')
+# Three row labels, with the student updates grouped within one lane.
+text(-.55, 97, 'Slow teacher', ha='right')
+text(-.55, 85, r'$A_k^{\mathrm{ref}}$', size=15, color=REFERENCE_EDGE, ha='right')
+text(-.55, 59, 'Fast student', ha='right')
+text(-.55, 45, r'$\Delta\hat A^{\mathrm{force}}+\Delta\hat A^{\mathrm{delay}}$',
+     size=13, color=JOINT_CORRECTION_EDGE, ha='right')
+text(-.55, 12, 'Execution', ha='right')
+text(-.55, -1, r'$\mathcal{P}(A^{\mathrm{cmd}})$', size=14, ha='right')
 
+# A compact key makes the selection visible without splitting force and delay.
+step(4.0, 4.4, 110, JOINT_CORRECTION, height=5)
+text(4.5, 110, 'Selected', size=12, color=EDGE)
+step(6.25, 6.65, 110, JOINT_CORRECTION, alpha=.16, height=5)
+text(6.75, 110, 'Unused', size=12, color=EDGE)
 
-# Reference computation is a single interval above the main action sequence.
-ready = REFERENCES[1]['end']
-block(0,52,ready,4,'#F0F3F5',NEW_EDGE,lw=.65)
-text(ready/2,62,'Reference inference',size=13.5,ha='center')
-ax.plot([ready,ready],[56,29],color=EDGE,lw=.8,linestyle=(0,(3,3)),zorder=2)
-text(ready+2,54,'Ready',size=12.5,color=NEW_EDGE)
+# A cropped sequence of discrete reference samples, with continuation marks.
+# Its original sample grid differs from the second student's query grid;
+# reference poses are interpolated at correction timestamps during composition.
+assert abs(REFERENCES[0]['start']-round(REFERENCES[0]['start'])) < 1e-8
+for j in range(8):
+    step(j, j+1, 92, REFERENCE, height=9)
+text(-.15, 92, r'$\cdots$', size=12, color=REFERENCE_EDGE, ha='right')
+text(8.1, 92, r'$\cdots$', size=12, color=REFERENCE_EDGE)
 
-# Short intervals remain separate from the denser, continuous control stream.
-text(0,43,'Correction inference',size=13.5)
-for query in QUERIES[1:]:
-    fill,edge=PALETTE[query['reference']]
-    block(query['start'],31,query['end']-query['start'],5.5,fill,edge)
+# One color denotes the joint pose adjustment, matching Fig. 1's correction
+# arrows. Force and delay remain separately predicted and bounded in the method.
+# Faint portions show predicted steps that are not selected for execution.
+for q in QUERIES:
+    y = q['y']
+    for j in range(K):
+        x = q['start'] + j
+        step(x, x+1, y, JOINT_CORRECTION, alpha=.16)
+        a = max(x, q['selected_start'])
+        b = min(x+1, q['selected_end'])
+        if a < b:
+            step(a, b, y, JOINT_CORRECTION, zorder=4)
 
-# Only the two queries relevant to the handover are connected to execution.
-for query in QUERIES[-2:]:
-    first_command=next(t for t in COMMAND_TIMES if correction_at(t) is query)
-    arrow(query['end'],30.5,first_command,18,PALETTE[query['reference']][1])
+# Only selected valid steps reach the bottom lane. Inference and preemption
+# can shorten a step; a full K-step chunk is not assumed to execute.
+for a, b, q, j in selected_steps:
+    step(a, b, 10, '#85A771', height=9)
 
-# This is the visual center of the figure: actual command transmissions.
-text(0,22,'Robot commands · 100 Hz',size=13)
-for t in COMMAND_TIMES:
-    fill,edge=PALETTE[correction_at(t)['reference']]
-    block(t,9,10,8,fill,INK,lw=.55)
+# Short vertical links map each selected interval to its executed action steps.
+for q in QUERIES:
+    mid=(q['selected_start']+q['selected_end'])/2
+    arrow(mid,q['y']-6,mid,19,color=JOINT_CORRECTION)
 
-first_new=next(t for t in COMMAND_TIMES if correction_at(t)['reference']==1)
-bracket(.5,first_new-.5,5,'Current reference',OLD_EDGE)
-bracket(first_new+.5,99.5,5,'New reference',NEW_EDGE)
-arrow(100.8,13,105.5,13)
-text(105,23,'Time',size=11.5,ha='right',color=EDGE)
-text(0,-4,'Schematic timing',size=10.5,color=EDGE)
+# Show where the newer completed result replaces the earlier result.
+for q in QUERIES[1:]:
+    x = q['selected_start']
+    ax.plot([x, x], [3, 17], color=EDGE, lw=.7, zorder=5)
+text(.3, -5, 'Reference + corrections', size=11.5, color=EDGE)
+arrow(6.25, -5, 7.4, -5)
+text(6.1, -5, 'Time', size=11.5, color=EDGE, ha='right')
 
-for suffix in ['.svg','.pdf','.png']:
-    fig.savefig(OUT.with_suffix(suffix),dpi=240,facecolor='white')
+for suffix in ['.svg', '.pdf', '.png']:
+    fig.savefig(OUT.with_suffix(suffix), dpi=240, facecolor='white')
 plt.close(fig)
-svg_path=OUT.with_suffix('.svg')
-svg_path.write_text('\n'.join(line.rstrip() for line in svg_path.read_text().splitlines())+'\n')
+svg_path = OUT.with_suffix('.svg')
+svg_path.write_text('\n'.join(line.rstrip() for line in svg_path.read_text().splitlines()) + '\n')

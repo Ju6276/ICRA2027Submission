@@ -1,4 +1,4 @@
-"""Shared semantic palette and vector snowflake for Figures 1 and 2."""
+"""Shared semantic palette for Figures 1--3 and a vector snowflake."""
 import math
 INK = '#202A30'
 EDGE = '#647781'
@@ -6,10 +6,17 @@ NEUTRAL = '#EEF1F3'
 BACKGROUND = '#F7F8F9'
 REFERENCE = '#D8E8EE'
 REFERENCE_EDGE = '#668C9C'
-FORCE = '#F8DEC2'
-FORCE_EDGE = '#B6793D'
-DELAY = '#E7DDF0'
-DELAY_EDGE = '#8D70A7'
+# Palette C: apricot force, rose delay, and their equal RGB mix for the
+# student's joint correction. Light fills and darker strokes keep small
+# modules and labels legible at the paper's printed size.
+FORCE_ACCENT = '#DF9E64'
+FORCE = '#F9ECE0'
+FORCE_EDGE = '#B27E50'
+DELAY_ACCENT = '#C87598'
+DELAY = '#F4E3EA'
+DELAY_EDGE = '#A05E7A'
+JOINT_CORRECTION = '#D48A7E'
+JOINT_CORRECTION_EDGE = '#AA6E65'
 COMMAND = '#E7EEDC'
 
 

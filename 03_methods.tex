@@ -1,7 +1,7 @@
 \begin{figure*}[!t]
     \centering
     \includegraphics[width=0.98\textwidth]{figures/fig02_architecture.pdf}
-    \caption{Teacher supervision and dual-correction policy. The snowflake marks frozen teacher parameters. (a) Image and language features form cached context $E_k$, shared by paired teacher queries with current state and noise. Signed sums define the force and delay targets; $\Gamma$ aligns reference states. (b) The policy reads pooled task context and recent observations. The linked $\Phi$ blocks share attention weights; F and D denote separate output heads. The crossed token marks the masked force input for the delay output. The two pose corrections are added to the reference pose before conversion to an absolute command using $S_k$. Dashed arrows indicate supervision; gripper poses are schematic.}
+    \caption{Teacher supervision and dual-correction policy. (a) Frozen teacher queries share $E_k$, $S_t$, and $\epsilon_k$. The force target compares the paired pose predictions; the delay target compares the force-agnostic prediction with the stored reference and includes reference-state alignment. (b) Two evaluations share attention weights, with the force token masked for the delay output.}
     \label{fig:network_structure}
 \end{figure*}
 
@@ -89,7 +89,7 @@ Here $T(E_k,\cdot)$ reuses the cached prefix without encoding a current image. T
      -\mathcal P\!\left(A_{T,t|k,j}^{\mathrm{ref}}\right),
     \label{eq:force_target}
 \end{equation}
-This target supervises the force-correction head. It measures the difference between paired teacher predictions and does not establish a causal effect of force.
+This target supervises the force-correction head.
 
 The force target compares two predictions at the current state, while execution reuses a reference predicted earlier. The delay target accounts for this remaining difference and the change in reference state. For the $K$ correction samples at $t_j=t+(j-1)/f_A$, where $f_A$ is the action-sample rate within a chunk, the target is
 \begin{equation}
@@ -169,16 +169,16 @@ With normalized temporal weights $w_j\propto\beta^{j-1}$, $0<\beta\leq1$, and no
 \end{align}
 The coefficient $\lambda_{\mathrm{delay}}$ balances force-conditioning and delay-correction supervision.
 
-\subsection{Independent Correction Execution}
+\subsection{Asynchronous Deployment}
 \label{sec:execution}
 
-The reference-action and correction workers execute independently (Fig.~\ref{fig:async_deployment}). Each correction query reads the latest completed reference-action update available at its start, together with the current state and $\mathcal F_t$. The resulting $K$-step correction chunk continues using that same cached update throughout its execution; a newly completed reference action is adopted by the next correction query.
+At deployment, the teacher and student run independently (Fig.~\ref{fig:async_deployment}). The teacher periodically refreshes the cached reference using its force-agnostic mode. Each student query reads the latest completed reference update and keeps that reference paired with its corrections throughout execution. Student queries continue while the teacher computes the next reference; queries started after that reference becomes available can adopt it.
+
+At each control tick, the executor selects the most recently started student query whose result is complete and still valid. For its active step $j$, it interpolates the reference at $t_j$, bounds the two corrections independently, and composes the normalized pose using Eq.~\eqref{eq:action_comp}. The result is converted to an absolute command using the selected reference's query state $S_k$. Expired steps are skipped; a valid correction step is held until its next timestamp or a newer valid result becomes available. The timestamp-selection rules are given in the supplementary material.
 
 \begin{figure}[!htb]
     \centering
     \includegraphics[width=\columnwidth]{figures/fig03_async_execution.pdf}
-    \caption{Asynchronous execution. Each correction remains paired with the reference read at query start; subsequent queries adopt the newly completed reference.}
+    \caption{Deployment schematic. Two successive student queries reuse the same reference chunk. Selected correction steps are combined with the reference poses at the corresponding timestamps.}
     \label{fig:async_deployment}
 \end{figure}
-
-Correction steps whose execution times have passed are skipped, and the remaining steps execute sequentially without interpolation. The reference pose is interpolated by timestamp. The force and state-consistent delay corrections are bounded independently, added to the reference action in normalized delta-action coordinates, and converted to an absolute command using the reference-action query state. The supervised delay-correction target already includes $\Gamma(S_t,S_k)$, so deployment does not add a separate alignment term.

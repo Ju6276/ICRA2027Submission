@@ -12,7 +12,8 @@ from matplotlib.patches import Circle, FancyArrowPatch, FancyBboxPatch, Rectangl
 from matplotlib.path import Path as MplPath
 from PIL import Image, ImageOps
 from figure_palette import (INK, EDGE, NEUTRAL, BACKGROUND, REFERENCE, FORCE,
-                            FORCE_EDGE, DELAY, DELAY_EDGE, COMMAND, snowflake_segments)
+                            FORCE_ACCENT, FORCE_EDGE, DELAY, DELAY_ACCENT,
+                            DELAY_EDGE, JOINT_CORRECTION, COMMAND, snowflake_segments)
 
 
 ROOT = Path(__file__).resolve().parent
@@ -29,10 +30,8 @@ CREAM_2 = "#FAF6EA"
 POLICY_BLUE = "#BFD6DF"
 PALE_BLUE = REFERENCE
 ACTION_GREEN = COMMAND
-FORCE_ORANGE = "#E99B5A"
 FORCE_PALE = FORCE
-STALE_PURPLE = "#8F72AE"
-STALE_PALE = DELAY
+DELAY_PALE = DELAY
 ACCENT_RED = "#D94F43"
 PLACEHOLDER = "#ECECE8"
 
@@ -206,7 +205,7 @@ def main():
         label(ax,.1905,y+.013,text,size=6.3,color=edge,weight="bold")
     ax.plot([.217,.224,.224,.217],[.874,.874,.583,.583],color=EDGE,lw=.8,zorder=3)
     arrow(ax,(.225,.735),(.241,.735),color=INK,scale=6)
-    panel(ax,.46,.718,.155,.088,face=FORCE_PALE)
+    panel(ax,.46,.718,.155,.088,face=FORCE_PALE,edge=FORCE_ACCENT)
     label(ax,.553,.762,"Force target",size=7.7,weight="bold")
     # Contact force: fingertip presses down onto a surface.
     panel(ax,.477,.761,.010,.032,face="white",edge=FORCE_EDGE,lw=.7,radius=.004)
@@ -214,7 +213,7 @@ def main():
     arrow(ax,(.482,.758),(.482,.739),color=FORCE_EDGE,lw=.8,scale=5)
     ax.plot([.473,.47],[.747,.753],color=FORCE_EDGE,lw=.6,zorder=5)
     ax.plot([.491,.494],[.747,.753],color=FORCE_EDGE,lw=.6,zorder=5)
-    panel(ax,.46,.588,.155,.106,face=STALE_PALE)
+    panel(ax,.46,.588,.155,.106,face=DELAY_PALE,edge=DELAY_ACCENT)
     label(ax,.553,.641,"Delay target",size=7.7,weight="bold")
     # Stopwatch icon for the delay target.
     from matplotlib.patches import Ellipse
@@ -256,24 +255,30 @@ def main():
     # One local trajectory panel receives the reference and the joint correction.
     panel(ax,.26,.132,.28,.152,face="#FBFDFC",edge="#91A7AF",lw=.85,radius=.011)
     arrow(ax,(.204,.208),(.255,.208),color="#668C9C",lw=1.1,scale=7)
-    arrow(ax,(.49,.331),(.49,.289),color=INK,lw=1.1,scale=7)
+    arrow(ax,(.49,.331),(.49,.289),color=JOINT_CORRECTION,lw=1.1,scale=7)
     import numpy as np
-    x = np.linspace(.282,.518,180)
-    u = (x-.282)/.236
-    ref_y = .165 + .037*u + .022*np.sin(np.pi*u)
-    adjusted_y = ref_y + .038*np.sin(np.pi*u)**4
-    # Alternating vertical tiles visualize the combined correction schematically.
-    for idx,(left,right) in enumerate(zip(np.linspace(.2,.8,9)[:-1],np.linspace(.2,.8,9)[1:])):
-        tile_u = np.linspace(left+.004,right-.004,24)
-        tile_x = .282 + .236*tile_u
-        base = .165 + .037*tile_u + .022*np.sin(np.pi*tile_u)
-        delta = .038*np.sin(np.pi*tile_u)**4
-        face,edge = (FORCE_PALE,FORCE_EDGE) if idx % 2 == 0 else (STALE_PALE,DELAY_EDGE)
-        ax.fill_between(tile_x,base+.05*delta,base+.95*delta,
-                        facecolor=face,edgecolor=edge,linewidth=.25,zorder=3)
-    ax.plot(x,ref_y,color="#668C9C",lw=1.3,linestyle=(0,(4,3)),zorder=4)
-    ax.plot(x,adjusted_y,color="#4E8A45",lw=1.8,zorder=5)
-    label(ax,.321,.157,r"$A^{\mathrm{ref}}$",size=8.3,color="#668C9C")
+    def trajectory_points(u):
+        # A spatial sketch of paired reference and corrected poses. The two
+        # endpoints coincide, while local corrections change direction along
+        # the path. These are illustrative curves, not measured trajectories.
+        x = .282 + .236*u
+        envelope = np.sin(np.pi*u)**2
+        ref_y = .204 + .005*u + .050*np.sin(2*np.pi*u)
+        corrected_x = x + .006*envelope
+        corrected_y = .204 + .005*u + .019*np.sin(2*np.pi*u) + .004*envelope
+        return x,ref_y,corrected_x,corrected_y
+
+    u = np.linspace(0,1,240)
+    ref_x,ref_y,adjusted_x,adjusted_y = trajectory_points(u)
+    ax.plot(ref_x,ref_y,color="#668C9C",lw=1.25,
+            linestyle=(0,(1.4,1.7)),zorder=4)
+    ax.plot(adjusted_x,adjusted_y,color="#4E8A45",lw=1.65,zorder=5)
+    # One arrow color denotes the student's joint force-and-delay correction;
+    # the arrows point from each reference pose to its adjusted counterpart.
+    for position in [.15,.25,.35,.64,.75,.86]:
+        rx,ry,cx,cy = trajectory_points(position)
+        arrow(ax,(rx,ry),(cx,cy),color=JOINT_CORRECTION,lw=.8,scale=4.5,z=6)
+    label(ax,.303,.157,r"$A^{\mathrm{ref}}$",size=8.3,color="#668C9C")
     label(ax,.424,.266,"Adjusted trajectory",size=6.6,color="#4E8A45")
     arrow(ax,(.544,.208),(.57,.208),color=INK,lw=1.1,scale=7)
     # Robot output with command transmission rate.
@@ -281,9 +286,9 @@ def main():
     label(ax,.601,.131,"100 Hz",size=7.4,weight="bold")
 
     # Both targets feed one short supervision connection to the student below.
-    ax.plot([.619,.628,.628,.535],[.762,.762,.565,.565],color=FORCE_EDGE,lw=.85,linestyle=(0,(3,2)),zorder=6)
-    ax.plot([.535,.535],[.584,.565],color=DELAY_EDGE,lw=.85,linestyle=(0,(3,2)),zorder=6)
-    arrow(ax,(.535,.565),(.535,.431),color=EDGE,dashed=True,lw=.85,scale=6,z=6)
+    ax.plot([.619,.628,.628,.535],[.762,.762,.565,.565],color=FORCE_ACCENT,lw=.85,linestyle=(0,(3,2)),zorder=6)
+    ax.plot([.535,.535],[.584,.565],color=DELAY_ACCENT,lw=.85,linestyle=(0,(3,2)),zorder=6)
+    arrow(ax,(.535,.565),(.535,.431),color=JOINT_CORRECTION,dashed=True,lw=.85,scale=6,z=6)
     label(ax,.522,.514,"Correction supervision",size=6.4,color=SUBTLE,ha="right")
 
     for y,title,color,path in [(.535,"ForceVLA failure",ACCENT_RED,COMPARISON_IMAGES[0]),(.09,"ForceDelta-VLA success","#4E8A45",COMPARISON_IMAGES[1])]:
