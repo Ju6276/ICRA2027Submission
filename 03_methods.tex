@@ -1,7 +1,7 @@
 \begin{figure*}[!t]
     \centering
     \includegraphics[width=0.98\textwidth]{figures/fig02_architecture.pdf}
-    \caption{Correction distillation (training stage 3). (a) The frozen vision--language model (VLM) produces $E_k$ at reference query $k$. Teacher queries reuse this context and share $S_t$ and $\epsilon_k$. Their predictions and the stored reference define the two correction targets, with reference-state alignment included in the delay target. (b) The student uses pooled context $(\bar E_k,\bar m_k)$ derived from $E_k$. The two evaluations of $\Phi$ share weights and append the same learned query token $q_{\mathrm{corr}}$ to their inputs, with the force token masked only for delay. Each head reads its corresponding output at $q_{\mathrm{corr}}$. The teacher targets supervise both student outputs through $\mathcal L_{\mathrm{distill}}$.}
+    \caption{Correction distillation (training stage 3). (a) Paired predictions from the frozen teacher define the force target as the pose difference between its force-conditioned and learned force-agnostic modes. The delay target compares the current force-agnostic prediction with the stored reference and includes reference-state alignment. Paired queries share visual--language context, robot state, and sampling noise. (b) The student learns both corrections from these targets. Its two evaluations of $\Phi$ share weights and append the same learned query token $q_{\mathrm{corr}}$ to their inputs, with the force token masked only for delay. Each head reads its corresponding output at $q_{\mathrm{corr}}$.}
     \label{fig:network_structure}
 \end{figure*}
 
@@ -120,7 +120,7 @@ Let $\mathcal R(S,a)$ convert a relative action $a$ based at state $S$ into an a
 \end{aligned}
     \label{eq:absolute_command_equivalence}
 \end{equation}
-Before clipping, substitution recovers the force-conditioned chunk expressed relative to $S_k$. Since state and action are converted to the same translation-plus-6D representation before component-wise delta construction, the alignment identity is exact in that representation up to $\varepsilon$; Gram--Schmidt projection is applied after restoring the action delta.
+Before clipping, substitution recovers the force-conditioned chunk expressed relative to $S_k$. The alignment relation holds in the shared translation-plus-6D representation up to the $\varepsilon$ stabilization term; Gram--Schmidt projection is applied after restoring the action delta.
 
 \subsection{Correction Policy and Training}
 \label{sec:residual_policy}

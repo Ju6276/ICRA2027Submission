@@ -198,7 +198,7 @@ arrow((615, 385), (650, 385), color=INK, lw=1.4)
 # force-agnostic mode. The measured history enters only the conditioned call.
 panel(650, 331, 320, 256, ACTION_MODULE, EDGE, radius=5, lw=1.25)
 text(804, 352, 'Action expert', size=21, weight='bold', ha='center')
-text(807, 385, r'Shared $E_k$, $S_t$, $\epsilon_k$', size=20, color=EDGE, ha='center')
+text(807, 385, 'Shared inputs', size=21, color=EDGE, ha='center')
 snowflake(947, 351, 9)
 panel(668, 436, 280, 55, ACTION_INNER, EDGE, radius=3, lw=.9)
 text(809, 464, 'Force-conditioned', size=20, ha='center')
@@ -214,26 +214,27 @@ transform(263, 434, 167, 60, ('Force', 'encoder'),
           color=FORCE_MODULE, edge=EDGE, size=20)
 snowflake(420, 424, 7)
 arrow((437, 464), (469, 464))
-token(507, 448, r'$z_t^F$', FORCE, FORCE_EDGE, w=61)
+token(507, 448, '', FORCE, FORCE_EDGE, w=61)
 arrow((545, 464), (668, 464))
 text(462, 543, 'Learned token', size=20, ha='right', color=EDGE)
-token(507, 527, r'$z_{\varnothing F}$', FORCE_MODULE, NEUTRAL_STROKE, w=67)
+token(507, 527, '', FORCE_MODULE, NEUTRAL_STROKE, w=67)
 snowflake(553, 515, 6)
 arrow((549, 543), (668, 543), color=EDGE)
 
-# All three glyphs below are K-step pose-action segments at matching times.
-# The stored segment is a separate input; it is NOT produced by a current call.
+# All three glyphs are pose-action segments at matching times. The two
+# current predictions inherit their mode labels from the teacher boxes.
+# Full indexed symbols and the pose extraction operator remain in the text.
+text(1116, 414, 'Current predictions', size=21, ha='center')
 pose_chunks = [
-    (464, r'$\mathcal{P}(A^{\mathrm{cond}}_{T,t|k,1:K})$', ACTION_INNER, EDGE),
-    (543, r'$\mathcal{P}(A^{\mathrm{ref}}_{T,t|k,1:K})$', 'white', REFERENCE_EDGE),
-    (631, r'$\mathcal{P}(A^{\mathrm{ref}}_k(t_{1:K}))$', REFERENCE, REFERENCE_EDGE),
+    (464, ACTION_INNER, EDGE),
+    (543, 'white', REFERENCE_EDGE),
+    (631, REFERENCE, REFERENCE_EDGE),
 ]
-for y, label, fill, edge in pose_chunks:
-    text(1116, y-40, label, size=21, ha='center', color=edge)
+for y, fill, edge in pose_chunks:
     sequence(1020, y-12, 193, h=24, color=fill, edge=edge)
 arrow((976, 464), (1013, 464))
 arrow((976, 543), (1013, 543), color=REFERENCE_EDGE)
-text(807, 631, r'Reference stored at $S_k$', size=20,
+text(807, 631, 'Stored reference', size=22,
      color=REFERENCE_EDGE, ha='center')
 arrow((974, 631), (1013, 631), color=REFERENCE_EDGE)
 
@@ -256,13 +257,11 @@ text(1312, 568, '−', size=20, ha='center', color=REFERENCE_EDGE)
 arrow((1320, 464), (1580, 464), color=FORCE_EDGE)
 arrow((1380, 585), (1395, 585), color=DELAY_EDGE)
 panel(1400, 562, 160, 46, DELAY_MODULE, DELAY_EDGE, radius=3, lw=1.1)
-text(1480, 585, r'$+\;\Gamma(S_t,S_k)$', size=21, color=INK, ha='center')
+text(1480, 585, r'$+\;\Gamma$', size=26, color=INK, ha='center')
 text(1510, 636, 'Reference-state alignment', size=17,
      color=DELAY_EDGE, ha='center')
 arrow((1563, 585), (1580, 585), color=DELAY_EDGE)
 
-target_force = r'$\Delta A^{\mathrm{force}}_{T,t|k,1:K}$'
-target_delay = r'$\Delta A^{\mathrm{delay}}_{T,k\rightarrow t,1:K}$'
 # Group the two teacher-defined targets as the supervision bundle. Its only
 # outgoing path goes to the existing distillation objective in panel (b).
 panel(1572, 398, 209, 226, 'white', '#A0A0A0', radius=5, lw=1)
@@ -282,14 +281,11 @@ text(35, 686, '(b) Student correction policy', size=24, weight='bold')
 # Five inputs are stacked at the left. Every row proceeds left to right:
 # observation/context -> encoder or projection -> condition token(s).
 rows = [776, 868, 960, 1052, 1144]
-for cy, title, lab in zip(
+for cy, title in zip(
     rows,
     ['Pooled context', 'Force history', 'State', 'Reference', 'Timing'],
-    [r'$(\bar E_k,\bar m_k)$', r'$\mathcal{F}_t$', r'$S_t$',
-     r'$A_k^{\mathrm{ref}}(t_{1:K})$', r'$\xi_{t,k}$'],
 ):
-    text(140, cy-20, title, size=20, ha='center')
-    text(140, cy+17, lab, size=24, ha='center')
+    text(135, cy, title, size=22, ha='center')
     if title != 'Reference':
         arrow((250, cy), (294, cy), scale=9)
         arrow((493, cy), (539, cy), scale=9)
@@ -317,7 +313,7 @@ transform(300, 1111, 185, 66, r'$P_\xi$', color=GENERIC_MODULE, size=23)
 panel(551, 763, 61, 30, VLM_MODULE, NEUTRAL_STROKE, radius=2, lw=.8)
 panel(556, 758, 61, 30, CONTEXT_TOKEN, NEUTRAL_STROKE, radius=2, lw=.8, z=3)
 text(638, 776, r'$\cdots$', size=21, color=EDGE, ha='center')
-token(584, 852, r'$u_t^F$', FORCE, FORCE_EDGE, w=61, h=32)
+token(584, 852, '', FORCE, FORCE_EDGE, w=61, h=32)
 token(584, 944, '', GENERIC_MODULE, w=61, h=32)
 token(584, 1036, '', REFERENCE, REFERENCE_EDGE, w=61, h=32)
 token(584, 1128, '', GENERIC_MODULE, w=61, h=32)
@@ -341,15 +337,15 @@ arrow((835, 1020), (850, 1020), scale=8)
 panel(850, 860, 260, 200, SHARED_FILL, SHARED_EDGE, radius=5, lw=1.1)
 text(980, 947, 'Shared attention', size=20, ha='center', weight='bold')
 text(980, 986, r'$\Phi$', size=30, ha='center')
-for cy, head, weight, pred, fill, edge in [
-    (900, 'Force head', r'$W_{\mathrm{force}}$', r'$\Delta\hat A^{\mathrm{force}}_{t,1:K}$', FORCE, FORCE_EDGE),
-    (1020, 'Delay head', r'$W_{\mathrm{delay}}$', r'$\Delta\hat A^{\mathrm{delay}}_{t,1:K}$', DELAY, DELAY_EDGE),
+for cy, head, pred, fill, edge in [
+    (900, 'Force head', 'Force correction', FORCE, FORCE_EDGE),
+    (1020, 'Delay head', 'Delay correction', DELAY, DELAY_EDGE),
 ]:
     arrow((1110, cy), (1142, cy), color=SHARED_EDGE, scale=9)
-    transform(1150, cy-38, 150, 76, (head, weight), fill, edge, size=18)
+    transform(1150, cy-38, 150, 76, head, fill, edge, size=19)
     arrow((1307, cy), (1353, cy), color=edge, scale=9)
     sequence(1360, cy-12, 168, h=24, color=fill, edge=edge)
-    text(1444, cy-45, pred, size=24, color=edge, ha='center')
+    text(1444, cy-45, pred, size=21, color=edge, ha='center')
     arrow((1535, cy), (1600, cy), color=edge, scale=9)
 
 # Teacher targets enter the same objective as both student predictions.

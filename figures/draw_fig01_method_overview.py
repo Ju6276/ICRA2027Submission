@@ -254,7 +254,8 @@ def main():
                                  (.174,"OFF",PALE_BLUE,REFERENCE_EDGE)]:
         panel(ax,.109,y,.068,.025,face=face,edge=edge,lw=.65,radius=.012)
         label(ax,.143,y+.0125,text,size=6.1,color=edge,weight="bold")
-    label(ax,.125,.145,"~6 Hz",size=6.8,color=SUBTLE)
+    # Approximate serial inference rate from the 189.7-ms mean forward latency.
+    label(ax,.125,.145,"Inference ~5 Hz",size=6.8,color=SUBTLE)
     # One local trajectory panel receives the reference and the joint correction.
     panel(ax,.26,.132,.28,.152,face="#FBFDFC",edge="#91A7AF",lw=.85,radius=.011)
     arrow(ax,(.204,.208),(.255,.208),color=REFERENCE_EDGE,lw=1.1,scale=7)

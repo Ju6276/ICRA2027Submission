@@ -12,5 +12,5 @@ The contributions of this work are:
 \begin{enumerate}
     \item We introduce \textbf{force-agnostic correction distillation}, which constructs an explicit force-correction target from matched force-conditioned and learned force-agnostic predictions of a frozen teacher, using only the original dataset;
     \item We develop a \textbf{state-consistent dual-correction policy} that separately learns force and delay corrections in a common action coordinate system and updates them independently of reference-action generation while reusing task context. The delay target includes both reference-action mismatch and reference-state alignment; and
-    \item We improve mean task success from $54.4\%$ to $82.2\%$ across nine single-arm and bimanual tasks and reduce mean successful-trial peak contact force by approximately $26\%$ on both platforms compared with ForceVLA.
+    \item Real-robot evaluation across nine single-arm and bimanual tasks shows $82.2\%$ mean success, versus $54.4\%$ for ForceVLA and $70.6\%$ for direct execution of the Stage-1 Temporal Teacher.
 \end{enumerate}
