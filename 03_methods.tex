@@ -12,7 +12,7 @@ ForceDelta-VLA separates reference-action generation from contact correction (Fi
 
 Training has three stages. We first train a temporal force-conditioned VLA teacher, then freeze it and learn a force-agnostic mode that supplies the reference action. With both modes fixed, paired predictions define correction targets, and a sampled asynchronous schedule provides the cached inputs used to train the correction policy.
 
-We consider an offline dataset $\mathcal D$ of teleoperated manipulation trajectories. At time $t$, each trajectory provides visual observations $V_t$, a language instruction $L$, robot state $S_t$, demonstrated action $A_t^*$, and the history of force/torque measurements up to time $t$
+We consider an offline dataset $\mathcal D$ of teleoperated manipulation trajectories. At time $t$, each trajectory provides visual observations $V_t$, a language instruction $L$, robot state $S_t$ (TCP pose), demonstrated action $A_t^*$, and the history of force/torque measurements up to time $t$
 \begin{equation*}
     \mathcal F_t=\{(s,\mathbf w(s))\mid t-T_F\leq s\leq t\},
 \end{equation*}
@@ -86,7 +86,7 @@ Here $T(E_k,\cdot)$ reuses the cached prefix without encoding a current image. T
 \begin{equation}
     \Delta A_{T,t|k,j}^{\mathrm{force}}
     =\mathcal P\!\left(A_{T,t|k,j}^{\mathrm{cond}}\right)
-     -\mathcal P\!\left(A_{T,t|k,j}^{\mathrm{ref}}\right),
+     -\mathcal P\!\left(A_{T,t|k,j}^{\mathrm{ref}}\right).
     \label{eq:force_target}
 \end{equation}
 This target supervises the force-correction head.
@@ -105,7 +105,7 @@ Reference-state alignment expresses the current prediction relative to the state
 \label{sec:residual_policy}
 
 \subsubsection{Inputs and prediction}
-Each reference-action query stores its action chunk $A_k^{\mathrm{ref}}$, query state $S_k$, and a pooled representation $(\bar E_k,\bar m_k)$ of the visual--language prefix, with a validity mask. A learned projector converts the pooled context into task-context tokens $Z_k^{\mathrm{ctx}}$. Timestamp-based interpolation provides the reference-action segment $A_k^{\mathrm{ref}}(t_{1:K})$ aligned with the correction outputs. A causal force encoder maps $\mathcal F_t$ to $u_t^F$, and timing features $\xi_{t,k}$ encode cache age and interpolation phase. The conditioning set is
+Each reference-action query stores its action chunk $A_k^{\mathrm{ref}}$, query state $S_k$, and a pooled representation $\bar E_k$ of the visual--language prefix with its validity mask $\bar m_k$. A learned projector converts the pooled context into task-context tokens $Z_k^{\mathrm{ctx}}$. Timestamp-based interpolation provides the reference-action segment $A_k^{\mathrm{ref}}(t_{1:K})$ aligned with the correction outputs. A causal force encoder maps $\mathcal F_t$ to $u_t^F$, and timing features $\xi_{t,k}$ encode cache age and interpolation phase. The conditioning set is
 \begin{align}
     \mathcal C_t=[&P_Z(Z_k^{\mathrm{ctx}});u_t^F;P_S(S_t);
     \nonumber\\[-2pt]
@@ -129,7 +129,7 @@ The mask prevents direct dependence of the delay-correction output on the force 
 \subsubsection{Asynchronous schedule replay}
 \label{sec:async_training}
 
-Training must expose the correction policy to reference actions delayed by inference. We sample query periods and inference latencies before target extraction and replay the same fixed schedule during policy optimization. At each sampled correction time, we select the most recently started reference query whose inference has completed. Its cached context, interpolated reference actions, and timing features are used to construct the student inputs and paired targets. Timestamp sampling and reference-selection details are provided in the supplementary material.
+We train the correction policy on reference actions delayed by inference. We sample query periods and inference latencies before target extraction and replay the same fixed schedule during policy optimization. At each sampled correction time, we select the most recently started reference query whose inference has completed. Its cached context, interpolated reference actions, and timing features are used to construct the student inputs and paired targets. Timestamp sampling and reference-selection details are provided in the supplementary material.
 
 With normalized temporal weights $w_j\propto\beta^{j-1}$, $0<\beta\leq1$, and normalized-coordinate mean-squared loss $\ell_{\mathrm{pose}}$, the distillation objective is
 \begin{align}

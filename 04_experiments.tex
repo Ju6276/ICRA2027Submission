@@ -60,7 +60,7 @@ For each task, we collect $200$ demonstrations. Multi-view images, robot states,
 \end{table*}
 
 \noindent\textbf{Baselines and evaluation protocol.}
-We compare with ForceVLA~\cite{yu2025forcevlaenhancingvlamodels}, a force-aware full-action policy that also provides our teacher backbone; $\pi_{0.5}$~\cite{intelligence2025pi05visionlanguageactionmodelopenworld}, a VLA without force/torque input; TA-VLA~\cite{zhang2025tavlaelucidatingdesignspace}, a torque-aware VLA; and ImplicitRDP~\cite{chen2026implicitrdpendtoendvisualforcediffusion}, a slow--fast visual--force policy. We also evaluate direct execution of our Stage-1 Temporal Teacher to compare against the same temporal force-aware backbone. All methods use the same task demonstrations, initial-state distributions, controller settings, and safety limits. We conduct $20$ trials per method and task and report success rate, peak contact force, and completion time.
+We compare with ForceVLA~\cite{yu2025forcevlaenhancingvlamodels}, a force-aware full-action policy that also provides our teacher backbone; $\pi_{0.5}$~\cite{intelligence2025pi05visionlanguageactionmodelopenworld}, a VLA without force/torque input; TA-VLA~\cite{zhang2025tavlaelucidatingdesignspace}, a torque-aware VLA; and ImplicitRDP~\cite{chen2026implicitrdpendtoendvisualforcediffusion}, a slow--fast visual--force policy. We also evaluate direct execution of the Stage-1 Temporal Teacher used by ForceDelta-VLA. All methods use the same task demonstrations, initial-state distributions, controller settings, and safety limits. We report success rate, peak contact force, and completion time.
 
 \noindent\textbf{Implementation details.}
 The teacher encodes a $100$-ms wrench history and predicts an action chunk with $H{=}50$ steps. The correction policy uses a causal force encoder and a shared attention module with separate force- and delay-correction heads to predict $K{=}5$ pose corrections. Deployment runs on a workstation with two NVIDIA RTX 4090 GPUs. The reference-action forward pass averages $189.7$~ms, corresponding to approximately $5$~Hz for serial inference (Table~\ref{tab:runtime}). Robot command transmission is limited to $100$~Hz; this control rate is distinct from the correction-query rate. Training and optimization details are provided in the supplementary material.
@@ -114,7 +114,7 @@ Figure~\ref{fig:qualitative_button} highlights how the learned translational cor
 We measure the forward-pass latencies of the reference-action and correction pathways and evaluate task performance under additional reference-action latency.
 
 \noindent\textbf{Forward-pass latency.}
-The correction forward pass takes $2.43$~ms, below the $10$-ms interval between robot command transmissions (Table~\ref{tab:runtime}). The Temporal Teacher and reference-action forward passes both exceed that interval. The shorter computation time allows the correction worker to reuse a reference action instead of waiting for a new generative prediction at each correction query.
+The correction forward pass takes $2.43$~ms, below the $10$-ms interval between robot command transmissions (Table~\ref{tab:runtime}). The Temporal Teacher and reference-action forward passes both exceed that interval. By reusing a reference action, the correction pathway avoids a new generative prediction at each query.
 
 \begin{table}[t]
     \centering
@@ -163,7 +163,7 @@ Execution ablations retain the trained model: \textbf{Reference action only} dis
     \centering
     \scriptsize
     \setlength{\tabcolsep}{2pt}
-    \caption{Ablations on USB Insertion, single-arm Whiteboard Wiping, Plug Insertion, and Drawer Opening, grouped by platform. Peak force: mean $\pm$ standard deviation.}
+    \caption{Ablations on four tasks, with 20 trials per task. Peak force: mean $\pm$ standard deviation over successful trials.}
     \label{tab:ablation}
     \begin{tabular}{lcccc}
         \toprule
@@ -191,19 +191,24 @@ Execution ablations retain the trained model: \textbf{Reference action only} dis
     \end{tabular}
 \end{table}
 
+\begin{samepage}
 \noindent\textbf{How should correction supervision be defined?}
-\textbf{Demonstration-derived correction target} replaces the force target with the demonstrated action minus the force-agnostic teacher prediction at the same query state. Success falls from $85.0\%$/$75.0\%$ to $72.5\%$/$57.5\%$ on the single-arm/bimanual subsets. In this evaluation, the difference between paired teacher predictions provides a more effective target than the difference between a demonstration and a teacher prediction. \textbf{Zero-wrench teacher query} instead uses an all-zero-wrench query to construct both the reference action and correction targets, reducing success to $65.0\%$/$55.0\%$.
+\textbf{Demonstration-derived correction target} replaces the force target with the demonstrated action minus the force-agnostic teacher prediction at the same query state. Success decreases by $12.5$ and $17.5$ percentage points on the single-arm and bimanual platforms, respectively. This comparison favors defining force supervision through teacher predictions matched in context, state, and sampling noise. \textbf{Zero-wrench teacher query}, used for both reference generation and target construction, also lowers success, supporting the learned force-agnostic mode.
+
+\end{samepage}
 
 \noindent\textbf{What should the fast policy predict?}
-Using the reference action alone reduces success from $85.0\%$/$75.0\%$ to $62.5\%$/$50.0\%$ on the single-arm/bimanual subsets. Relative to the full model, removing the force correction reduces success by $15$ and $17.5$ percentage points and increases peak force by $3.7$ and $4.3$~N. Zeroing its input performs worse than disabling its output: the force branch still applies a prediction when given zeros. \textbf{Single combined-correction head} trains one head on the sum of the two targets. Success decreases by $10$ percentage points on both subsets, supporting separate supervision and prediction of the force and delay corrections. \textbf{Fast full-action distillation} directly distills the teacher's force-conditioned pose action using the same compact student architecture, inputs, and update schedule. Its success rate is $17.5$ and $22.5$ percentage points lower than the full model on the two subsets. This comparison supports retaining reference actions and training the compact student to predict their corrections.
+Removing the force correction reduces success by $15$ and $17.5$ percentage points and increases mean peak force over successful trials by $3.7$ and $4.3$~N on the single-arm and bimanual platforms, respectively. The force branch thus contributes to both task completion and contact-force reduction. Removing both corrections lowers success further. Zeroing the force history also performs worse than disabling the force output, indicating that the active branch depends on force feedback.
+
+\textbf{Single combined-correction head} trains one head on the summed target and reduces success by $10$ percentage points on both platforms, favoring separate supervision and prediction of the two corrections. \textbf{Fast full-action distillation} of the teacher's pose actions also performs worse under the same compact student architecture, inputs, and update schedule. This favors reusing reference actions and assigning the student to predict their corrections.
 
 \noindent\textbf{How does asynchronous adaptation contribute?}
-Disabling the complete learned delay output reduces success by $7.5$ points on both subsets. \textbf{w/o schedule replay} omits the sampled asynchronous schedule during cached-context target extraction and reduces success to $77.5\%$/$62.5\%$. These results support both compensating for reference-action mismatch and exposing the policy to asynchronous conditions during training.
+Disabling the learned delay correction reduces success by $7.5$ percentage points on both platforms and increases peak force, supporting the adjustment for reference-action mismatch and reference-state alignment. Omitting \textbf{schedule replay} reduces success by $7.5$ and $12.5$ percentage points on the single-arm and bimanual platforms, respectively. The student therefore also benefits from training on delayed references.
 
 \subsection{Generalization to Unseen Objects}
 \label{sec:exp_physical_generalization}
 
-For the tasks shown in Fig.~\ref{fig:physical_generalization_objects}, we replace the training objects with an unseen USB port, an unseen cardboard box, and an unseen whiteboard and erasers, respectively.
+We evaluate USB Insertion, Object Flipping, and bimanual Whiteboard Wiping with the unseen objects shown in Fig.~\ref{fig:physical_generalization_objects}.
 
 \begin{table}[!htbp]
     \centering
@@ -215,20 +220,20 @@ For the tasks shown in Fig.~\ref{fig:physical_generalization_objects}, we replac
 
     \scriptsize
     \setlength{\tabcolsep}{5pt}
-    \caption{Generalization results with unseen objects. Peak force: mean $\pm$ standard deviation.}
+    \caption{Generalization with unseen objects: 10 trials per task, 30 per method. Peak force: mean $\pm$ standard deviation over successful trials.}
     \label{tab:physical_generalization}
     \begin{tabular}{lcc}
         \toprule
         \textbf{Method} & \textbf{Success rate} (\%) $\uparrow$ & \textbf{Peak force} (N) $\downarrow$ \\
         \midrule
-        ImplicitRDP & $30.0$ & $45.9 \pm 10.5$ \\
-        Temporal Teacher & $70.0$ & $21.8 \pm 5.2$ \\
-        \textbf{ForceDelta-VLA (Ours)} & $80.0$ & $13.6 \pm 3.7$ \\
+        ImplicitRDP & $16.7$ & $45.9 \pm 10.5$ \\
+        Temporal Teacher & $40.0$ & $21.8 \pm 5.2$ \\
+        \textbf{ForceDelta-VLA (Ours)} & $66.7$ & $13.6 \pm 3.7$ \\
         \bottomrule
     \end{tabular}
 \end{table}
 
-With the unseen objects, ForceDelta-VLA exceeds the Temporal Teacher by $10$ percentage points in success rate and reduces successful-trial peak force from $21.8$ to $13.6$~N (Table~\ref{tab:physical_generalization}).
+On unseen objects, ForceDelta-VLA improves success over the Temporal Teacher by $26.7$ percentage points and reduces mean peak force over successful trials by $8.2$~N (Table~\ref{tab:physical_generalization}). The new USB port is particularly challenging for the Temporal Teacher. For ImplicitRDP, failures often occur while establishing contact: the policy misses the replacement eraser during grasping or fails to initiate the downward insertion motion.
 
 \subsection{Failure Analysis}
 \label{sec:exp_limitations}
