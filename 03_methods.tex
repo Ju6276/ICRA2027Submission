@@ -28,7 +28,7 @@ Let $\mathcal P(\cdot)$ extract the pose component of an action. We decompose th
 \end{equation}
 The force correction learns the paired teacher prediction difference. The delay correction compensates for the difference between previous and current reference predictions, including the difference between their reference states. Both terms modify only pose; the gripper command comes from the reference action.
 
-Pose coordinates contain translation and a continuous 6D rotation representation~\cite{zhou2020continuityrotationrepresentationsneural}. Corrections are added in these coordinates, followed by Gram--Schmidt projection to a valid rotation. For bimanual tasks, the per-arm inputs and pose actions are concatenated and predicted jointly. Representation and normalization details are provided in the supplementary material.
+Pose coordinates contain translation and a continuous 6D rotation representation~\cite{zhou2020continuityrotationrepresentationsneural}. Corrections are added in these coordinates, followed by Gram--Schmidt projection to a valid rotation. For bimanual tasks, we concatenate the inputs from both arms and jointly predict their pose actions. Representation and normalization details are provided in the supplementary material.
 
 \subsection{Teacher and Force-Agnostic Reference Policy}
 \label{sec:teacher_and_missing}
@@ -50,13 +50,13 @@ where $\epsilon$ is the initial flow noise. We freeze $\theta$ after training.
 
 \subsubsection{Force-agnostic reference-action mode}
 
-We distinguish an unavailable wrench history from a physically measured zero wrench. The learned force-agnostic mode represents the former: it replaces the wrench history with a learned token $z_{\varnothing F}$ and a rank-$\rho$ adapter $(W_{\mathrm{in}},W_{\mathrm{out}})$. We collect its trainable parameters as $\phi=\{z_{\varnothing F},W_{\mathrm{in}},W_{\mathrm{out}}\}$. The adapter modifies the pose channels of the action expert,
+We distinguish an unavailable wrench history from a physically measured zero wrench. The force-agnostic mode handles unavailable force input: it replaces the force-history input with a learned token $z_{\varnothing F}$ and uses a rank-$\rho$ adapter $(W_{\mathrm{in}},W_{\mathrm{out}})$ to modify the action expert's pose output. We collect its trainable parameters as $\phi=\{z_{\varnothing F},W_{\mathrm{in}},W_{\mathrm{out}}\}$. The adapter modifies the pose channels of the action expert,
 \begin{equation}
     v^p\leftarrow v^p+W_{\mathrm{out}}\,
     \sigma(W_{\mathrm{in}}h),
     \label{eq:missing_force_adapter}
 \end{equation}
-where $h$ is an action-expert hidden state, $v^p$ its pose-channel flow output, and $\sigma$ a pointwise nonlinearity. The adapter is active only in the force-agnostic mode. With $\theta$ fixed, we train $\phi$ using the teacher's original flow-matching objective to learn the force-agnostic reference policy.
+where $h$ is an action-expert hidden state, $v^p$ its pose-channel flow output, and $\sigma$ an element-wise activation function. The adapter is active only in the force-agnostic mode. With $\theta$ fixed, we train $\phi$ using the teacher's original flow-matching objective to learn the force-agnostic reference policy.
 The reference-action prediction is
 \begin{equation}
     A_{T,t,1:H}^{\mathrm{ref}}
@@ -129,7 +129,7 @@ The mask prevents direct dependence of the delay-correction output on the force 
 \subsubsection{Asynchronous schedule replay}
 \label{sec:async_training}
 
-Training must expose the correction policy to references that have aged during inference. We sample query periods and inference latencies before target extraction and replay the same fixed schedule during policy optimization. At each sampled correction time, we select the most recently started reference query whose inference has completed. Its cached context, interpolated reference actions, and timing features are used to construct the student inputs and paired targets. Timestamp sampling and reference-selection details are provided in the supplementary material.
+Training must expose the correction policy to reference actions delayed by inference. We sample query periods and inference latencies before target extraction and replay the same fixed schedule during policy optimization. At each sampled correction time, we select the most recently started reference query whose inference has completed. Its cached context, interpolated reference actions, and timing features are used to construct the student inputs and paired targets. Timestamp sampling and reference-selection details are provided in the supplementary material.
 
 With normalized temporal weights $w_j\propto\beta^{j-1}$, $0<\beta\leq1$, and normalized-coordinate mean-squared loss $\ell_{\mathrm{pose}}$, the distillation objective is
 \begin{align}
@@ -142,14 +142,12 @@ With normalized temporal weights $w_j\propto\beta^{j-1}$, $0<\beta\leq1$, and no
         \Delta A^{\mathrm{delay}}_{T,k\rightarrow t,j})\big].
     \label{eq:correction_loss}
 \end{align}
-The coefficient $\lambda_{\mathrm{delay}}$ balances force-conditioning and delay-correction supervision.
+The coefficient $\lambda_{\mathrm{delay}}$ balances the force-correction and delay-correction losses.
 
 \subsection{Asynchronous Deployment}
 \label{sec:execution}
 
 At deployment, the teacher and student run independently (Fig.~\ref{fig:async_deployment}). The teacher periodically refreshes the cached reference using its force-agnostic mode. Each student query reads the latest completed reference update and keeps that reference paired with its corrections throughout execution. Student queries continue while the teacher computes the next reference; queries started after that reference becomes available can adopt it.
-
-At each control tick, the executor selects the most recently started student query whose result is complete and still valid. For its active step $j$, it interpolates the reference at $t_j$, bounds the two corrections independently, and composes the normalized pose using Eq.~\eqref{eq:action_comp}. The result is converted to an absolute command using the selected reference's query state $S_k$. Expired steps are skipped; a valid correction step is held until its next timestamp or a newer valid result becomes available. The timestamp-selection rules are given in the supplementary material.
 
 \begin{figure}[!htb]
     \centering
@@ -157,3 +155,5 @@ At each control tick, the executor selects the most recently started student que
     \caption{Deployment schematic. Two successive student queries reuse the same reference chunk. Selected correction steps are combined with the reference poses at the corresponding timestamps.}
     \label{fig:async_deployment}
 \end{figure}
+
+At each control tick, the executor selects the most recently started student query whose result is complete and still valid. For its active step $j$, it interpolates the reference at $t_j$, bounds the two corrections independently, and composes the normalized pose using Eq.~\eqref{eq:action_comp}. The result is converted to an absolute command using the selected reference's query state $S_k$. Expired steps are skipped; a valid correction step is held until its next timestamp or a newer valid result becomes available. The timestamp-selection rules are given in the supplementary material.

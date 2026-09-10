@@ -63,13 +63,13 @@ For each task, we collect $200$ demonstrations. Multi-view images, robot states,
 We compare with ForceVLA~\cite{yu2025forcevlaenhancingvlamodels}, a force-aware full-action policy that also provides our teacher backbone; $\pi_{0.5}$~\cite{intelligence2025pi05visionlanguageactionmodelopenworld}, a VLA without force/torque input; TA-VLA~\cite{zhang2025tavlaelucidatingdesignspace}, a torque-aware VLA; and ImplicitRDP~\cite{chen2026implicitrdpendtoendvisualforcediffusion}, a slow--fast visual--force policy. We also evaluate direct execution of our Stage-1 Temporal Teacher to compare against the same temporal force-aware backbone. All methods use the same task demonstrations, initial-state distributions, controller settings, and safety limits. We conduct $20$ trials per method and task and report success rate, peak contact force, and completion time.
 
 \noindent\textbf{Implementation details.}
-The teacher encodes a $100$-ms wrench history and predicts an $H{=}50$ action chunk at $30$~Hz. The correction policy uses a causal force encoder and a shared attention module with separate force- and delay-correction heads to predict $K{=}5$ pose corrections. Deployment runs on a workstation with two NVIDIA RTX 4090 GPUs. The reference-action forward pass averages $189.7$~ms, corresponding to approximately $5$~Hz for serial inference (Table~\ref{tab:runtime}). Robot command transmission is limited to $100$~Hz; this control rate is distinct from the correction-query rate. Training and optimization details are provided in the supplementary material.
+The teacher encodes a $100$-ms wrench history and predicts an action chunk with $H{=}50$ steps. The correction policy uses a causal force encoder and a shared attention module with separate force- and delay-correction heads to predict $K{=}5$ pose corrections. Deployment runs on a workstation with two NVIDIA RTX 4090 GPUs. The reference-action forward pass averages $189.7$~ms, corresponding to approximately $5$~Hz for serial inference (Table~\ref{tab:runtime}). Robot command transmission is limited to $100$~Hz; this control rate is distinct from the correction-query rate. Training and optimization details are provided in the supplementary material.
 
 \subsection{Main Results}
 \label{sec:exp_main}
 
 \noindent\textbf{Quantitative results.}
-Compared with the original ForceVLA baseline, the complete ForceDelta-VLA system improves mean success from $54.4\%$ to $82.2\%$ (Table~\ref{tab:main_results}). It also exceeds TA-VLA, $\pi_{0.5}$, and ImplicitRDP. The improvement over ForceVLA spans all nine tasks and is largest on USB Insertion, Button Pressing, and Plug Insertion.
+Compared with the original ForceVLA baseline, the complete ForceDelta-VLA system improves mean success from $54.4\%$ to $82.2\%$ (Table~\ref{tab:main_results}). It also exceeds TA-VLA, $\pi_{0.5}$, and ImplicitRDP. Success improves over ForceVLA on all nine tasks, with the largest gains on USB Insertion, Button Pressing, and Plug Insertion.
 
 Direct execution of the Stage-1 Temporal Teacher achieves $70.6\%$ mean success. ForceDelta-VLA improves mean success by about $11.7$ percentage points over this teacher. The largest gains are on USB Insertion and Plug Insertion, at $25$ and $20$ points, respectively. On Button Pressing, most of the improvement over ForceVLA is already obtained by the Temporal Teacher ($50\%$ to $80\%$); ForceDelta-VLA raises success to $85\%$.
 
@@ -99,7 +99,7 @@ Relative to ForceVLA, mean peak contact force over successful trials decreases b
 \end{table}
 
 \noindent\textbf{Qualitative results.}
-Figure~\ref{fig:qualitative_button} highlights how the learned translational correction evolves through contact. The correction is comparatively smaller before sustained contact, increases during pressing, shows a brief change near peak contact, and decreases as contact is released.
+Figure~\ref{fig:qualitative_button} highlights how the learned translational correction evolves through contact. The correction is smaller before sustained contact, increases during pressing, shows a brief change near peak contact, and decreases as contact is released.
 
 \begin{figure}[t]
     \centering
@@ -114,7 +114,7 @@ Figure~\ref{fig:qualitative_button} highlights how the learned translational cor
 We measure the forward-pass latencies of the reference-action and correction pathways and evaluate task performance under additional reference-action latency.
 
 \noindent\textbf{Forward-pass latency.}
-The correction forward pass takes $2.43$~ms, below the $10$-ms interval between robot command transmissions (Table~\ref{tab:runtime}). Both generative action paths exceed that interval. The shorter computation time allows the correction worker to reuse a reference action instead of waiting for a new generative prediction at each correction query.
+The correction forward pass takes $2.43$~ms, below the $10$-ms interval between robot command transmissions (Table~\ref{tab:runtime}). The Temporal Teacher and reference-action forward passes both exceed that interval. The shorter computation time allows the correction worker to reuse a reference action instead of waiting for a new generative prediction at each correction query.
 
 \begin{table}[t]
     \centering
@@ -135,7 +135,7 @@ The correction forward pass takes $2.43$~ms, below the $10$-ms interval between 
 \end{table}
 
 \noindent\textbf{Sensitivity to reference-action delay.}
-We evaluate USB Insertion and Plug Insertion with $0$, $100$, and $200$~ms of additional reference-action latency, using $10$ trials per task, method, and delay. As delay increases, ForceDelta-VLA shows a smaller decline in success and a smaller rise in mean peak force than the Temporal Teacher (Fig.~\ref{fig:latency_sensitivity}). This pattern is consistent with the correction pathway remaining useful between delayed reference-action updates. Performance still decreases as the reference action gets older, indicating that recent force feedback cannot fully compensate for delayed reference updates.
+We evaluate USB Insertion and Plug Insertion with $0$, $100$, and $200$~ms of additional reference-action latency, using $10$ trials per task, method, and delay. From $0$ to $200$~ms of additional delay, success decreases by $15$ percentage points for ForceDelta-VLA and $25$ points for the Temporal Teacher (Fig.~\ref{fig:latency_sensitivity}). Mean peak force over successful trials increases by $3.7$~N and $9.6$~N, respectively. These results support updating corrections between reference-action updates.
 
 \begin{figure}[t]
     \centering
@@ -154,10 +154,10 @@ We evaluate USB Insertion and Plug Insertion with $0$, $100$, and $200$~ms of ad
 \subsection{Ablation Studies}
 \label{sec:exp_ablation}
 
-The ablations ask three questions: how the correction target should be defined, whether corrections should be predicted separately or as complete actions, and how training should account for asynchronous execution (Table~\ref{tab:ablation}). All variants are evaluated on USB Insertion, single-arm Whiteboard Wiping, Plug Insertion, and Drawer Opening.
+The ablations ask three questions: how the correction target should be defined, whether the fast policy should predict separate corrections, a combined correction, or complete actions, and how training should account for asynchronous execution (Table~\ref{tab:ablation}). All variants are evaluated on USB Insertion, single-arm Whiteboard Wiping, Plug Insertion, and Drawer Opening.
 
 \noindent\textbf{Ablation setup.}
-Execution ablations retain the trained model: \textbf{Reference action only} disables both corrections; \textbf{w/o force correction} disables the force output; \textbf{w/o learned delay correction} disables the full delay output, including its state-reference compensation; and \textbf{Zeroed correction input} supplies an all-zero force history while retaining the force branch. The remaining variants retrain the affected policy. Their changes are described with the corresponding results below.
+Execution ablations retain the trained model: \textbf{Reference action only} disables both corrections; \textbf{w/o force correction} disables the force output; \textbf{w/o learned delay correction} disables the full delay output, including reference-state alignment; and \textbf{Zeroed correction input} supplies an all-zero force history while retaining the force branch. The remaining variants retrain the affected policy. Their changes are described with the corresponding results below.
 
 \begin{table}[t]
     \centering
@@ -192,10 +192,10 @@ Execution ablations retain the trained model: \textbf{Reference action only} dis
 \end{table}
 
 \noindent\textbf{How should correction supervision be defined?}
-\textbf{Demonstration-derived correction target} replaces the force target with the demonstrated action minus the force-agnostic teacher prediction at the same query state. Success falls from $85.0\%$/$75.0\%$ to $72.5\%$/$57.5\%$ on the single-arm/bimanual subsets. In this evaluation, the difference between paired teacher predictions provides a more effective target than the difference between a demonstration and a teacher prediction. \textbf{Zero-wrench teacher query} instead uses an all-zero-wrench query to construct both the reference action and correction targets, reducing success to $65.0\%$/$55.0\%$. Because this variant changes both constructions, the result reflects the combined effect of replacing both.
+\textbf{Demonstration-derived correction target} replaces the force target with the demonstrated action minus the force-agnostic teacher prediction at the same query state. Success falls from $85.0\%$/$75.0\%$ to $72.5\%$/$57.5\%$ on the single-arm/bimanual subsets. In this evaluation, the difference between paired teacher predictions provides a more effective target than the difference between a demonstration and a teacher prediction. \textbf{Zero-wrench teacher query} instead uses an all-zero-wrench query to construct both the reference action and correction targets, reducing success to $65.0\%$/$55.0\%$.
 
 \noindent\textbf{What should the fast policy predict?}
-Using the reference action alone reduces success from $85.0\%$/$75.0\%$ to $62.5\%$/$50.0\%$ on the single-arm/bimanual subsets. Relative to the full model, removing the force correction reduces success by $15$ and $17.5$ percentage points and increases peak force by $3.7$ and $4.3$~N. Zeroing its input performs worse than disabling its output: the force branch still applies a prediction when given zeros. \textbf{Single combined-correction head} predicts the sum of the two targets with one head; success falls to $75.0\%$/$65.0\%$ despite retaining their sum. \textbf{Fast full-action distillation} directly distills the teacher's force-conditioned pose action using the same compact student architecture, inputs, and update schedule. Its success rate is $17.5$ and $22.5$ percentage points lower, supporting the use of this compact policy to predict corrections to a reference action.
+Using the reference action alone reduces success from $85.0\%$/$75.0\%$ to $62.5\%$/$50.0\%$ on the single-arm/bimanual subsets. Relative to the full model, removing the force correction reduces success by $15$ and $17.5$ percentage points and increases peak force by $3.7$ and $4.3$~N. Zeroing its input performs worse than disabling its output: the force branch still applies a prediction when given zeros. \textbf{Single combined-correction head} trains one head on the sum of the two targets. Success decreases by $10$ percentage points on both subsets, supporting separate supervision and prediction of the force and delay corrections. \textbf{Fast full-action distillation} directly distills the teacher's force-conditioned pose action using the same compact student architecture, inputs, and update schedule. Its success rate is $17.5$ and $22.5$ percentage points lower than the full model on the two subsets. This comparison supports retaining reference actions and training the compact student to predict their corrections.
 
 \noindent\textbf{How does asynchronous adaptation contribute?}
 Disabling the complete learned delay output reduces success by $7.5$ points on both subsets. \textbf{w/o schedule replay} omits the sampled asynchronous schedule during cached-context target extraction and reduces success to $77.5\%$/$62.5\%$. These results support both compensating for reference-action mismatch and exposing the policy to asynchronous conditions during training.
@@ -228,9 +228,13 @@ For the tasks shown in Fig.~\ref{fig:physical_generalization_objects}, we replac
     \end{tabular}
 \end{table}
 
-Under the object replacements, ForceDelta-VLA exceeds the Temporal Teacher by $10$ success points and reduces successful-trial peak force from $21.8$ to $13.6$~N (Table~\ref{tab:physical_generalization}). The correction framework also improves performance on these unseen objects.
+With the unseen objects, ForceDelta-VLA exceeds the Temporal Teacher by $10$ percentage points in success rate and reduces successful-trial peak force from $21.8$ to $13.6$~N (Table~\ref{tab:physical_generalization}).
 
-\subsection{Limitations}
+\subsection{Failure Analysis}
 \label{sec:exp_limitations}
 
-Failed ForceDelta-VLA trials show three limitations. First, if a reference action moves the robot away from a suitable contact position, the required adjustment may exceed the correction bounds. Second, a reference action that is older than those seen during training may no longer match the current robot and environment state. Third, jamming or contact on the wrong side of an object may require the robot to retreat, approach again, or change its strategy. These recovery motions may also exceed the correction bounds.
+In failed USB and plug insertion trials, the robot often reached the target region but contacted the rim or entered with a small orientation error. Once the connector jammed, the reference action often continued advancing, and the corrected motion did not retreat far enough to clear the jam and retry.
+
+In cabinet and drawer opening, pulling sometimes began before stable contact with the handle was established. Recovery required releasing contact, repositioning the gripper, or approaching again. Wiping and object-flipping failures involved contact on an unintended side or loss of the intended contact geometry, requiring a different approach direction.
+
+Reference-update delay further reduced insertion success (Fig.~\ref{fig:latency_sensitivity}). During this delay, the robot could enter a new contact state while the student continued correcting a chunk generated before that change. These failures point to the need for reference updates that initiate retreat, reestablish contact, or change the approach direction.

@@ -4,13 +4,13 @@ Learning this correction from demonstrations is not straightforward. Demonstrati
 
 Existing asynchronous policies separate computation or sensor-update rates~\cite{li2026favlaforceadaptivefastslowvla,wang2026lateforceacceleratingvla,vanjani2026damvladecoupledasynchronousmultimodal}. Residual reinforcement learning and corrective imitation obtain correction signals from rewards or extra on-policy interaction~\cite{ankile2024imitationrefinementresidual,xu2025compliantresidualdaggerimproving}. We address the supervision problem using only the existing demonstrations, while retaining asynchronous execution.
 
-We present ForceDelta-VLA, which learns force and delay corrections to a reusable reference action. Paired force-conditioned and learned force-agnostic predictions of a frozen teacher provide force-correction supervision. A separate delay target accounts for the difference between the earlier reference action and a current force-agnostic prediction, including the change in reference state. The trained lightweight policy uses recent force history and robot state to update these corrections independently of reference-action generation.
+We present ForceDelta-VLA, which learns force and delay corrections to a reusable reference action. Paired predictions from a frozen teacher's force-conditioned and learned force-agnostic modes provide force-correction supervision. A separate delay target accounts for the difference between the earlier reference action and a current force-agnostic prediction, including the change in reference state. The trained lightweight policy uses recent force history and robot state to update these corrections independently of reference-action generation.
 
 We evaluate ForceDelta-VLA on five single-arm and four bimanual real-robot tasks involving initial contact, precise insertion, motion against friction, and motion constrained by the environment.
 
 The contributions of this work are:
 \begin{enumerate}
-    \item We introduce \textbf{force-agnostic correction distillation}, which constructs an explicit force-correction target from matched force-conditioned and learned force-agnostic predictions of a frozen teacher, using only the original dataset;
+    \item We introduce \textbf{force-agnostic correction distillation}, which uses only the original dataset to construct an explicit force-correction target from matched predictions of a frozen teacher's force-conditioned and learned force-agnostic modes;
     \item We develop a \textbf{state-consistent dual-correction policy} that separately learns force and delay corrections in a common action coordinate system and updates them independently of reference-action generation while reusing task context. The delay target includes both reference-action mismatch and reference-state alignment; and
     \item Real-robot evaluation across nine single-arm and bimanual tasks shows $82.2\%$ mean success, versus $54.4\%$ for ForceVLA and $70.6\%$ for direct execution of the Stage-1 Temporal Teacher.
 \end{enumerate}
