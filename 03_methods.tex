@@ -101,8 +101,6 @@ The force target compares two predictions at the current state, while execution 
 \end{equation}
 Reference-state alignment expresses the current prediction relative to the state $S_k$ used to generate the stored reference. Here $A_k^{\mathrm{ref}}(t_j)$ is that reference interpolated at $t_j$, and $\Gamma(S_t,S_k)$ converts the state difference to normalized action coordinates. The delay head learns the entire target, including $\Gamma$.
 
-The exact form of $\Gamma$ and the corresponding alignment relation are provided in the supplementary material.
-
 \subsection{Correction Policy and Training}
 \label{sec:residual_policy}
 
