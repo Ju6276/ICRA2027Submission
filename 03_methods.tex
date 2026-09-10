@@ -1,7 +1,7 @@
 \begin{figure*}[!t]
     \centering
     \includegraphics[width=0.98\textwidth]{figures/fig02_architecture.pdf}
-    \caption{Correction distillation (training stage 3). (a) Paired predictions from the frozen teacher define the force target as the pose difference between its force-conditioned and learned force-agnostic modes. The delay target compares the current force-agnostic prediction with the stored reference and includes reference-state alignment. Paired queries share visual--language context, robot state, and sampling noise. (b) The student learns both corrections from these targets. Its two evaluations of $\Phi$ share weights and append the same learned query token $q_{\mathrm{corr}}$ to their inputs, with the force token masked only for delay. Each head reads its corresponding output at $q_{\mathrm{corr}}$.}
+    \caption{Correction distillation (training stage 3). (a) Paired predictions from the frozen teacher share context, proprioception, and sampling noise. The pose difference between the force-conditioned and force-agnostic predictions defines the force target. The delay target compares the current force-agnostic prediction with the stored reference and includes reference-state alignment. (b) Two evaluations of $\Phi$ share weights and the learned query $q_{\mathrm{corr}}$; only the delay evaluation masks the force token. Separate heads predict the two corrections, supervised by the teacher-defined targets.}
     \label{fig:network_structure}
 \end{figure*}
 
@@ -101,26 +101,7 @@ The force target compares two predictions at the current state, while execution 
 \end{equation}
 Reference-state alignment expresses the current prediction relative to the state $S_k$ used to generate the stored reference. Here $A_k^{\mathrm{ref}}(t_j)$ is that reference interpolated at $t_j$, and $\Gamma(S_t,S_k)$ converts the state difference to normalized action coordinates. The delay head learns the entire target, including $\Gamma$.
 
-To compute this conversion, let $\widetilde S^{p}$ denote the normalized pose coordinates (nine per arm), and let $\sigma_S^{p}$ and $\sigma_A^{p}$ denote the corresponding training-set standard deviations. Then
-\begin{equation}
-    \Gamma(S_t,S_k)
-    =\frac{\sigma_S^{p}+\varepsilon}{\sigma_A^{p}+\varepsilon}
-      \odot(\widetilde S_t^{p}-\widetilde S_k^{p}),
-    \qquad \varepsilon=10^{-6}.
-    \label{eq:coordinate_rebasing}
-\end{equation}
-Let $\mathcal R(S,a)$ convert a relative action $a$ based at state $S$ into an absolute robot command. The paired targets account for the change in reference state at each action step:
-\begin{equation}
-\begin{aligned}
-    &\mathcal R\!\left(S_k,\mathcal P(A_k^{\mathrm{ref}}(t_j))
-      +\Delta A_{T,t|k,j}^{\mathrm{force}}
-      +\Delta A_{T,k\rightarrow t,j}^{\mathrm{delay}}\right)\\[-2pt]
-    &\qquad\approx\mathcal R\!\left(S_t,
-      \mathcal P(A_{T,t|k,j}^{\mathrm{cond}})\right).
-\end{aligned}
-    \label{eq:absolute_command_equivalence}
-\end{equation}
-Before clipping, substitution recovers the force-conditioned chunk expressed relative to $S_k$. The alignment relation holds in the shared translation-plus-6D representation up to the $\varepsilon$ stabilization term; Gram--Schmidt projection is applied after restoring the action delta.
+The exact form of $\Gamma$ and the corresponding alignment relation are provided in the supplementary material.
 
 \subsection{Correction Policy and Training}
 \label{sec:residual_policy}
@@ -150,11 +131,7 @@ The mask prevents direct dependence of the delay-correction output on the force 
 \subsubsection{Asynchronous schedule replay}
 \label{sec:async_training}
 
-Training must expose the correction policy to reference actions that are already old when they become available. We therefore sample query periods and inference latencies before target extraction and replay the same fixed schedule during policy optimization. We add small random offsets to query timestamps so that training includes interpolation between recorded samples. Training uses the recorded state--action timestamps, while $\mathcal F_t$ retains all wrench samples in the causal window. The sampling distributions are given in the supplementary material. If $t_i$ and $\bar t_i=t_i+L_i$ are the start and availability times of query $i$, the active reference-action index is
-\begin{equation*}
-    k(t)=\arg\max_{i:\bar t_i\leq t}t_i.
-\end{equation*}
-The active reference-action update supplies the cached pooled context, aligned reference-action segment, and timestamps used to compute the temporal features and stepwise targets. The schedule determines the reference-action age, interpolation phase, and reference-query latency encountered during training.
+Training must expose the correction policy to references that have aged during inference. We sample query periods and inference latencies before target extraction and replay the same fixed schedule during policy optimization. At each sampled correction time, we select the most recently started reference query whose inference has completed. Its cached context, interpolated reference actions, and timing features are used to construct the student inputs and paired targets. Timestamp sampling and reference-selection details are provided in the supplementary material.
 
 With normalized temporal weights $w_j\propto\beta^{j-1}$, $0<\beta\leq1$, and normalized-coordinate mean-squared loss $\ell_{\mathrm{pose}}$, the distillation objective is
 \begin{align}

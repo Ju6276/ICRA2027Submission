@@ -14,7 +14,7 @@ from PIL import Image, ImageOps
 from figure_palette import (INK, EDGE, NEUTRAL, BACKGROUND, REFERENCE, REFERENCE_EDGE, FORCE,
                             FORCE_ACCENT, FORCE_EDGE, DELAY, DELAY_ACCENT,
                             DELAY_EDGE, JOINT_CORRECTION, JOINT_CORRECTION_EDGE,
-                            STUDENT_FILL, COMMAND, COMMAND_EDGE, snowflake_segments)
+                            STUDENT_FILL, COMMAND, COMMAND_EDGE, snowflake_segments, draw_input_icon)
 
 
 ROOT = Path(__file__).resolve().parent
@@ -182,10 +182,15 @@ def main():
     panel(ax,.67,.025,.318,.919,face=BACKGROUND,edge=BACKGROUND,lw=0,radius=.014,z=0)
 
     # Conceptual overview: preparation, paired predictions, and two distinct targets.
-    panel(ax,.03,.54,.605,.36,face="white",edge="#C8D0D4")
+    panel(ax,.03,.54,.605,.395,face="white",edge="#8DAFC9",radius=.013)
+    panel(ax,.036,.886,.593,.043,face="#C9DFF2",edge="none",lw=0,radius=.009)
+    label(ax,.048,.908,"Teacher-defined correction targets",size=10.0,weight="bold",ha="left",color="#254C6E")
+    # Aligned modality cards organize inputs without adding method details.
+    for y,h in [(.817,.064),(.746,.064),(.675,.064),(.574,.094)]:
+        panel(ax,.041,y,.168,h,face="#E8EFF5",edge="none",lw=0,radius=.009,z=3)
     # Emoji-like vector pictograms keep the PDF portable and sharp.
     # Images and instruction supply cached context; state is current.
-    panel(ax,.245,.665,.17,.15,face=NEUTRAL)
+    panel(ax,.245,.665,.17,.15,face="#D5E5F3",edge="#45677F",radius=.011)
     ax.imshow(Image.open(ROOT/"icons/teacher.png"),extent=[.263,.296,.691,.768],aspect="auto",zorder=5)
     label(ax,.353,.725,"Force-aware\nteacher",size=7.8,weight="bold")
     for pts in snowflake_segments(.302,.765,.006,8.5/3.66):
@@ -193,29 +198,42 @@ def main():
 
     # A single aligned column for all teacher inputs.
     ax.imshow(Image.open(ROOT/"icons/camera.png"),extent=[.048,.075,.823,.882],aspect="auto",zorder=5)
-    label(ax,.09,.852,"Images",size=6.8,ha="left")
+    label(ax,.09,.852,"Images",size=7.3,ha="left")
     ax.imshow(Image.open(ROOT/"icons/instruction.png"),extent=[.049,.074,.754,.808],aspect="auto",zorder=5)
-    label(ax,.09,.781,"Instruction",size=6.8,ha="left")
-    ax.plot([.051,.062,.073,.078],[.694,.715,.702,.717],color=EDGE,lw=1,zorder=4)
-    for x,y in [(.051,.694),(.062,.715),(.073,.702)]:
-        ax.plot(x,y,marker="o",markersize=2.2,color=EDGE,zorder=5)
-    label(ax,.09,.708,"State",size=6.8,ha="left")
-    ax.imshow(Image.open(ROOT/"icons/force.png"),extent=[.048,.075,.599,.658],aspect="auto",zorder=5)
-    label(ax,.09,.628,"Force History",size=6.5,ha="left",color=FORCE_EDGE)
+    label(ax,.09,.781,"Instruction",size=7.3,ha="left")
+    draw_input_icon(ax,"proprioception",.062,.708,.034,.070)
+    label(ax,.09,.708,"Proprioception",size=7.3,ha="left")
+    history_asset = ROOT / "inputs/fig02_force_history.png"
+    if history_asset.exists():
+        ax.imshow(Image.open(history_asset),extent=[.046,.078,.604,.654],aspect="auto",zorder=5)
+    else:
+        # Same illustrative history curve as Fig. 2; replace both from the shared asset.
+        import numpy as np
+        t_history=np.linspace(0,1,120)
+        history_y=.654-.050*(.68-.25*np.sin(2*np.pi*t_history)*np.exp(-.9*t_history)-.15*t_history)
+        ax.plot([.046,.046,.078],[.652,.604,.604],color=HAIRLINE,lw=.7,zorder=5)
+        ax.plot(.047+.030*t_history,history_y,color=FORCE_EDGE,lw=1.3,zorder=5)
+    label(ax,.09,.628,"Force History",size=7.0,ha="left",color=FORCE_EDGE)
     for y, text, face, edge in [(.635,"ON",FORCE_PALE,FORCE_EDGE),
                                  (.585,"OFF",PALE_BLUE,REFERENCE_EDGE)]:
-        panel(ax,.174,y,.033,.026,face=face,edge=edge,lw=.7,radius=.012)
+        panel(ax,.174,y,.033,.026,face=face,edge=edge,lw=.7,radius=.012,z=4)
         label(ax,.1905,y+.013,text,size=6.3,color=edge,weight="bold")
     ax.plot([.217,.224,.224,.217],[.874,.874,.583,.583],color=EDGE,lw=.8,zorder=3)
     arrow(ax,(.225,.735),(.241,.735),color=INK,scale=6)
     panel(ax,.46,.718,.155,.088,face=FORCE_PALE,edge=FORCE_ACCENT)
-    label(ax,.553,.762,"Force target",size=7.7,weight="bold")
-    # Contact force: fingertip presses down onto a surface.
-    panel(ax,.477,.761,.010,.032,face="white",edge=FORCE_EDGE,lw=.7,radius=.004)
-    ax.plot([.472,.494],[.735,.735],color=FORCE_EDGE,lw=1.1,zorder=5)
-    arrow(ax,(.482,.758),(.482,.739),color=FORCE_EDGE,lw=.8,scale=5)
-    ax.plot([.473,.47],[.747,.753],color=FORCE_EDGE,lw=.6,zorder=5)
-    ax.plot([.491,.494],[.747,.753],color=FORCE_EDGE,lw=.6,zorder=5)
+    label(ax,.559,.762,"Force target",size=7.7,weight="bold")
+    # A round pushbutton on a low base, with downward contact from the gripper.
+    from matplotlib.patches import Ellipse
+    draw_input_icon(ax,"proprioception",.484,.785,.022,.034,z=5)
+    arrow(ax,(.484,.768),(.484,.751),color=FORCE_EDGE,lw=1.05,scale=6,z=7)
+    panel(ax,.471,.726,.026,.009,face="#D6DBDE",edge="#66757D",
+          lw=.65,radius=.002,z=5)
+    ax.add_patch(Rectangle((.476,.737),.016,.006,facecolor="#C89C31",
+                          edgecolor=FORCE_EDGE,lw=.65,zorder=6))
+    ax.add_patch(Ellipse((.484,.737),.016,.009,facecolor="#C89C31",
+                        edgecolor=FORCE_EDGE,lw=.65,zorder=6))
+    ax.add_patch(Ellipse((.484,.745),.020,.012,facecolor="#FFE19A",
+                        edgecolor=FORCE_EDGE,lw=.8,zorder=7))
     panel(ax,.46,.588,.155,.106,face=DELAY_PALE,edge=DELAY_ACCENT)
     label(ax,.553,.641,"Delay target",size=7.7,weight="bold")
     # Stopwatch icon for the delay target.
@@ -228,48 +246,50 @@ def main():
     ax.plot(.482,.636,marker="o",markersize=1.6,color=DELAY_EDGE,zorder=6)
     arrow(ax,(.42,.762),(.455,.762),scale=8)
     arrow(ax,(.42,.675),(.455,.675),scale=7)
-    action_strip(ax,.302,.604,.056,PALE_BLUE,REFERENCE_EDGE)
-    label(ax,.33,.573,r"$A^{\mathrm{ref}}$",size=9,color=REFERENCE_EDGE)
-    arrow(ax,(.33,.66),(.33,.634),color=REFERENCE_EDGE,scale=6)
-    arrow(ax,(.363,.6165),(.455,.6165),scale=7)
 
-    label(ax,.032,.505,"Slow reference + fast correction",size=10.5,weight="bold",ha="left")
-    panel(ax,.03,.09,.605,.389,face="white",edge="#C8D0D4")
-    panel(ax,.23,.335,.16,.09,face=NEUTRAL)
-    label(ax,.31,.393,"Force history + state",size=6.5,weight="bold")
-    label(ax,.31,.358,"Cached task context",size=6.8)
-    arrow(ax,(.395,.38),(.435,.38),scale=7)
-    panel(ax,.44,.335,.175,.09,face=STUDENT_FILL)
-    ax.imshow(Image.open(ROOT/"icons/student.png"),extent=[.45,.475,.347,.405],aspect="auto",zorder=5)
-    label(ax,.549,.393,"Fast student",size=7.8,weight="bold")
-    label(ax,.549,.357,"Correction policy",size=6.5,color=SUBTLE)
-    # The slow worker is the same teacher's learned force-agnostic mode.
-    panel(ax,.05,.13,.15,.17,face=NEUTRAL)
-    ax.imshow(Image.open(ROOT/"icons/teacher.png"),extent=[.06,.086,.224,.284],aspect="auto",zorder=5)
-    for pts in snowflake_segments(.087,.28,.0045,8.5/3.66):
+    panel(ax,.03,.09,.605,.425,face="white",edge="#8EACA6",radius=.013)
+    panel(ax,.036,.460,.593,.047,face="#CFE4DC",edge="none",lw=0,radius=.009)
+    label(ax,.045,.487,"Slow reference + fast correction",size=10.5,weight="bold",ha="left")
+    # Current sensing and cached visual-language context have distinct sources.
+    panel(ax,.225,.401,.175,.046,face="#EDF2F5",edge="#667D8D",radius=.007)
+    label(ax,.3125,.433,"Force history +",size=7.0,weight="bold")
+    label(ax,.3125,.412,"proprioception",size=7.0,weight="bold")
+    arrow(ax,(.405,.424),(.435,.424),scale=7)
+    panel(ax,.225,.343,.175,.043,face=PALE_BLUE,edge=REFERENCE_EDGE,radius=.007)
+    label(ax,.3125,.3645,"Cached task context",size=7.1)
+    arrow(ax,(.405,.3645),(.435,.3645),color=REFERENCE_EDGE,scale=7)
+    panel(ax,.44,.357,.175,.09,face=STUDENT_FILL)
+    ax.imshow(Image.open(ROOT/"icons/student.png"),extent=[.45,.475,.369,.427],aspect="auto",zorder=5)
+    label(ax,.549,.415,"Fast student",size=8.2,weight="bold")
+    label(ax,.549,.379,"Correction policy",size=7.0,color=SUBTLE)
+    # The slow worker uses the learned force-agnostic teacher mode.
+    panel(ax,.048,.177,.15,.185,face="#D5E5F3",edge="#45677F",radius=.011)
+    ax.imshow(Image.open(ROOT/"icons/teacher.png"),extent=[.058,.084,.287,.347],aspect="auto",zorder=5)
+    for pts in snowflake_segments(.085,.343,.0045,8.5/3.66):
         ax.plot(*zip(*pts),color=EDGE,lw=.65,zorder=5)
-    label(ax,.143,.262,"Slow teacher",size=7.2,weight="bold")
-    # Only the learned force-agnostic mode generates execution references.
-    for y, text, face, edge in [(.213,"ON","#F6F7F8","#BCC4C9"),
-                                 (.174,"OFF",PALE_BLUE,REFERENCE_EDGE)]:
-        panel(ax,.109,y,.068,.025,face=face,edge=edge,lw=.65,radius=.012)
-        label(ax,.143,y+.0125,text,size=6.1,color=edge,weight="bold")
-    # Approximate serial inference rate from the 189.7-ms mean forward latency.
-    label(ax,.125,.145,"Inference ~5 Hz",size=6.8,color=SUBTLE)
-    # One local trajectory panel receives the reference and the joint correction.
-    panel(ax,.26,.132,.28,.152,face="#FBFDFC",edge="#91A7AF",lw=.85,radius=.011)
-    arrow(ax,(.204,.208),(.255,.208),color=REFERENCE_EDGE,lw=1.1,scale=7)
-    arrow(ax,(.49,.331),(.49,.289),color=JOINT_CORRECTION_EDGE,lw=1.1,scale=7)
+    label(ax,.141,.327,"Slow teacher",size=7.6,weight="bold")
+    for y, text, face, edge in [(.273,"ON","#F6F7F8","#BCC4C9"),
+                                 (.232,"OFF",PALE_BLUE,REFERENCE_EDGE)]:
+        panel(ax,.107,y,.068,.025,face=face,edge=edge,lw=.65,radius=.012)
+        label(ax,.141,y+.0125,text,size=6.5,color=edge,weight="bold")
+    label(ax,.123,.192,"Inference ~5 Hz",size=7.0,color=SUBTLE)
+    # The slow teacher caches its visual-language context together with the reference.
+    ax.plot([.202,.213,.213],[.327,.327,.3645],color=REFERENCE_EDGE,lw=1.1,zorder=3)
+    arrow(ax,(.213,.3645),(.220,.3645),color=REFERENCE_EDGE,lw=1.1,scale=6)
+    # A larger spatial sketch emphasizes the composition of the separately predicted force and delay corrections.
+    panel(ax,.225,.12,.325,.205,face="#FBFDFC",edge="#91A7AF",lw=.85,radius=.011)
+    arrow(ax,(.202,.222),(.220,.222),color=REFERENCE_EDGE,lw=1.1,scale=7)
+    arrow(ax,(.49,.353),(.49,.330),color=JOINT_CORRECTION_EDGE,lw=1.1,scale=7)
     import numpy as np
     def trajectory_points(u):
         # A spatial sketch of paired reference and corrected poses. The two
         # endpoints coincide, while local corrections change direction along
         # the path. These are illustrative curves, not measured trajectories.
-        x = .282 + .236*u
+        x = .246 + .282*u
         envelope = np.sin(np.pi*u)**2
-        ref_y = .204 + .005*u + .050*np.sin(2*np.pi*u)
+        ref_y = .231 + .005*u + .054*np.sin(2*np.pi*u)
         corrected_x = x + .006*envelope
-        corrected_y = .204 + .005*u + .019*np.sin(2*np.pi*u) + .004*envelope
+        corrected_y = .231 + .005*u + .021*np.sin(2*np.pi*u) + .004*envelope
         return x,ref_y,corrected_x,corrected_y
 
     u = np.linspace(0,1,240)
@@ -277,23 +297,44 @@ def main():
     ax.plot(ref_x,ref_y,color=REFERENCE_EDGE,lw=1.25,
             linestyle=(0,(1.4,1.7)),zorder=4)
     ax.plot(adjusted_x,adjusted_y,color=COMMAND_EDGE,lw=1.65,zorder=5)
-    # One arrow color denotes the student's joint force-and-delay correction;
+    # One arrow color denotes the sum of the separately predicted force and delay corrections;
     # the arrows point from each reference pose to its adjusted counterpart.
     for position in [.15,.25,.35,.64,.75,.86]:
         rx,ry,cx,cy = trajectory_points(position)
-        arrow(ax,(rx,ry),(cx,cy),color=JOINT_CORRECTION_EDGE,lw=.8,scale=4.5,z=6)
-    label(ax,.303,.157,r"$A^{\mathrm{ref}}$",size=8.3,color=REFERENCE_EDGE)
-    label(ax,.424,.266,"Adjusted trajectory",size=6.6,color=COMMAND_EDGE)
-    arrow(ax,(.544,.208),(.57,.208),color=INK,lw=1.1,scale=7)
+        arrow(ax,(rx,ry),(cx,cy),color=JOINT_CORRECTION_EDGE,lw=.95,scale=5.2,z=6)
+    # Read left to right: stored reference, predicted pose corrections, adjusted trajectory.
+    ax.plot([.240,.255],[.143,.143],color=REFERENCE_EDGE,lw=1.2,linestyle=(0,(1.4,1.7)),zorder=5)
+    label(ax,.259,.143,r"$A^{\mathrm{ref}}$",size=7.2,ha="left",color=REFERENCE_EDGE)
+    arrow(ax,(.318,.133),(.318,.154),color=JOINT_CORRECTION_EDGE,lw=1,scale=5)
+    label(ax,.329,.143,"Force + delay",size=6.6,ha="left",color=JOINT_CORRECTION_EDGE)
+    ax.plot([.422,.437],[.143,.143],color=COMMAND_EDGE,lw=1.6,zorder=5)
+    label(ax,.441,.143,"Adjusted trajectory",size=6.3,ha="left",color=COMMAND_EDGE)
+    arrow(ax,(.554,.222),(.574,.222),color=INK,lw=1.1,scale=7)
     # Robot output with command transmission rate.
-    robot_arm_icon(ax,.57,.145)
-    label(ax,.601,.131,"100 Hz",size=7.4,weight="bold")
+    robot_arm_icon(ax,.574,.159)
+    label(ax,.604,.145,"100 Hz",size=7.4,weight="bold")
 
-    # Both targets feed one short supervision connection to the student below.
-    ax.plot([.619,.628,.628,.535],[.762,.762,.565,.565],color=FORCE_ACCENT,lw=.85,linestyle=(0,(3,2)),zorder=6)
-    ax.plot([.535,.535],[.584,.565],color=DELAY_ACCENT,lw=.85,linestyle=(0,(3,2)),zorder=6)
-    arrow(ax,(.535,.565),(.535,.431),color=JOINT_CORRECTION_EDGE,dashed=True,lw=.85,scale=6,z=6)
-    label(ax,.522,.514,"Correction supervision",size=6.4,color=SUBTLE,ha="right")
+    # Both target branches feed the same distillation link to the student.
+    ax.plot([.619,.632],[.762,.762],color=FORCE_ACCENT,lw=1.4,zorder=6)
+    ax.plot([.619,.632],[.641,.641],color=DELAY_ACCENT,lw=1.4,zorder=6)
+    ax.plot([.632,.632,.535],[.762,.565,.565],color=JOINT_CORRECTION_EDGE,
+            lw=1.15,linestyle=(0,(3,2)),zorder=6)
+    # Highlight correction distillation as the learning step between targets and student.
+    arrow(ax,(.535,.561),(.535,.549),color="#80304F",lw=1.3,scale=7,z=8)
+    panel(ax,.376,.477,.240,.065,face="#A83F68",edge="#80304F",lw=1.2,radius=.009,z=7)
+    # A small glowing lightbulb emphasizes learning without adding method content.
+    ax.add_patch(Ellipse((.397,.511),.032,.064,facecolor="#D883A2",
+                        edgecolor="none",alpha=.65,zorder=8))
+    ax.add_patch(Ellipse((.397,.516),.013,.027,facecolor="#FFFFFF",
+                        edgecolor="#FFFFFF",lw=.9,zorder=9))
+    ax.plot([.394,.394,.400,.400],[.506,.498,.498,.506],color="#FFFFFF",lw=.9,zorder=9)
+    ax.plot([.394,.400],[.494,.494],color="#FFFFFF",lw=1.1,zorder=9)
+    for dx,dy,ex,ey in [(-.009,0,-.013,0),(.009,0,.013,0),
+                         (0,.018,0,.025),(-.007,.014,-.010,.020),(.007,.014,.010,.020)]:
+        ax.plot([.397+dx,.397+ex],[.516+dy,.516+ey],color="#FFE2EB",lw=.7,zorder=9)
+    label(ax,.513,.510,"Correction distillation",size=8.2,weight="bold",
+          color="#FFFFFF",z=10)
+    arrow(ax,(.535,.472),(.535,.453),color="#80304F",lw=1.5,scale=8,z=8)
 
     for y,title,color,path in [(.535,"ForceVLA failure",ACCENT_RED,COMPARISON_IMAGES[0]),(.09,"ForceDelta-VLA success","#4E8A45",COMPARISON_IMAGES[1])]:
         panel(ax,.685,y,.288,.40,face="white",edge=color,lw=1.1,radius=.009)

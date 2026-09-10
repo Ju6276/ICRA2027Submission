@@ -39,6 +39,12 @@ Cache age and interpolation phase are represented as
 \end{equation}
 where $\alpha_{t,k}$ is the position of $t$ between adjacent reference-action samples.
 
+The correction policy observes the complete $K$-step reference-action segment aligned with its output timestamps. The segment is flattened and projected to one reference-action token with a type embedding, so each predicted correction is conditioned on the corresponding future reference-action waypoint without increasing the attention-sequence length.
+
+At deployment, force and delay corrections are clipped separately and element-wise before composition. The implementation accepts either nine-dimensional nonnegative bounds $b_F,b_S\in\mathbb R_{\geq0}^{9}$ or scalar values broadcast over the pose coordinates; bimanual clipping is applied independently per arm. \assumed{The final robot configuration must specify the values used for $b_F$ and $b_S$.}
+
+\subsection{Reference-State Alignment}
+
 The action representation and rotational correction composition are defined in Sec.~III-A of the main paper. Let $\widetilde S^p$ be the nine per-arm pose coordinates of the normalized robot state, obtained after converting orientation to the continuous 6D representation, and let $\sigma_S^p$ and $\sigma_A^p$ be the corresponding training-set state and action standard deviations. Reference-state alignment expresses the current prediction relative to the reference-query state $S_k$. The implementation computes
 \begin{equation}
     \Gamma(S_t,S_k)=
@@ -49,11 +55,29 @@ The action representation and rotational correction composition are defined in S
 \end{equation}
 This difference, rescaled separately for each coordinate, is included in the learned delay-correction target, placing the current force-agnostic prediction and reference action in the same normalized delta-action coordinate system. The composed normalized action is de-normalized, applied relative to the reference-action-query state $S_k$, and projected to a valid rotation by Gram--Schmidt orthogonalization.
 
-The correction policy observes the complete $K$-step reference-action segment aligned with its output timestamps. The segment is flattened and projected to one reference-action token with a type embedding, so each predicted correction is conditioned on the corresponding future reference-action waypoint without increasing the attention-sequence length.
+Let $\mathcal R(S,a)$ convert a relative action $a$ based at state $S$ into an absolute robot command. The paired targets account for the change in reference state at each action step:
+\begin{equation}
+\begin{aligned}
+    &\mathcal R\!\left(S_k,\mathcal P(A_k^{\mathrm{ref}}(t_j))
+      +\Delta A_{T,t|k,j}^{\mathrm{force}}
+      +\Delta A_{T,k\rightarrow t,j}^{\mathrm{delay}}\right)\\[-2pt]
+    &\qquad\approx\mathcal R\!\left(S_t,
+      \mathcal P(A_{T,t|k,j}^{\mathrm{cond}})\right).
+\end{aligned}
+    \label{eq:absolute_command_equivalence}
+\end{equation}
+Before clipping, substitution recovers the force-conditioned chunk expressed relative to $S_k$. The alignment relation holds in the shared translation-plus-6D representation up to the $\varepsilon$ stabilization term; Gram--Schmidt projection is applied after restoring the action delta.
 
-At deployment, force and delay corrections are clipped separately and element-wise before composition. The implementation accepts either nine-dimensional nonnegative bounds $b_F,b_S\in\mathbb R_{\geq0}^{9}$ or scalar values broadcast over the pose coordinates; bimanual clipping is applied independently per arm. \assumed{The final robot configuration must specify the values used for $b_F$ and $b_S$.}
+\subsection{Asynchronous Schedule Replay}
 
 Correction-policy training examples use the $30$~Hz state/action timestamps while retaining every $100$~Hz wrench sample in $\mathcal F_t$. The sampled schedule independently draws inter-query periods $T_i\sim\mathcal U(1/15,1/5)$~s and reference-action-query latencies $L_i\sim\mathcal U(0.05,0.30)$~s. Query samples are first selected greedily from the recorded timestamps. We then add random offsets $J_i\sim\mathcal U(-0.01,0.01)$~s so that reference actions are interpolated between recorded samples. Correction queries may start more frequently at deployment; the actual correction-update rate is measured directly rather than inferred from the action-sample rate within a chunk.
+
+The schedule is sampled before target extraction and kept fixed during correction-policy optimization. Let $t_i$ and $\bar t_i=t_i+L_i$ denote the start and availability times of reference query $i$. At a sampled correction time $t$, the active reference index is
+\begin{equation}
+    k(t)=\arg\max_{i:\bar t_i\leq t}t_i.
+    \label{eq:supp_replay_reference}
+\end{equation}
+This reference supplies the cached pooled context, interpolated reference-action segment, and timestamps for the timing features and paired targets. The schedule determines the reference age, interpolation phase, and query latency encountered during training.
 
 \subsection{Force-Agnostic Mode Optimization}
 

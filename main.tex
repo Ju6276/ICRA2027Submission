@@ -68,7 +68,7 @@ ForceDelta-VLA: Distilling Force-Conditioned Action\\Corrections for Contact-Ric
       \centering
       \includegraphics[width=\textwidth]{figures/fig01_method_overview.pdf}
       % \vspace{-0.2in}
-      \captionof{figure}{ForceDelta-VLA overview. A frozen teacher provides force and delay correction targets to train a lightweight student. During execution, the student jointly predicts both corrections to adjust reference actions from the slow teacher.}
+      \captionof{figure}{ForceDelta-VLA overview. Force and delay correction targets constructed from a frozen teacher supervise a lightweight student through correction distillation. During execution, the slow teacher supplies reference actions and cached task context. The student uses these together with recent force history and proprioception to predict the two corrections and adjust the reference poses.}
       \label{fig:teaser}
       \vspace{-0.1in}
       \bigskip}

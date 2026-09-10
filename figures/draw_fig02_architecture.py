@@ -14,7 +14,7 @@ from PIL import Image
 OUT = Path(__file__).resolve().parent
 PAPER = OUT.parent
 from figure_palette import (
-    snowflake_segments, FORCE, DELAY, REFERENCE,
+    snowflake_segments, draw_tcp_gripper, draw_input_icon, FORCE, DELAY, REFERENCE,
     FORCE_EDGE, DELAY_EDGE, REFERENCE_EDGE, STUDENT_FILL, STUDENT_ACCENT,
 )
 
@@ -121,12 +121,7 @@ def force_history(x, y, w=155, h=50):
 
 def state(x, y, w=128, h=48):
     if not asset('fig02_state.png', x, y, w, h):
-        ox, oy = x+24, y+29
-        arrow((ox, oy), (ox+32, oy), color=EDGE, scale=7, lw=1.1)
-        arrow((ox, oy), (ox, oy-24), color=EDGE, scale=7, lw=1.1)
-        arrow((ox, oy), (ox-16, oy+14), color=EDGE, scale=7, lw=1.1)
-        for i, ww in enumerate([45, 31, 39]):
-            panel(x+68, y+9+i*12, ww, 5, '#636363', radius=2)
+        draw_input_icon(ax,'proprioception',x+w/2,y+h/2,w*.48,-h*.95)
 
 
 def route(points, color=EDGE, lw=1.25, scale=9):
@@ -169,10 +164,7 @@ text(35, 130, '(a) Teacher-defined correction targets', size=24, weight='bold')
 text(132, 185, r'Images $V_k$', size=20, ha='center')
 views(42, 207, 180, 43)
 text(132, 274, r'Instruction $L$', size=20, ha='center')
-panel(46, 294, 177, 32, GENERIC_MODULE, '#8A8A8A', radius=3, lw=.8)
-# A text-input placeholder, not a claimed instruction from the dataset.
-for yy, width in [(303, 136), (311, 112), (319, 124)]:
-    line([(65, yy), (65+width, yy)], color=NEUTRAL_STROKE, lw=1)
+draw_input_icon(ax,'instruction',132,310,48,-36)
 arrow((228, 228), (268, 228))
 arrow((228, 310), (268, 310))
 panel(272, 211, 208, 128, CONTEXT_TOKEN, EDGE, radius=4)
@@ -186,7 +178,7 @@ text(550, 247, r'$E_k$', size=25, ha='center')
 
 # Current state is a shared input to both teacher modes, distinct from the
 # stored reference's query state S_k used in reference-state alignment.
-text(132, 349, r'State $S_t$', size=20, ha='center')
+text(132, 349, r'Proprioception $S_t$', size=20, ha='center')
 state(75, 365, 126, 42)
 # Context and state merge only at the shared-input junction. State does not
 # enter the vision-language encoder or the learned missing-force token.
@@ -198,7 +190,7 @@ arrow((615, 385), (650, 385), color=INK, lw=1.4)
 # force-agnostic mode. The measured history enters only the conditioned call.
 panel(650, 331, 320, 256, ACTION_MODULE, EDGE, radius=5, lw=1.25)
 text(804, 352, 'Action expert', size=21, weight='bold', ha='center')
-text(807, 385, 'Shared inputs', size=21, color=EDGE, ha='center')
+text(807, 391, 'Shared context,\nproprioception and noise', size=16, color=EDGE, ha='center')
 snowflake(947, 351, 9)
 panel(668, 436, 280, 55, ACTION_INNER, EDGE, radius=3, lw=.9)
 text(809, 464, 'Force-conditioned', size=20, ha='center')
@@ -221,46 +213,38 @@ token(507, 527, '', FORCE_MODULE, NEUTRAL_STROKE, w=67)
 snowflake(553, 515, 6)
 arrow((549, 543), (668, 543), color=EDGE)
 
-# All three glyphs are pose-action segments at matching times. The two
-# current predictions inherit their mode labels from the teacher boxes.
-# Full indexed symbols and the pose extraction operator remain in the text.
-text(1116, 414, 'Current predictions', size=21, ha='center')
-pose_chunks = [
-    (464, ACTION_INNER, EDGE),
-    (543, 'white', REFERENCE_EDGE),
-    (631, REFERENCE, REFERENCE_EDGE),
-]
-for y, fill, edge in pose_chunks:
+# A light group distinguishes the two current predictions from the stored action.
+panel(1007, 386, 215, 181, '#F7F8F8', 'none', radius=5, z=0)
+text(1116, 404, 'Current predictions', size=17, ha='center')
+text(1116, 604, 'Stored reference', size=17, color=REFERENCE_EDGE, ha='center')
+for y, fill, edge in [(464, ACTION_INNER, EDGE),
+                       (543, 'white', REFERENCE_EDGE),
+                       (631, REFERENCE, REFERENCE_EDGE)]:
     sequence(1020, y-12, 193, h=24, color=fill, edge=edge)
 arrow((976, 464), (1013, 464))
 arrow((976, 543), (1013, 543), color=REFERENCE_EDGE)
-text(807, 631, 'Stored reference', size=22,
-     color=REFERENCE_EDGE, ha='center')
-arrow((974, 631), (1013, 631), color=REFERENCE_EDGE)
 
-# Stagger the two signed sums: a current force-agnostic prediction enters
-# the force sum negatively and the delay sum positively. The stored reference
-# enters only the delay sum, negatively. Signs sit beside distinct input ports.
+# Both signed operations align vertically. The common current agnostic action
+# goes upward with a minus sign and downward with a plus sign.
 operation(1300, 464)
-operation(1360, 585)
+operation(1300, 585)
 arrow((1219, 464), (1281, 464), color=EDGE)
-text(1253, 447, '+', size=19, ha='center')
-line([(1219, 543), (1360, 543)], color=REFERENCE_EDGE)
+text(1268, 447, '+', size=19, ha='center')
+line([(1219, 543), (1300, 543)], color=REFERENCE_EDGE, lw=1.4)
 ax.add_patch(Circle((1300, 543), 2.3, fc=REFERENCE_EDGE, ec='none', zorder=5))
-arrow((1300, 543), (1300, 483), color=REFERENCE_EDGE)
-text(1320, 503, '−', size=20, color=REFERENCE_EDGE)
-arrow((1360, 543), (1360, 566), color=REFERENCE_EDGE)
-text(1379, 553, '+', size=19, color=REFERENCE_EDGE)
-route([(1219, 631), (1270, 631), (1270, 585), (1341, 585)], color=REFERENCE_EDGE)
-text(1312, 568, '−', size=20, ha='center', color=REFERENCE_EDGE)
+arrow((1300, 543), (1300, 483), color=REFERENCE_EDGE, lw=1.4)
+text(1318, 501, '−', size=20, color=REFERENCE_EDGE)
+arrow((1300, 543), (1300, 566), color=REFERENCE_EDGE, lw=1.4)
+text(1318, 558, '+', size=19, color=REFERENCE_EDGE)
+route([(1219, 631), (1250, 631), (1250, 585), (1281, 585)], color=REFERENCE_EDGE)
+text(1267, 568, '−', size=20, ha='center', color=REFERENCE_EDGE)
 
-arrow((1320, 464), (1580, 464), color=FORCE_EDGE)
-arrow((1380, 585), (1395, 585), color=DELAY_EDGE)
-panel(1400, 562, 160, 46, DELAY_MODULE, DELAY_EDGE, radius=3, lw=1.1)
-text(1480, 585, r'$+\;\Gamma$', size=26, color=INK, ha='center')
-text(1510, 636, 'Reference-state alignment', size=17,
-     color=DELAY_EDGE, ha='center')
-arrow((1563, 585), (1580, 585), color=DELAY_EDGE)
+arrow((1320, 464), (1580, 464), color=FORCE_EDGE, lw=1.5)
+arrow((1320, 585), (1374, 585), color=DELAY_EDGE, lw=1.5)
+panel(1380, 562, 170, 46, DELAY_MODULE, DELAY_EDGE, radius=3, lw=1.1)
+text(1465, 585, r'$+\;\Gamma$', size=26, color=INK, ha='center')
+text(1465, 633, 'Reference-state\nalignment', size=14, color=DELAY_EDGE, ha='center')
+arrow((1553, 585), (1580, 585), color=DELAY_EDGE, lw=1.5)
 
 # Group the two teacher-defined targets as the supervision bundle. Its only
 # outgoing path goes to the existing distillation objective in panel (b).
@@ -283,19 +267,24 @@ text(35, 686, '(b) Student correction policy', size=24, weight='bold')
 rows = [776, 868, 960, 1052, 1144]
 for cy, title in zip(
     rows,
-    ['Pooled context', 'Force history', 'State', 'Reference', 'Timing'],
+    ['Pooled context', 'Force history', 'Proprioception', 'Reference', 'Timing'],
 ):
-    text(135, cy, title, size=22, ha='center')
+    text(76, cy, title, size=18, ha='left')
+    kind={'Pooled context':'context','Proprioception':'proprioception','Reference':'reference','Timing':'timing'}.get(title)
+    if kind:
+        draw_input_icon(ax,kind,47,cy,32,-32)
+    elif title == 'Force history':
+        force_history(31,cy-13,32,26)
     if title != 'Reference':
         arrow((250, cy), (294, cy), scale=9)
         arrow((493, cy), (539, cy), scale=9)
 
 # P_ctx -> P_Z denotes the sequential context mappings in the supplement
 # and eq:conditioning_set; the remaining projections retain their symbols.
-transform(300, 743, 185, 66, r'$P_{\mathrm{ctx}}\!\rightarrow\!P_Z$', color=VLM_MODULE, size=23, taper=13)
+transform(300, 743, 185, 66, r'$P_{\mathrm{ctx}}\!\rightarrow\!P_Z$', color=VLM_MODULE, edge='#7B7B7B', size=20, taper=13)
 transform(300, 835, 185, 66, ('Force', 'encoder'),
           color=FORCE_MODULE, edge=EDGE, size=20)
-transform(300, 927, 185, 66, r'$P_S$', color=GENERIC_MODULE, size=23)
+transform(300, 927, 185, 66, r'$P_S$', color=GENERIC_MODULE, edge='#7B7B7B', size=20)
 # One horizontal reference chunk uses the same action-block glyph as panel (a).
 # Deterministic flattening before P_A is specified in the manuscript and is
 # implicit here; each block denotes an action step, not an attention token.
@@ -303,10 +292,10 @@ sequence(250, 1040, 156, h=24, color=REFERENCE, edge=REFERENCE_EDGE)
 arrow((413, 1052), (437, 1052), scale=8)
 # The learned projection produces one token in the shared input group.
 ax.add_patch(Polygon([(444,1019), (508,1032), (508,1072), (444,1085)],
-                     fc=VLM_MODULE, ec=EDGE, lw=1.1, zorder=3))
-text(475, 1052, r'$P_A$', size=23, ha='center')
+                     fc=VLM_MODULE, ec='#7B7B7B', lw=.85, zorder=3))
+text(475, 1052, r'$P_A$', size=20, ha='center')
 arrow((515, 1052), (539, 1052), scale=8)
-transform(300, 1111, 185, 66, r'$P_\xi$', color=GENERIC_MODULE, size=23)
+transform(300, 1111, 185, 66, r'$P_\xi$', color=GENERIC_MODULE, edge='#7B7B7B', size=20)
 
 # One vertical group of projected tokens. The bracket denotes the complete
 # conditioning set; no repeated title is needed. P_A produces one token.
@@ -320,26 +309,39 @@ token(584, 1128, '', GENERIC_MODULE, w=61, h=32)
 line([(663, 741), (678, 741), (678, 1179), (663, 1179)],
      color=NEUTRAL_STROKE, lw=1)
 
-# The complete condition set branches into the two shared-weight evaluations.
-# Mask_F remains upstream of attention and only on the delay evaluation.
-# The caption specifies the two separate evaluations, shared learned query,
-# and query-position readout. A single silhouette denotes the shared module.
-arrow((678, 960), (717, 960), scale=9)
-line([(717, 900), (717, 1020)])
-arrow((717, 900), (850, 900), scale=9)
-arrow((717, 1020), (735, 1020), scale=8)
-panel(741, 1002, 88, 36, 'white', NEUTRAL_STROKE, radius=3, lw=1)
-text(785, 1020, r'$\mathrm{Mask}_F$', size=19, ha='center')
-arrow((835, 1020), (850, 1020), scale=8)
-
-# Approved option A: input arrows stop at the shared module; output arrows
-# begin at its right boundary. No data-flow lines cross the box interior.
-panel(850, 860, 260, 200, SHARED_FILL, SHARED_EDGE, radius=5, lw=1.1)
-text(980, 947, 'Shared attention', size=20, ha='center', weight='bold')
-text(980, 986, r'$\Phi$', size=30, ha='center')
+# Explicitly show both evaluations of the same attention module.
+# The second condition set differs only by its masked force token.
+route([(678, 960), (696, 960), (696, 870), (710, 870)], scale=8)
+panel(708, 850, 147, 40, 'white', '#A6AFB5', radius=5, lw=.9, z=1)
+condition_colors = [CONTEXT_TOKEN, FORCE, GENERIC_MODULE, REFERENCE, GENERIC_MODULE]
+condition_edges = [REFERENCE_EDGE, FORCE_EDGE, NEUTRAL_STROKE, REFERENCE_EDGE, NEUTRAL_STROKE]
+for row_y, masked in [(870, False), (1050, True)]:
+    for i, (fill, edge) in enumerate(zip(condition_colors, condition_edges)):
+        x = 714+i*28
+        box = panel(x, row_y-13, 23, 26,
+                    'white' if masked and i == 1 else fill,
+                    '#929292' if masked and i == 1 else edge,
+                    radius=3, lw=.9, z=4)
+        if masked and i == 1:
+            box.set_linestyle((0,(3,2)))
+    arrow((852, row_y), (889, row_y), scale=9)
+text(782, 831, r'$\mathcal{C}_t$', size=24, ha='center')
+text(782, 1010, r'$\mathcal{C}_t^{\mathrm{maskF}}$', size=23, ha='center')
+arrow((782, 894), (782, 931), scale=8)
+panel(737, 935, 90, 42, 'white', NEUTRAL_STROKE, radius=3, lw=1)
+text(782, 956, r'$\mathrm{Mask}_F$', size=19, ha='center')
+# The short downward arrow ends above the masked-set label.
+arrow((782, 980), (782, 991), scale=7)
+for cy in [870, 1050]:
+    panel(895, cy-46, 215, 92, SHARED_FILL, SHARED_EDGE, radius=5, lw=1.1)
+    text(1002.5, cy-17, 'Shared attention', size=17, ha='center', weight='bold')
+    text(1002.5, cy+19, r'$\Phi$', size=28, ha='center')
+ax.add_patch(FancyArrowPatch((970,921),(970,999),arrowstyle='<->',
+    mutation_scale=9,color=SHARED_EDGE,lw=1.1,linestyle=(0,(3,3)),zorder=4))
+text(1026, 960, 'Shared\nweights', size=16, ha='center')
 for cy, head, pred, fill, edge in [
-    (900, 'Force head', 'Force correction', FORCE, FORCE_EDGE),
-    (1020, 'Delay head', 'Delay correction', DELAY, DELAY_EDGE),
+    (870, 'Force head', 'Force correction', FORCE, FORCE_EDGE),
+    (1050, 'Delay head', 'Delay correction', DELAY, DELAY_EDGE),
 ]:
     arrow((1110, cy), (1142, cy), color=SHARED_EDGE, scale=9)
     transform(1150, cy-38, 150, 76, head, fill, edge, size=19)
@@ -349,11 +351,11 @@ for cy, head, pred, fill, edge in [
     arrow((1535, cy), (1600, cy), color=edge, scale=9)
 
 # Teacher targets enter the same objective as both student predictions.
-panel(1600, 860, 176, 200, 'white', EDGE, radius=10, lw=1.2)
+panel(1600, 824, 176, 272, 'white', EDGE, radius=10, lw=1.2)
 text(1688, 960, r'$\mathcal{L}_{\mathrm{distill}}$', size=26, ha='center')
 line([(1698, 624), (1698, 694)], color=SHARED_EDGE, lw=1.6, dash=True)
 text(1698, 718, 'Distillation', size=20, color=SHARED_EDGE, ha='center', weight='bold')
-arrow((1698, 742), (1698, 860), color=SHARED_EDGE, lw=1.6, scale=12, dash=True)
+arrow((1698, 742), (1698, 824), color=SHARED_EDGE, lw=1.6, scale=12, dash=True)
 
 for suffix in ['png', 'pdf', 'svg']:
     fig.savefig(OUT / f'fig02_architecture.{suffix}', dpi=150, facecolor='white')
