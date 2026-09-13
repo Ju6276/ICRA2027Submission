@@ -1,0 +1,305 @@
+{
+  "source": {
+    "folder": "outputs/fig02-real-data-downloads/cache/franka_newtask",
+    "episode": "episode_000000",
+    "type": "robot-derived external wrench estimate",
+    "topic": "/franka_robot_state_broadcaster/robot_state",
+    "field": "o_f_ext_hat_k",
+    "message": "franka_msgs/msg/FrankaState",
+    "camera_keys": [
+      "observation.image",
+      "observation.wrist_image"
+    ],
+    "source_index_definition": "Original force parquet sample_index",
+    "task": "flip the object over",
+    "videos": {
+      "observation.image": "outputs/fig02-real-data-downloads/cache/franka_newtask/videos/observation_image/episode_000000.mp4",
+      "observation.wrist_image": "outputs/fig02-real-data-downloads/cache/franka_newtask/videos/observation_wrist_image/episode_000000.mp4"
+    },
+    "drive_folder_url": "https://drive.google.com/drive/folders/1nrMg_NBDcwOI_DVbEtqIG5f_q155rvVg"
+  },
+  "units": {
+    "fx": "N",
+    "fy": "N",
+    "fz": "N",
+    "tx": "Nm",
+    "ty": "Nm",
+    "tz": "Nm"
+  },
+  "coordinate_frames": {
+    "expression": "Franka O (= panda_link0 origin)",
+    "application": "Franka stiffness K (= panda_hand_tcp)",
+    "note": "Expressed relative to Franka base O, applied at stiffness K; not labeled as an independent world frame.",
+    "definition_url": "https://frankarobotics.github.io/libfranka/latest/structfranka_1_1RobotState.html"
+  },
+  "clock": {
+    "domain": "receive_monotonic_ns",
+    "origin_ns": 21371844772284,
+    "origin_definition": "Original episode origin recovered exactly from receive_monotonic_ns - round(episode_time_s * 1e9)",
+    "origin_max_residual_ns": 0
+  },
+  "frame_alignment": {
+    "method": "Exact unique equality of state[7:13] and original six-dimensional wrench; seven joint torques independently match at the same sample.",
+    "matched_frames": 433,
+    "total_frames": 433,
+    "max_wrench_residual": 0,
+    "max_joint_torque_residual": 0,
+    "sample_indices_strictly_increasing": true,
+    "camera_exposure_synchronization_verified": false,
+    "limitation": "Associates each video/state row with its contained feedback sample; does not establish hardware camera exposure synchronization.",
+    "video_nominal_fps": 30,
+    "do_not_use_for_alignment": [
+      "timestamp=frame_index/30",
+      "nearest_lerobot_frame_index"
+    ]
+  },
+  "source_rates": {
+    "configured_hz": 200,
+    "metadata_expected_effective_hz": 167,
+    "metadata_note": "The unchanged 1 kHz broadcaster throttle quantizes the configured 200 Hz period to approximately 167 Hz on this setup. Use each episode's measured receive rate as ground truth.",
+    "measured_receive": {
+      "samples": 2501,
+      "duration_s": 14.59526644,
+      "effective_rate_hz": 171.28841123094975,
+      "inverse_median_interval_hz": 178.38444344945566,
+      "interval_ms": {
+        "min": 0.361837,
+        "median": 5.6058699999999995,
+        "mean": 5.838106576,
+        "p99": 15.696987,
+        "max": 20.769959
+      },
+      "strictly_increasing": true
+    },
+    "measured_ros": {
+      "samples": 2501,
+      "duration_s": 14.627998566,
+      "effective_rate_hz": 170.90513023502575,
+      "inverse_median_interval_hz": 166.71928049293555,
+      "interval_ms": {
+        "min": 5.001642,
+        "median": 5.9981065000000005,
+        "mean": 5.8511994264,
+        "p99": 6.01779,
+        "max": 6.112081
+      },
+      "strictly_increasing": true
+    },
+    "reporting_rate": "measured_receive.effective_rate_hz"
+  },
+  "input_files": [
+    {
+      "path": "outputs/fig02-real-data-downloads/cache/franka_newtask/data/episode_000000.parquet",
+      "sha256": "1b6eccd8a62040d115adb8c9eed85694c07ee636c6e7e6cc7ccd10aec2a3786b"
+    },
+    {
+      "path": "outputs/fig02-real-data-downloads/cache/franka_newtask/force/episode_000000.parquet",
+      "sha256": "777f307365a39637dfa6f1188f7cc4075d4f380a47a13f988fe3b2e39bf5504d"
+    },
+    {
+      "path": "outputs/fig02-real-data-downloads/cache/franka_newtask/force_metadata/meta.json",
+      "sha256": "a255259d2d28f35e658916f57559843937443494120436227d1c428807a542fe"
+    },
+    {
+      "path": "outputs/fig02-real-data-downloads/cache/franka_newtask/meta/info.json",
+      "sha256": "8f21ef50bb0c7a07a6eb3a3a73caf00af3780bcdb0644db36f2c420f068b98fc"
+    },
+    {
+      "path": "outputs/fig02-real-data-downloads/cache/franka_newtask/meta/crisp_meta.json",
+      "sha256": "ed0eb7d1c60667f4354a01e45b309e17f102d180d7aa45c4d60032863ab3e346"
+    },
+    {
+      "path": "outputs/fig02-real-data-downloads/cache/franka_newtask/meta/tasks.jsonl",
+      "sha256": "c0929cea695f20123f0277453f7bb84fa0a3dab94f027e3e19a03128dc24e90b"
+    },
+    {
+      "path": "outputs/fig02-real-data-downloads/cache/franka_newtask/videos/observation_image/episode_000000.mp4",
+      "sha256": "b0633e5cd7b558f5e03e2814719492fffc542edbc4a61450a4c5ff9818dc68d3"
+    },
+    {
+      "path": "outputs/fig02-real-data-downloads/cache/franka_newtask/videos/observation_wrist_image/episode_000000.mp4",
+      "sha256": "06ebbe5efcb6257b94c28a5a071d63665593a07ebfe0d349201a1d43672bd284"
+    }
+  ],
+  "schema_version": 1,
+  "platform": "franka_object_flipping",
+  "export_script": "outputs/fig02-real-data-downloads/export_signals.py",
+  "raw_export": {
+    "file": "data/wrench_raw.csv.gz",
+    "rows": 2501,
+    "values": "Unmodified original feedback values and source timestamps; selected source topics only."
+  },
+  "resampling": {
+    "file": "data/wrench_100hz.csv",
+    "target_rate_hz": 100,
+    "grid_step_ns": 10000000,
+    "method": "Causal previous sample / zero-order hold; greatest source timestamp <= target timestamp. No interpolation of values.",
+    "grid_origin_ns": 21371844772284,
+    "grid_first_timestamp_ns": 21371854772284,
+    "grid_last_timestamp_ns": 21386444772284,
+    "points_per_arm": 1460,
+    "label": "Original feedback sampled on a 100 Hz time grid; repeated source samples are retained and reported.",
+    "statistics": {
+      "arm": {
+        "points": 1460,
+        "unique_source_samples": 1412,
+        "repeated_source_selections": 48,
+        "age_ms": {
+          "min": 0.00351,
+          "median": 3.8357455,
+          "mean": 4.262626639726028,
+          "p99": 13.538305,
+          "max": 19.101253
+        },
+        "points_with_age_over_10ms": 48,
+        "future_samples_used": 0
+      }
+    }
+  },
+  "histories": {
+    "t01": {
+      "file": "data/history_t01_100ms.csv",
+      "frame_index": 123,
+      "target_timestamp_ns": 21376014903976,
+      "offset_ms": [
+        -100,
+        0
+      ],
+      "statistics": {
+        "arm": {
+          "points": 11,
+          "unique_source_samples": 11,
+          "repeated_source_selections": 0,
+          "age_ms": {
+            "min": 0.0,
+            "median": 3.441803,
+            "mean": 2.6169919090909093,
+            "p99": 5.528509,
+            "max": 5.528509
+          },
+          "points_with_age_over_10ms": 0,
+          "future_samples_used": 0
+        }
+      }
+    },
+    "t02": {
+      "file": "data/history_t02_100ms.csv",
+      "frame_index": 246,
+      "target_timestamp_ns": 21380153175392,
+      "offset_ms": [
+        -100,
+        0
+      ],
+      "statistics": {
+        "arm": {
+          "points": 11,
+          "unique_source_samples": 11,
+          "repeated_source_selections": 0,
+          "age_ms": {
+            "min": 0.0,
+            "median": 3.749379,
+            "mean": 4.189810272727272,
+            "p99": 9.900267,
+            "max": 9.900267
+          },
+          "points_with_age_over_10ms": 0,
+          "future_samples_used": 0
+        }
+      }
+    },
+    "t03": {
+      "file": "data/history_t03_100ms.csv",
+      "frame_index": 308,
+      "target_timestamp_ns": 21382237210145,
+      "offset_ms": [
+        -100,
+        0
+      ],
+      "statistics": {
+        "arm": {
+          "points": 11,
+          "unique_source_samples": 11,
+          "repeated_source_selections": 0,
+          "age_ms": {
+            "min": 0.0,
+            "median": 1.38922,
+            "mean": 2.4424434545454545,
+            "p99": 5.930023,
+            "max": 5.930023
+          },
+          "points_with_age_over_10ms": 0,
+          "future_samples_used": 0
+        }
+      }
+    },
+    "t04": {
+      "file": "data/history_t04_100ms.csv",
+      "frame_index": 432,
+      "target_timestamp_ns": 21386414699919,
+      "offset_ms": [
+        -100,
+        0
+      ],
+      "statistics": {
+        "arm": {
+          "points": 11,
+          "unique_source_samples": 11,
+          "repeated_source_selections": 0,
+          "age_ms": {
+            "min": 0.0,
+            "median": 3.620429,
+            "mean": 3.8309455454545454,
+            "p99": 9.018491,
+            "max": 9.018491
+          },
+          "points_with_age_over_10ms": 0,
+          "future_samples_used": 0
+        }
+      }
+    }
+  },
+  "schemas": {
+    "raw": [
+      "arm",
+      "time_s",
+      "timestamp_ns",
+      "source_index",
+      "fx",
+      "fy",
+      "fz",
+      "tx",
+      "ty",
+      "tz"
+    ],
+    "100hz": [
+      "arm",
+      "time_s",
+      "target_timestamp_ns",
+      "source_timestamp_ns",
+      "source_index",
+      "age_ms",
+      "fx",
+      "fy",
+      "fz",
+      "tx",
+      "ty",
+      "tz"
+    ],
+    "history": [
+      "arm",
+      "time_s",
+      "target_timestamp_ns",
+      "source_timestamp_ns",
+      "source_index",
+      "age_ms",
+      "fx",
+      "fy",
+      "fz",
+      "tx",
+      "ty",
+      "tz",
+      "time_offset_ms"
+    ]
+  },
+  "original_source_files_modified": false
+}

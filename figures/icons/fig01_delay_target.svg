@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="512" height="512" viewBox="283.888359 81.072256 23.473281 23.473281" version="1.1"><title>Fig. 1: delay target</title><desc>Original vector elements extracted from fig01_method_overview.svg. No surrounding card, label or data-flow connection is included.</desc><defs><style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ <path id="mc9fd9afe83" d="M 0 0.8 C 0.212162 0.8 0.415664 0.715707 0.565685 0.565685 C 0.715707 0.415664 0.8 0.212162 0.8 0 C 0.8 -0.212162 0.715707 -0.415664 0.565685 -0.565685 C 0.415664 -0.715707 0.212162 -0.8 0 -0.8 C -0.212162 -0.8 -0.415664 -0.715707 -0.565685 -0.565685 C -0.715707 -0.415664 -0.8 -0.212162 -0.8 0 C -0.8 0.212162 -0.715707 0.415664 -0.565685 0.565685 C -0.415664 0.715707 -0.212162 0.8 0 0.8 z " style="stroke: #66428d" />
+    <clipPath id="p69fd59aa0e">
+   <rect x="0" y="0" width="612" height="280.8" />
+  </clipPath>
+ </defs><g id="patch_42">
+    <path d="M 294.984 102.536606 C 296.931652 102.536606 298.799795 101.710768 300.176992 100.240974 C 301.55419 98.771179 302.328 96.77743 302.328 94.698826 C 302.328 92.620222 301.55419 90.626473 300.176992 89.156679 C 298.799795 87.686884 296.931652 86.861046 294.984 86.861046 C 293.036348 86.861046 291.168205 87.686884 289.791008 89.156679 C 288.41381 90.626473 287.64 92.620222 287.64 94.698826 C 287.64 96.77743 288.41381 98.771179 289.791008 100.240974 C 291.168205 101.710768 293.036348 102.536606 294.984 102.536606 z " clip-path="url(#p69fd59aa0e)" style="fill: #ffffff; stroke: #66428d; stroke-width: 0.95; stroke-linejoin: miter" />
+   </g>
+   <g id="line2d_24">
+    <path d="M 294.984 86.90715 L 294.984 84.210032 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #66428d; stroke-width: 1.5; stroke-linecap: square" />
+   </g>
+   <g id="line2d_25">
+    <path d="M 292.536 83.610672 L 297.432 83.610672 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #66428d; stroke-width: 1.7; stroke-linecap: round" />
+   </g>
+   <g id="line2d_26">
+    <path d="M 300.492 89.004909 L 302.94 86.307791 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #66428d; stroke-width: 1.6; stroke-linecap: square" />
+   </g>
+   <g id="line2d_51">
+    <path d="M 294.984 94.698826 L 298.044 90.503308 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #66428d; stroke-linecap: square" />
+   </g>
+   <g id="line2d_52">
+    <path d="M 294.984 94.698826 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #66428d; stroke-width: 1.5; stroke-linecap: square" />
+    <g clip-path="url(#p69fd59aa0e)">
+     <use xlink:href="#mc9fd9afe83" x="294.984" y="94.698826" style="fill: #66428d; stroke: #66428d" />
+    </g>
+   </g>
+   </svg>

@@ -1,0 +1,90 @@
+[
+  {
+    "camera": "observation_image",
+    "view_label": "External",
+    "id": "t01",
+    "frame_index": 123,
+    "width": 640,
+    "height": 480,
+    "video_time_s": 4.1,
+    "file": "images/observation_image/t01.png",
+    "source_video": "videos/observation_image/episode_000000.mp4"
+  },
+  {
+    "camera": "observation_image",
+    "view_label": "External",
+    "id": "t02",
+    "frame_index": 246,
+    "width": 640,
+    "height": 480,
+    "video_time_s": 8.2,
+    "file": "images/observation_image/t02.png",
+    "source_video": "videos/observation_image/episode_000000.mp4"
+  },
+  {
+    "camera": "observation_image",
+    "view_label": "External",
+    "id": "t03",
+    "frame_index": 308,
+    "width": 640,
+    "height": 480,
+    "video_time_s": 10.266666666666667,
+    "file": "images/observation_image/t03.png",
+    "source_video": "videos/observation_image/episode_000000.mp4"
+  },
+  {
+    "camera": "observation_image",
+    "view_label": "External",
+    "id": "t04",
+    "frame_index": 432,
+    "width": 640,
+    "height": 480,
+    "video_time_s": 14.4,
+    "file": "images/observation_image/t04.png",
+    "source_video": "videos/observation_image/episode_000000.mp4"
+  },
+  {
+    "camera": "observation_wrist_image",
+    "view_label": "Wrist",
+    "id": "t01",
+    "frame_index": 123,
+    "width": 640,
+    "height": 480,
+    "video_time_s": 4.1,
+    "file": "images/observation_wrist_image/t01.png",
+    "source_video": "videos/observation_wrist_image/episode_000000.mp4"
+  },
+  {
+    "camera": "observation_wrist_image",
+    "view_label": "Wrist",
+    "id": "t02",
+    "frame_index": 246,
+    "width": 640,
+    "height": 480,
+    "video_time_s": 8.2,
+    "file": "images/observation_wrist_image/t02.png",
+    "source_video": "videos/observation_wrist_image/episode_000000.mp4"
+  },
+  {
+    "camera": "observation_wrist_image",
+    "view_label": "Wrist",
+    "id": "t03",
+    "frame_index": 308,
+    "width": 640,
+    "height": 480,
+    "video_time_s": 10.266666666666667,
+    "file": "images/observation_wrist_image/t03.png",
+    "source_video": "videos/observation_wrist_image/episode_000000.mp4"
+  },
+  {
+    "camera": "observation_wrist_image",
+    "view_label": "Wrist",
+    "id": "t04",
+    "frame_index": 432,
+    "width": 640,
+    "height": 480,
+    "video_time_s": 14.4,
+    "file": "images/observation_wrist_image/t04.png",
+    "source_video": "videos/observation_wrist_image/episode_000000.mp4"
+  }
+]

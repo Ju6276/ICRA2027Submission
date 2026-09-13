@@ -23,7 +23,7 @@ For each task, we collect $200$ demonstrations. Multi-view images, robot states,
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{figures/fig05_task_overview.pdf}
-    \caption{The nine real-robot manipulation tasks used in the evaluation. The first five panels show single-arm tasks; the remaining four show bimanual tasks.}
+    \caption{Nine real-robot evaluation tasks, read left to right and top to bottom. The first 5 panels show single-arm tasks; the remaining 4 show bimanual tasks.}
     \label{fig:task_overview}
 \end{figure}
 
@@ -99,12 +99,12 @@ Relative to ForceVLA, mean peak contact force over successful trials decreases b
 \end{table}
 
 \noindent\textbf{Qualitative results.}
-Figure~\ref{fig:qualitative_button} highlights how the learned translational correction evolves through contact. The correction is smaller before sustained contact, increases during pressing, shows a brief change near peak contact, and decreases as contact is released.
+Figure~\ref{fig:qualitative_button} shows a real-robot execution of ForceDelta-VLA on Button Pressing. The correction magnitude is relatively small before contact, increases during pressing, and decreases as contact is released. This example illustrates how the correction magnitude changes across the contact phases.
 
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{figures/fig06_button_pressing_rollout.pdf}
-    \caption{Representative rollout of Button Pressing. The observations show four interaction phases. The traces plot robot-estimated end-effector force components and translational correction magnitude over the contact interval; vertical lines mark the three displayed contact transitions, while the earlier free-space frame precedes the axis break.}
+    \caption{Real-robot execution of ForceDelta-VLA on Button Pressing. Front and wrist views show four marked moments. The curves show robot-estimated force components and translational correction magnitude. Vertical lines mark contact onset, peak force, and contact release.}
     \label{fig:qualitative_button}
 \end{figure}
 
@@ -135,7 +135,7 @@ The correction forward pass takes $2.43$~ms, below the $10$-ms interval between 
 \end{table}
 
 \noindent\textbf{Sensitivity to reference-action delay.}
-We evaluate USB Insertion and Plug Insertion with $0$, $100$, and $200$~ms of additional reference-action latency, using $10$ trials per task, method, and delay. From $0$ to $200$~ms of additional delay, success decreases by $15$ percentage points for ForceDelta-VLA and $25$ points for the Temporal Teacher (Fig.~\ref{fig:latency_sensitivity}). Mean peak force over successful trials increases by $3.7$~N and $9.6$~N, respectively. These results support updating corrections between reference-action updates.
+On USB Insertion and Plug Insertion, increasing additional reference-action latency from $0$ to $200$~ms reduces success by $15$ percentage points for ForceDelta-VLA and $25$ points for the Temporal Teacher (Fig.~\ref{fig:latency_sensitivity}). Mean peak force over successful trials increases by $3.7$~N and $9.6$~N, respectively. These results support updating corrections between reference-action updates.
 
 \begin{figure}[t]
     \centering
@@ -147,7 +147,7 @@ We evaluate USB Insertion and Plug Insertion with $0$, $100$, and $200$~ms of ad
         \centering
         \includegraphics[width=\linewidth]{figures/fig07b_delay_peak_force.pdf}
     \end{minipage}
-    \caption{Sensitivity to additional reference-action latency on the two insertion tasks. Left: success rate. Right: peak force over successful trials. Blue solid lines with circular markers denote ForceDelta-VLA; gray dashed lines with square markers denote Temporal Teacher.}
+    \caption{Sensitivity to additional reference-action latency on USB Insertion and Plug Insertion, with 10 trials per task, method, and delay. Left: mean success rate across the two tasks. Right: mean peak force over successful trials. Blue solid lines with circular markers denote ForceDelta-VLA; gray dashed lines with square markers denote Temporal Teacher.}
     \label{fig:latency_sensitivity}
 \end{figure}
 
@@ -163,7 +163,7 @@ Execution ablations retain the trained model: \textbf{Reference action only} dis
     \centering
     \scriptsize
     \setlength{\tabcolsep}{2pt}
-    \caption{Ablations on four tasks, with 20 trials per task. Peak force: mean $\pm$ standard deviation over successful trials.}
+    \caption{Ablations on four tasks, with 20 trials per variant and task. Results are grouped by platform. Peak force: mean $\pm$ standard deviation over successful trials.}
     \label{tab:ablation}
     \begin{tabular}{lcccc}
         \toprule
@@ -214,13 +214,13 @@ We evaluate USB Insertion, Object Flipping, and bimanual Whiteboard Wiping with 
     \centering
     \includegraphics[width=0.85\columnwidth]{figures/fig08_unseen_objects.pdf}
     \begingroup
-    \captionof{figure}{Generalization evaluation. From left to right: USB Insertion, Object Flipping, and bimanual Whiteboard Wiping.}
+    \captionof{figure}{Unseen objects used for generalization evaluation. From left to right: USB Insertion, Object Flipping, and bimanual Whiteboard Wiping.}
     \label{fig:physical_generalization_objects}
     \endgroup
 
     \scriptsize
     \setlength{\tabcolsep}{5pt}
-    \caption{Generalization with unseen objects: 10 trials per task, 30 per method. Peak force: mean $\pm$ standard deviation over successful trials.}
+    \caption{Generalization with unseen objects, with 10 trials per method and task. Success rate is computed across the three tasks. Peak force: mean $\pm$ standard deviation over successful trials.}
     \label{tab:physical_generalization}
     \begin{tabular}{lcc}
         \toprule

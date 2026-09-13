@@ -1,0 +1,36 @@
+{
+  "source": "data/wrench_100hz.csv",
+  "role": "Qualitative input illustration",
+  "display_transform": "Force and torque separately divided by their full-episode group maximum absolute value across the three axes; no mean subtraction, smoothing, or extra magnification of the selected interval.",
+  "line_styles": {
+    "force": "solid",
+    "torque": "dashed"
+  },
+  "axis_colors": {
+    "x": "#377AB5",
+    "y": "#D89135",
+    "z": "#639378"
+  },
+  "outputs": {
+    "force_torque_schematic": {
+      "arm": {
+        "force_scale_N": 23.486009310657405,
+        "torque_scale_Nm": 11.18583687409374,
+        "source_time_range_s": [
+          0.01,
+          14.6
+        ],
+        "samples": 1460,
+        "segment_peak_force_norm_N": 26.78037931835934,
+        "segment_peak_torque_norm_Nm": 11.218222851095746
+      }
+    }
+  },
+  "coordinate_frame": "Franka base O",
+  "layout": {
+    "width_inches": 3.8,
+    "height_inches": 1.9,
+    "arrangement": "single arm",
+    "axes": "Arrowed axes with zero origin and time label; no other numeric ticks"
+  }
+}

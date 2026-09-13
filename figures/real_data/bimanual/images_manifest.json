@@ -1,0 +1,134 @@
+[
+  {
+    "camera": "faceImg",
+    "view_label": "Front",
+    "id": "t01",
+    "frame_index": 200,
+    "width": 1280,
+    "height": 720,
+    "video_time_s": 10.0,
+    "file": "images/faceImg/t01.png",
+    "source_video": "faceImg.mp4"
+  },
+  {
+    "camera": "faceImg",
+    "view_label": "Front",
+    "id": "t02",
+    "frame_index": 275,
+    "width": 1280,
+    "height": 720,
+    "video_time_s": 13.75,
+    "file": "images/faceImg/t02.png",
+    "source_video": "faceImg.mp4"
+  },
+  {
+    "camera": "faceImg",
+    "view_label": "Front",
+    "id": "t03",
+    "frame_index": 350,
+    "width": 1280,
+    "height": 720,
+    "video_time_s": 17.5,
+    "file": "images/faceImg/t03.png",
+    "source_video": "faceImg.mp4"
+  },
+  {
+    "camera": "faceImg",
+    "view_label": "Front",
+    "id": "t04",
+    "frame_index": 425,
+    "width": 1280,
+    "height": 720,
+    "video_time_s": 21.25,
+    "file": "images/faceImg/t04.png",
+    "source_video": "faceImg.mp4"
+  },
+  {
+    "camera": "leftImg",
+    "view_label": "Left wrist",
+    "id": "t01",
+    "frame_index": 200,
+    "width": 640,
+    "height": 480,
+    "video_time_s": 10.0,
+    "file": "images/leftImg/t01.png",
+    "source_video": "leftImg.mp4"
+  },
+  {
+    "camera": "leftImg",
+    "view_label": "Left wrist",
+    "id": "t02",
+    "frame_index": 275,
+    "width": 640,
+    "height": 480,
+    "video_time_s": 13.75,
+    "file": "images/leftImg/t02.png",
+    "source_video": "leftImg.mp4"
+  },
+  {
+    "camera": "leftImg",
+    "view_label": "Left wrist",
+    "id": "t03",
+    "frame_index": 350,
+    "width": 640,
+    "height": 480,
+    "video_time_s": 17.5,
+    "file": "images/leftImg/t03.png",
+    "source_video": "leftImg.mp4"
+  },
+  {
+    "camera": "leftImg",
+    "view_label": "Left wrist",
+    "id": "t04",
+    "frame_index": 425,
+    "width": 640,
+    "height": 480,
+    "video_time_s": 21.25,
+    "file": "images/leftImg/t04.png",
+    "source_video": "leftImg.mp4"
+  },
+  {
+    "camera": "rightImg",
+    "view_label": "Right wrist",
+    "id": "t01",
+    "frame_index": 200,
+    "width": 640,
+    "height": 480,
+    "video_time_s": 10.0,
+    "file": "images/rightImg/t01.png",
+    "source_video": "rightImg.mp4"
+  },
+  {
+    "camera": "rightImg",
+    "view_label": "Right wrist",
+    "id": "t02",
+    "frame_index": 275,
+    "width": 640,
+    "height": 480,
+    "video_time_s": 13.75,
+    "file": "images/rightImg/t02.png",
+    "source_video": "rightImg.mp4"
+  },
+  {
+    "camera": "rightImg",
+    "view_label": "Right wrist",
+    "id": "t03",
+    "frame_index": 350,
+    "width": 640,
+    "height": 480,
+    "video_time_s": 17.5,
+    "file": "images/rightImg/t03.png",
+    "source_video": "rightImg.mp4"
+  },
+  {
+    "camera": "rightImg",
+    "view_label": "Right wrist",
+    "id": "t04",
+    "frame_index": 425,
+    "width": 640,
+    "height": 480,
+    "video_time_s": 21.25,
+    "file": "images/rightImg/t04.png",
+    "source_video": "rightImg.mp4"
+  }
+]

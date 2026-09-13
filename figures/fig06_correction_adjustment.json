@@ -1,0 +1,18 @@
+{
+  "basis": "Author states the original plotted interval is incorrect and specifies its corrected 6.5\u20137.2 s peak as approximately 12 mm, with the same scale applied from 7.2 s to before 7.5 s.",
+  "interval_s": [
+    6.5,
+    7.5
+  ],
+  "interval_end_exclusive": true,
+  "peak_calibration_interval_s": [
+    6.5,
+    7.2
+  ],
+  "operation": "Uniform amplitude scaling within the specified interval; no smoothing.",
+  "previous_plotted_peak_mm": 17.767910608794736,
+  "specified_peak_mm": 12,
+  "scale_factor": 0.6753748521258462,
+  "scope": "Correction trace only. Original PDF preserved in outputs/fig06-review/fig06_labels_unsmoothed.pdf.",
+  "source_limitation": "Applied to the supplied PDF vector trace using the author-specified peak; not regenerated from raw inference logs."
+}

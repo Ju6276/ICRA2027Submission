@@ -1,0 +1,55 @@
+{
+  "source": "data/wrench_100hz.csv",
+  "role": "Qualitative input illustration",
+  "display_transform": "Force and torque separately divided by their full-episode group maximum absolute value across the three axes; no mean subtraction, smoothing, or extra magnification of the selected interval.",
+  "line_styles": {
+    "force": "solid",
+    "torque": "dashed"
+  },
+  "axis_colors": {
+    "x": "#377AB5",
+    "y": "#D89135",
+    "z": "#639378"
+  },
+  "outputs": {
+    "force_torque_schematic": {
+      "left": {
+        "force_scale_N": 74.51828918941361,
+        "torque_scale_Nm": 7.984695185897064,
+        "source_time_range_s": [
+          1.6,
+          2.6
+        ],
+        "samples": 101,
+        "segment_peak_force_norm_N": 10.86700802175695,
+        "segment_peak_torque_norm_Nm": 2.4738756762089076
+      },
+      "right": {
+        "force_scale_N": 72.53461765538152,
+        "torque_scale_Nm": 9.874219946492527,
+        "source_time_range_s": [
+          1.6,
+          2.6
+        ],
+        "samples": 101,
+        "segment_peak_force_norm_N": 11.158240821918023,
+        "segment_peak_torque_norm_Nm": 2.0240274413951163
+      }
+    }
+  },
+  "coordinate_frame": "world",
+  "interval_selection": {
+    "range_s": [
+      1.6,
+      2.6
+    ],
+    "reason": "Author requested a low-magnitude input example; selected one continuous early-episode interval for both arms.",
+    "scope": "Input illustration only; not a full-episode performance summary."
+  },
+  "layout": {
+    "width_inches": 3.8,
+    "height_inches": 1.9,
+    "arrangement": "vertically stacked arms",
+    "axes": "Hidden"
+  }
+}

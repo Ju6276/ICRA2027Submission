@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="231.420000 120.575961 22.910000 22.910000" version="1.1"><title>Fig. 1: correction distillation</title><desc>Original vector elements extracted from fig01_method_overview.svg. No surrounding card, label or data-flow connection is included.</desc><defs><style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ <path id="mc9fd9afe83" d="M 0 0.8 C 0.212162 0.8 0.415664 0.715707 0.565685 0.565685 C 0.715707 0.415664 0.8 0.212162 0.8 0 C 0.8 -0.212162 0.715707 -0.415664 0.565685 -0.565685 C 0.415664 -0.715707 0.212162 -0.8 0 -0.8 C -0.212162 -0.8 -0.415664 -0.715707 -0.565685 -0.565685 C -0.715707 -0.415664 -0.8 -0.212162 -0.8 0 C -0.8 0.212162 -0.715707 0.415664 -0.565685 0.565685 C -0.415664 0.715707 -0.212162 0.8 0 0.8 z " style="stroke: #66428d" />
+    <clipPath id="p69fd59aa0e">
+   <rect x="0" y="0" width="612" height="280.8" />
+  </clipPath>
+ </defs><g id="patch_73">
+    <path d="M 242.964 141.748559 C 245.560869 141.748559 248.051726 140.738122 249.88799 138.939785 C 251.724253 137.141448 252.756 134.702037 252.756 132.158805 C 252.756 129.615572 251.724253 127.176161 249.88799 125.377824 C 248.051726 123.579487 245.560869 122.56905 242.964 122.56905 C 240.367131 122.56905 237.876274 123.579487 236.04001 125.377824 C 234.203747 127.176161 233.172 129.615572 233.172 132.158805 C 233.172 134.702037 234.203747 137.141448 236.04001 138.939785 C 237.876274 140.738122 240.367131 141.748559 242.964 141.748559 z " clip-path="url(#p69fd59aa0e)" style="fill: #d883a2; opacity: 0.65" />
+   </g>
+   <g id="patch_75">
+    <path d="M 242.964 134.706083 C 244.018978 134.706083 245.030889 134.279805 245.776871 133.521132 C 246.522853 132.762458 246.942 131.733332 246.942 130.660406 C 246.942 129.587479 246.522853 128.558353 245.776871 127.799679 C 245.030889 127.041006 244.018978 126.614728 242.964 126.614728 C 241.909022 126.614728 240.897111 127.041006 240.151129 127.799679 C 239.405147 128.558353 238.986 129.587479 238.986 130.660406 C 238.986 131.733332 239.405147 132.762458 240.151129 133.521132 C 240.897111 134.279805 241.909022 134.706083 242.964 134.706083 z " clip-path="url(#p69fd59aa0e)" style="fill: #ffffff; stroke: #ffffff; stroke-width: 0.9; stroke-linejoin: miter" />
+   </g>
+   <g id="line2d_61">
+    <path d="M 241.128 133.657204 L 241.128 136.054642 L 244.8 136.054642 L 244.8 133.657204 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #ffffff; stroke-width: 0.9; stroke-linecap: square" />
+   </g>
+   <g id="line2d_62">
+    <path d="M 241.128 137.253362 L 244.8 137.253362 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #ffffff; stroke-width: 1.1; stroke-linecap: square" />
+   </g>
+   <g id="line2d_63">
+    <path d="M 237.456 130.660406 L 235.008 130.660406 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #ffe2eb; stroke-width: 0.7; stroke-linecap: square" />
+   </g>
+   <g id="line2d_64">
+    <path d="M 248.472 130.660406 L 250.92 130.660406 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #ffe2eb; stroke-width: 0.7; stroke-linecap: square" />
+   </g>
+   <g id="line2d_65">
+    <path d="M 242.964 125.266169 L 242.964 123.16841 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #ffe2eb; stroke-width: 0.7; stroke-linecap: square" />
+   </g>
+   <g id="line2d_66">
+    <path d="M 238.68 126.464888 L 236.844 124.666809 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #ffe2eb; stroke-width: 0.7; stroke-linecap: square" />
+   </g>
+   <g id="line2d_67">
+    <path d="M 247.248 126.464888 L 249.084 124.666809 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #ffe2eb; stroke-width: 0.7; stroke-linecap: square" />
+   </g>
+   </svg>

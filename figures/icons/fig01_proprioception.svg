@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="25.828669 60.027246 24.342662 24.342662" version="1.1"><title>Fig. 1: proprioception</title><desc>Original vector elements extracted from fig01_method_overview.svg. No surrounding card, label or data-flow connection is included.</desc><defs><style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ <path id="mc9fd9afe83" d="M 0 0.8 C 0.212162 0.8 0.415664 0.715707 0.565685 0.565685 C 0.715707 0.415664 0.8 0.212162 0.8 0 C 0.8 -0.212162 0.715707 -0.415664 0.565685 -0.565685 C 0.415664 -0.715707 0.212162 -0.8 0 -0.8 C -0.212162 -0.8 -0.415664 -0.715707 -0.565685 -0.565685 C -0.715707 -0.415664 -0.8 -0.212162 -0.8 0 C -0.8 0.212162 -0.715707 0.415664 -0.565685 0.565685 C -0.415664 0.715707 -0.212162 0.8 0 0.8 z " style="stroke: #66428d" />
+    <clipPath id="p69fd59aa0e">
+   <rect x="0" y="0" width="612" height="280.8" />
+  </clipPath>
+ </defs><g id="patch_39">
+    <path d="M 35.8632 65.779723 L 40.0248 65.779723 Q 40.85712 65.779723 40.85712 65.372158 L 40.85712 62.621097 Q 40.85712 62.213533 40.0248 62.213533 L 35.8632 62.213533 Q 35.03088 62.213533 35.03088 62.621097 L 35.03088 65.372158 Q 35.03088 65.779723 35.8632 65.779723 z " clip-path="url(#p69fd59aa0e)" style="fill: #40515d; stroke: #3f5666; stroke-width: 0.8; stroke-linejoin: miter" />
+   </g>
+   <g id="patch_43">
+    <path d="M 32.53392 71.653447 L 43.35408 71.653447 Q 45.01872 71.653447 45.01872 70.838318 L 45.01872 65.755748 Q 45.01872 64.940619 43.35408 64.940619 L 32.53392 64.940619 Q 30.86928 64.940619 30.86928 65.755748 L 30.86928 70.838318 Q 30.86928 71.653447 32.53392 71.653447 z " clip-path="url(#p69fd59aa0e)" style="fill: #ffffff; stroke: #3f5666; stroke-width: 0.8; stroke-linejoin: miter" />
+   </g>
+   <g id="patch_53">
+    <path d="M 32.84604 70.604568 L 43.04196 70.604568 Q 43.56216 70.604568 43.56216 70.34984 L 43.56216 69.390864 Q 43.56216 69.136137 43.04196 69.136137 L 32.84604 69.136137 Q 32.32584 69.136137 32.32584 69.390864 L 32.32584 70.34984 Q 32.32584 70.604568 32.84604 70.604568 z " clip-path="url(#p69fd59aa0e)" style="fill: #ffffff" />
+   </g>
+   <g id="patch_54">
+    <path d="M 33.36624 71.233895 L 30.6612 71.443671 L 28.78848 75.009861 L 31.07736 82.142241 L 34.40664 82.142241 L 34.40664 79.205379 L 32.742 79.205379 L 31.7016 75.219637 z " clip-path="url(#p69fd59aa0e)" style="fill: #ffffff; stroke: #3f5666; stroke-width: 0.85" />
+   </g>
+   <g id="patch_55">
+    <path d="M 42.52176 71.233895 L 45.2268 71.443671 L 47.09952 75.009861 L 44.81064 82.142241 L 41.48136 82.142241 L 41.48136 79.205379 L 43.146 79.205379 L 44.1864 75.219637 z " clip-path="url(#p69fd59aa0e)" style="fill: #ffffff; stroke: #3f5666; stroke-width: 0.85" />
+   </g>
+   <g id="patch_65">
+    <path d="M 34.40664 78.995603 L 32.742 78.995603 L 32.742 82.352017 L 34.40664 82.352017 z " clip-path="url(#p69fd59aa0e)" style="fill: #40515d" />
+   </g>
+   <g id="patch_66">
+    <path d="M 41.48136 78.995603 L 43.146 78.995603 L 43.146 82.352017 L 41.48136 82.352017 z " clip-path="url(#p69fd59aa0e)" style="fill: #40515d" />
+   </g>
+   </svg>

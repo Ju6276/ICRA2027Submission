@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="179.820000 51.030142 9.860000 9.860000" version="1.1"><title>Fig. 1: frozen</title><desc>Original vector elements extracted from fig01_method_overview.svg. No surrounding card, label or data-flow connection is included.</desc><defs><style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ <path id="mc9fd9afe83" d="M 0 0.8 C 0.212162 0.8 0.415664 0.715707 0.565685 0.565685 C 0.715707 0.415664 0.8 0.212162 0.8 0 C 0.8 -0.212162 0.715707 -0.415664 0.565685 -0.565685 C 0.415664 -0.715707 0.212162 -0.8 0 -0.8 C -0.212162 -0.8 -0.415664 -0.715707 -0.565685 -0.565685 C -0.715707 -0.415664 -0.8 -0.212162 -0.8 0 C -0.8 0.212162 -0.715707 0.415664 -0.565685 0.565685 C -0.415664 0.715707 -0.212162 0.8 0 0.8 z " style="stroke: #66428d" />
+    <clipPath id="p69fd59aa0e">
+   <rect x="0" y="0" width="612" height="280.8" />
+  </clipPath>
+ </defs><g id="line2d_4">
+    <path d="M 184.824 56.040128 L 188.496 56.040128 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #647781; stroke-width: 0.85; stroke-linecap: square" />
+   </g>
+   <g id="line2d_5">
+    <path d="M 186.95376 56.040128 L 187.7616 56.833543 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #647781; stroke-width: 0.85; stroke-linecap: square" />
+   </g>
+   <g id="line2d_6">
+    <path d="M 186.95376 56.040128 L 187.7616 55.246713 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #647781; stroke-width: 0.85; stroke-linecap: square" />
+   </g>
+   <g id="line2d_7">
+    <path d="M 184.824 56.040128 L 186.66 52.423722 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #647781; stroke-width: 0.85; stroke-linecap: square" />
+   </g>
+   <g id="line2d_8">
+    <path d="M 185.88888 53.942612 L 186.897009 53.54371 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #647781; stroke-width: 0.85; stroke-linecap: square" />
+   </g>
+   <g id="line2d_9">
+    <path d="M 185.88888 53.942612 L 185.688591 52.750296 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #647781; stroke-width: 0.85; stroke-linecap: square" />
+   </g>
+   <g id="line2d_10">
+    <path d="M 184.824 56.040128 L 182.988 52.423722 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #647781; stroke-width: 0.85; stroke-linecap: square" />
+   </g>
+   <g id="line2d_11">
+    <path d="M 183.75912 53.942612 L 183.959409 52.750296 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #647781; stroke-width: 0.85; stroke-linecap: square" />
+   </g>
+   <g id="line2d_12">
+    <path d="M 183.75912 53.942612 L 182.750991 53.54371 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #647781; stroke-width: 0.85; stroke-linecap: square" />
+   </g>
+   <g id="line2d_13">
+    <path d="M 184.824 56.040128 L 181.152 56.040128 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #647781; stroke-width: 0.85; stroke-linecap: square" />
+   </g>
+   <g id="line2d_14">
+    <path d="M 182.69424 56.040128 L 181.8864 55.246713 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #647781; stroke-width: 0.85; stroke-linecap: square" />
+   </g>
+   <g id="line2d_15">
+    <path d="M 182.69424 56.040128 L 181.8864 56.833543 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #647781; stroke-width: 0.85; stroke-linecap: square" />
+   </g>
+   <g id="line2d_16">
+    <path d="M 184.824 56.040128 L 182.988 59.656535 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #647781; stroke-width: 0.85; stroke-linecap: square" />
+   </g>
+   <g id="line2d_17">
+    <path d="M 183.75912 58.137644 L 182.750991 58.536546 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #647781; stroke-width: 0.85; stroke-linecap: square" />
+   </g>
+   <g id="line2d_18">
+    <path d="M 183.75912 58.137644 L 183.959409 59.329961 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #647781; stroke-width: 0.85; stroke-linecap: square" />
+   </g>
+   <g id="line2d_19">
+    <path d="M 184.824 56.040128 L 186.66 59.656535 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #647781; stroke-width: 0.85; stroke-linecap: square" />
+   </g>
+   <g id="line2d_20">
+    <path d="M 185.88888 58.137644 L 185.688591 59.329961 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #647781; stroke-width: 0.85; stroke-linecap: square" />
+   </g>
+   <g id="line2d_21">
+    <path d="M 185.88888 58.137644 L 186.897009 58.536546 " clip-path="url(#p69fd59aa0e)" style="fill: none; stroke: #647781; stroke-width: 0.85; stroke-linecap: square" />
+   </g>
+   </svg>

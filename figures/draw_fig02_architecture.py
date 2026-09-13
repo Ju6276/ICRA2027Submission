@@ -203,7 +203,7 @@ text(132, 429, r'Force history $\mathcal{F}_t$', size=20, ha='center')
 force_history(43, 446, 171, 36)
 arrow((222, 464), (255, 464))
 transform(263, 434, 167, 60, ('Force', 'encoder'),
-          color=FORCE_MODULE, edge=EDGE, size=20)
+          color=FORCE, edge=FORCE_EDGE, size=20)
 snowflake(420, 424, 7)
 arrow((437, 464), (469, 464))
 token(507, 448, '', FORCE, FORCE_EDGE, w=61)
@@ -283,7 +283,7 @@ for cy, title in zip(
 # and eq:conditioning_set; the remaining projections retain their symbols.
 transform(300, 743, 185, 66, r'$P_{\mathrm{ctx}}\!\rightarrow\!P_Z$', color=VLM_MODULE, edge='#7B7B7B', size=20, taper=13)
 transform(300, 835, 185, 66, ('Force', 'encoder'),
-          color=FORCE_MODULE, edge=EDGE, size=20)
+          color=FORCE, edge=FORCE_EDGE, size=20)
 transform(300, 927, 185, 66, r'$P_S$', color=GENERIC_MODULE, edge='#7B7B7B', size=20)
 # One horizontal reference chunk uses the same action-block glyph as panel (a).
 # Deterministic flattening before P_A is specified in the manuscript and is

@@ -1,0 +1,30 @@
+[
+  {
+    "id": "t01",
+    "frame_index": 123,
+    "time_s": 4.170131692,
+    "timestamp_ns": 21376014903976,
+    "video_time_s": 4.1
+  },
+  {
+    "id": "t02",
+    "frame_index": 246,
+    "time_s": 8.308403108,
+    "timestamp_ns": 21380153175392,
+    "video_time_s": 8.2
+  },
+  {
+    "id": "t03",
+    "frame_index": 308,
+    "time_s": 10.392437861,
+    "timestamp_ns": 21382237210145,
+    "video_time_s": 10.266666666666667
+  },
+  {
+    "id": "t04",
+    "frame_index": 432,
+    "time_s": 14.569927635,
+    "timestamp_ns": 21386414699919,
+    "video_time_s": 14.4
+  }
+]

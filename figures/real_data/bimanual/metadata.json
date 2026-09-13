@@ -1,0 +1,400 @@
+{
+  "source": {
+    "folder": "outputs/fig02-real-data-downloads/bimanual",
+    "episode": "20260825-day-plug_into_power_strip_v2@MASTER_SLAVE_MODE@2026_08_25_18_01_50",
+    "type": "joint-derived external WrenchStamped estimate; not tactile and not independently calibrated F/T ground truth",
+    "topics": {
+      "left": "/left_arm/wrench_ext_world",
+      "right": "/right_arm/wrench_ext_world"
+    },
+    "camera_keys": [
+      "face",
+      "left",
+      "right"
+    ],
+    "source_index_definition": "Zero-based data-row index in original wrench200hz.csv.gz before topic filtering; header excluded"
+  },
+  "units": {
+    "fx": "N",
+    "fy": "N",
+    "fz": "N",
+    "tx": "Nm",
+    "ty": "Nm",
+    "tz": "Nm"
+  },
+  "units_note": "Author-confirmed: force is in N and torque is in N·m, the same units as Franka. This confirmation comes from the author, not an explicit unit declaration in the original bimanual source metadata.",
+  "coordinate_frames": {
+    "left": "world",
+    "right": "world",
+    "source_field": "frame_id"
+  },
+  "clock": {
+    "domain": "header_time_ns",
+    "origin_ns": 1787652110621508096,
+    "origin_definition": "First state_action_aligned.json data timestamp (face-camera header time)"
+  },
+  "frame_alignment": {
+    "method": "MP4 frame i <-> data[i]; nearest same-topic wrench header_time_ns to data[i].timestamp",
+    "timestamp_contract": "data[i].timestamp is the face-camera header time in integer nanoseconds; state/action interpolated to that time",
+    "frames": 627,
+    "video_nominal_fps": 20,
+    "camera_exposure_synchronization_verified": false,
+    "limitation": "Camera frame correspondence follows the export contract; individual original wrist-camera exposure timestamps are unavailable.",
+    "do_not_use_for_alignment": [
+      "video playback time = frame_index/20"
+    ],
+    "recorded_state_clock": {
+      "samples": 627,
+      "duration_s": 21.071636992,
+      "effective_rate_hz": 29.708180728325257,
+      "inverse_median_interval_hz": 31.202696711784935,
+      "interval_ms": {
+        "min": 31.774976,
+        "median": 32.048512,
+        "mean": 33.66076196805112,
+        "p99": 36.14592,
+        "max": 36.203008
+      },
+      "strictly_increasing": true
+    }
+  },
+  "source_rates": {
+    "left": {
+      "measured_header": {
+        "samples": 4218,
+        "duration_s": 21.08499744,
+        "effective_rate_hz": 200.00002428266836,
+        "inverse_median_interval_hz": 200.000280000392,
+        "interval_ms": {
+          "min": 3.84667,
+          "median": 4.999993,
+          "mean": 4.999999392933365,
+          "p99": 5.615089,
+          "max": 6.473704
+        },
+        "strictly_increasing": true
+      },
+      "measured_bag": {
+        "samples": 4218,
+        "duration_s": 21.085439609,
+        "effective_rate_hz": 199.9958302126192,
+        "inverse_median_interval_hz": 199.89313712889088,
+        "interval_ms": {
+          "min": 2.315743,
+          "median": 5.002673,
+          "mean": 5.000104246857956,
+          "p99": 6.419648,
+          "max": 7.690609
+        },
+        "strictly_increasing": true
+      },
+      "manifest_header_hz": 200.00002428266836,
+      "manifest_bag_hz": 199.99583021261918
+    },
+    "right": {
+      "measured_header": {
+        "samples": 4218,
+        "duration_s": 21.084983954,
+        "effective_rate_hz": 200.00015220310374,
+        "inverse_median_interval_hz": 199.93989806664118,
+        "interval_ms": {
+          "min": 3.932026,
+          "median": 5.001503,
+          "mean": 4.999996194925302,
+          "p99": 5.568182,
+          "max": 6.376264
+        },
+        "strictly_increasing": true
+      },
+      "measured_bag": {
+        "samples": 4218,
+        "duration_s": 21.08590171,
+        "effective_rate_hz": 199.99144727114447,
+        "inverse_median_interval_hz": 200.000440000968,
+        "interval_ms": {
+          "min": 2.025823,
+          "median": 4.999989,
+          "mean": 5.0002138273654255,
+          "p99": 6.566384,
+          "max": 7.707223
+        },
+        "strictly_increasing": true
+      },
+      "manifest_header_hz": 200.00015220310374,
+      "manifest_bag_hz": 199.99144727114447
+    }
+  },
+  "input_files": [
+    {
+      "path": "outputs/fig02-real-data-downloads/bimanual/wrench200hz.csv.gz",
+      "sha256": "89c98f94251be8a95e99602e470eca1ae482c8f1c0adc87ac9c177d70ed91727"
+    },
+    {
+      "path": "outputs/fig02-real-data-downloads/bimanual/state_action_aligned.json",
+      "sha256": "6fb63007d89ba75f9419c87ff43baa0f58e882f0fc3a1c22cc4c507ba984538f"
+    },
+    {
+      "path": "outputs/fig02-real-data-downloads/bimanual/COMPLETE.json",
+      "sha256": "8cb91601775587c68fb85a12545d7405954f1d1c6d31a9c41d8cdb3fae38b5c9"
+    },
+    {
+      "path": "outputs/fig02-real-data-downloads/bimanual/WRENCH_MANIFEST.json",
+      "sha256": "9698a625e8fe4084d0cf0226bc49e211b9f3117632ac029e4df099898564b572"
+    }
+  ],
+  "schema_version": 1,
+  "platform": "bimanual",
+  "export_script": "outputs/fig02-real-data-downloads/export_signals.py",
+  "raw_export": {
+    "file": "data/wrench_raw.csv.gz",
+    "rows": 8436,
+    "values": "Unmodified original feedback values and source timestamps; selected source topics only."
+  },
+  "resampling": {
+    "file": "data/wrench_100hz.csv",
+    "target_rate_hz": 100,
+    "grid_step_ns": 10000000,
+    "method": "Causal previous sample / zero-order hold; greatest source timestamp <= target timestamp. No interpolation of values.",
+    "grid_origin_ns": 1787652110621508096,
+    "grid_first_timestamp_ns": 1787652110631508096,
+    "grid_last_timestamp_ns": 1787652131701508096,
+    "points_per_arm": 2108,
+    "label": "Original feedback sampled on a 100 Hz time grid; repeated source samples are retained and reported.",
+    "statistics": {
+      "left": {
+        "points": 2108,
+        "unique_source_samples": 2108,
+        "repeated_source_selections": 0,
+        "age_ms": {
+          "min": 3.132962,
+          "median": 4.5569375,
+          "mean": 4.492696848671727,
+          "p99": 4.653456,
+          "max": 4.67491
+        },
+        "points_with_age_over_10ms": 0,
+        "future_samples_used": 0
+      },
+      "right": {
+        "points": 2108,
+        "unique_source_samples": 2108,
+        "repeated_source_selections": 0,
+        "age_ms": {
+          "min": 3.289151,
+          "median": 4.6230685000000005,
+          "mean": 4.562404424098672,
+          "p99": 4.710276,
+          "max": 4.730375
+        },
+        "points_with_age_over_10ms": 0,
+        "future_samples_used": 0
+      }
+    }
+  },
+  "histories": {
+    "t01": {
+      "file": "data/history_t01_100ms.csv",
+      "frame_index": 200,
+      "target_timestamp_ns": 1787652117353388032,
+      "offset_ms": [
+        -100,
+        0
+      ],
+      "statistics": {
+        "left": {
+          "points": 11,
+          "unique_source_samples": 11,
+          "repeated_source_selections": 0,
+          "age_ms": {
+            "min": 0.909354,
+            "median": 1.29128,
+            "mean": 1.2583238181818182,
+            "p99": 1.49986,
+            "max": 1.49986
+          },
+          "points_with_age_over_10ms": 0,
+          "future_samples_used": 0
+        },
+        "right": {
+          "points": 11,
+          "unique_source_samples": 11,
+          "repeated_source_selections": 0,
+          "age_ms": {
+            "min": 1.00166,
+            "median": 1.36044,
+            "mean": 1.3414039090909091,
+            "p99": 1.55669,
+            "max": 1.55669
+          },
+          "points_with_age_over_10ms": 0,
+          "future_samples_used": 0
+        }
+      }
+    },
+    "t02": {
+      "file": "data/history_t02_100ms.csv",
+      "frame_index": 275,
+      "target_timestamp_ns": 1787652119877435904,
+      "offset_ms": [
+        -100,
+        0
+      ],
+      "statistics": {
+        "left": {
+          "points": 11,
+          "unique_source_samples": 11,
+          "repeated_source_selections": 0,
+          "age_ms": {
+            "min": 0.092203,
+            "median": 0.426821,
+            "mean": 0.3948771818181818,
+            "p99": 0.559888,
+            "max": 0.559888
+          },
+          "points_with_age_over_10ms": 0,
+          "future_samples_used": 0
+        },
+        "right": {
+          "points": 11,
+          "unique_source_samples": 11,
+          "repeated_source_selections": 0,
+          "age_ms": {
+            "min": 0.255616,
+            "median": 0.496963,
+            "mean": 0.4725912727272727,
+            "p99": 0.620041,
+            "max": 0.620041
+          },
+          "points_with_age_over_10ms": 0,
+          "future_samples_used": 0
+        }
+      }
+    },
+    "t03": {
+      "file": "data/history_t03_100ms.csv",
+      "frame_index": 350,
+      "target_timestamp_ns": 1787652122401285888,
+      "offset_ms": [
+        -100,
+        0
+      ],
+      "statistics": {
+        "left": {
+          "points": 11,
+          "unique_source_samples": 11,
+          "repeated_source_selections": 0,
+          "age_ms": {
+            "min": 3.887012,
+            "median": 4.36117,
+            "mean": 4.303704909090909,
+            "p99": 4.41349,
+            "max": 4.41349
+          },
+          "points_with_age_over_10ms": 0,
+          "future_samples_used": 0
+        },
+        "right": {
+          "points": 11,
+          "unique_source_samples": 11,
+          "repeated_source_selections": 0,
+          "age_ms": {
+            "min": 4.040259,
+            "median": 4.422669,
+            "mean": 4.3789193636363635,
+            "p99": 4.473121,
+            "max": 4.473121
+          },
+          "points_with_age_over_10ms": 0,
+          "future_samples_used": 0
+        }
+      }
+    },
+    "t04": {
+      "file": "data/history_t04_100ms.csv",
+      "frame_index": 425,
+      "target_timestamp_ns": 1787652124925284096,
+      "offset_ms": [
+        -100,
+        0
+      ],
+      "statistics": {
+        "left": {
+          "points": 11,
+          "unique_source_samples": 11,
+          "repeated_source_selections": 0,
+          "age_ms": {
+            "min": 3.01698,
+            "median": 3.352314,
+            "mean": 3.293133,
+            "p99": 3.388564,
+            "max": 3.388564
+          },
+          "points_with_age_over_10ms": 0,
+          "future_samples_used": 0
+        },
+        "right": {
+          "points": 11,
+          "unique_source_samples": 11,
+          "repeated_source_selections": 0,
+          "age_ms": {
+            "min": 3.08113,
+            "median": 3.413473,
+            "mean": 3.3595218181818183,
+            "p99": 3.449236,
+            "max": 3.449236
+          },
+          "points_with_age_over_10ms": 0,
+          "future_samples_used": 0
+        }
+      }
+    }
+  },
+  "schemas": {
+    "raw": [
+      "arm",
+      "time_s",
+      "timestamp_ns",
+      "source_index",
+      "fx",
+      "fy",
+      "fz",
+      "tx",
+      "ty",
+      "tz"
+    ],
+    "100hz": [
+      "arm",
+      "time_s",
+      "target_timestamp_ns",
+      "source_timestamp_ns",
+      "source_index",
+      "age_ms",
+      "fx",
+      "fy",
+      "fz",
+      "tx",
+      "ty",
+      "tz"
+    ],
+    "history": [
+      "arm",
+      "time_s",
+      "target_timestamp_ns",
+      "source_timestamp_ns",
+      "source_index",
+      "age_ms",
+      "fx",
+      "fy",
+      "fz",
+      "tx",
+      "ty",
+      "tz",
+      "time_offset_ms"
+    ]
+  },
+  "original_source_files_modified": false,
+  "units_provenance": {
+    "status": "author-confirmed",
+    "original_source_metadata_declares_units": false
+  }
+}

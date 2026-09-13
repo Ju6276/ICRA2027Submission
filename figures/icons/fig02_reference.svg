@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="28.8pt" height="28.8pt" viewBox="0 0 28.8 28.8" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:description>Fig. 2 input icon: reference</dc:description>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.9.4, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 28.8 
+L 28.8 28.8 
+L 28.8 0 
+L 0 0 
+L 0 28.8 
+z
+" style="fill: none"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 5.0688 7.9488 
+L 9.4464 7.9488 
+Q 10.0224 7.9488 10.0224 8.5248 
+L 10.0224 20.2752 
+Q 10.0224 20.8512 9.4464 20.8512 
+L 5.0688 20.8512 
+Q 4.4928 20.8512 4.4928 20.2752 
+L 4.4928 8.5248 
+Q 4.4928 7.9488 5.0688 7.9488 
+z
+" clip-path="url(#p94b3bf860f)" style="fill: #ffffff; stroke: #40515d; stroke-width: 0.9; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 12.2112 7.9488 
+L 16.5888 7.9488 
+Q 17.1648 7.9488 17.1648 8.5248 
+L 17.1648 20.2752 
+Q 17.1648 20.8512 16.5888 20.8512 
+L 12.2112 20.8512 
+Q 11.6352 20.8512 11.6352 20.2752 
+L 11.6352 8.5248 
+Q 11.6352 7.9488 12.2112 7.9488 
+z
+" clip-path="url(#p94b3bf860f)" style="fill: #ffffff; stroke: #40515d; stroke-width: 0.9; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 19.3536 7.9488 
+L 23.7312 7.9488 
+Q 24.3072 7.9488 24.3072 8.5248 
+L 24.3072 20.2752 
+Q 24.3072 20.8512 23.7312 20.8512 
+L 19.3536 20.8512 
+Q 18.7776 20.8512 18.7776 20.2752 
+L 18.7776 8.5248 
+Q 18.7776 7.9488 19.3536 7.9488 
+z
+" clip-path="url(#p94b3bf860f)" style="fill: #ffffff; stroke: #40515d; stroke-width: 0.9; stroke-linejoin: miter"/>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p94b3bf860f">
+   <rect x="0" y="0" width="28.8" height="28.8"/>
+  </clipPath>
+ </defs>
+</svg>
