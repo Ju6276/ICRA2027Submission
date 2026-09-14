@@ -11,7 +11,13 @@
 \usepackage{amsmath,amssymb}
 \usepackage{xcolor}
 \usepackage{microtype}
-\usepackage[section]{placeins}
+\usepackage{placeins}
+% Compact float spacing while retaining the class text size and margins.
+\setlength{\textfloatsep}{12pt plus 2pt minus 2pt}
+\setlength{\dbltextfloatsep}{14pt plus 2pt minus 2pt}
+\setlength{\floatsep}{8pt plus 2pt minus 2pt}
+\setlength{\dblfloatsep}{8pt plus 2pt minus 2pt}
+\setlength{\intextsep}{10pt plus 2pt minus 2pt}
 \usepackage[hidelinks,breaklinks=true,bookmarks=false]{hyperref}
 \input{project_url}
 
@@ -68,7 +74,7 @@ ForceDelta-VLA: Distilling Force-Conditioned Action\\Corrections for Contact-Ric
       \centering
       \includegraphics[width=\textwidth]{figures/fig01_method_overview.pdf}
       % \vspace{-0.2in}
-      \captionof{figure}{ForceDelta-VLA overview. Force and delay targets constructed from a frozen teacher supervise the student through correction distillation. The student predicts pose corrections from reference actions and cached task context provided by the slow teacher, together with recent force history and proprioception. Right: a Button Pressing example comparing ForceVLA and ForceDelta-VLA.}
+      \captionof{figure}{ForceDelta-VLA overview. A frozen teacher defines force and delay targets for correction distillation. The fast student uses recent force history and proprioception to adjust the slow teacher's reference actions while reusing its cached task context. Right: USB Insertion examples and corresponding contact-force traces for ForceVLA and ForceDelta-VLA.}
       \label{fig:teaser}
       \vspace{-0.1in}
       \bigskip}
@@ -79,7 +85,7 @@ ForceDelta-VLA: Distilling Force-Conditioned Action\\Corrections for Contact-Ric
 \pagestyle{empty}
 \setcounter{figure}{1}
 \begin{abstract}
-Force-aware Vision-Language-Action (VLA) policies improve contact-rich manipulation, but typically combine task-level motion and contact-dependent adjustment in a single action prediction. Demonstrations provide no explicit labels for decomposing that prediction into a reusable reference action and a correction. We present ForceDelta-VLA, a correction-distillation framework that constructs an explicit force-correction target using paired predictions from a frozen teacher's force-conditioned and learned force-agnostic modes. A separate delay-correction target accounts for reference-action mismatch and the change in reference state. Training uses asynchronous schedule replay with the cached task context available during execution. The resulting lightweight policy adjusts the reference actions using recent force history and robot state, responding to contact changes between reference-action updates without regenerating complete action chunks. Across nine single-arm and bimanual contact-rich tasks, ForceDelta-VLA achieves an $82.2\%$ mean success rate, compared with $54.4\%$ for the original ForceVLA baseline. Direct execution of our Stage-1 Temporal Teacher achieves $70.6\%$. Relative to ForceVLA, the complete system reduces mean successful-trial peak contact force by approximately $26\%$ on both platforms.
+Force-aware Vision-Language-Action (VLA) policies improve contact-rich manipulation, but typically combine task-level motion and contact-dependent adjustment in a single action prediction. Demonstrations provide no explicit labels for decomposing that prediction into a reusable reference action and a correction. We present ForceDelta-VLA, a correction-distillation framework that constructs an explicit force-correction target using paired predictions from a frozen teacher's force-conditioned and learned force-agnostic modes. A separate delay-correction target accounts for reference-action mismatch and the change in reference state. Training uses asynchronous schedule replay with the cached task context available during execution. The resulting lightweight policy adjusts the reference actions using recent force history and robot state, responding to contact changes between reference-action updates without regenerating complete action chunks. Across nine single-arm and bimanual contact-rich tasks, ForceDelta-VLA achieves an $82.2\%$ mean success rate, compared with $54.4\%$ for the original ForceVLA baseline. Direct execution of our Stage-1 Temporal Teacher achieves $70.6\%$. Relative to ForceVLA, the complete system reduces mean peak contact force over successful trials by approximately $26\%$ on both platforms.
 \projectpagestatement
 \end{abstract}
 
@@ -102,7 +108,6 @@ Force-aware Vision-Language-Action (VLA) policies improve contact-rich manipulat
 \section{Conclusion and Future Work}
 \label{sec:conclusion}
 \input{05_conclusion}
-\vspace{0.1in}
 % \noindent\textbf{Acknowledgement}
 
 {

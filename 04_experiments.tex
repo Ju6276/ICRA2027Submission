@@ -6,7 +6,8 @@ The evaluation includes $5$ single-arm and $4$ bimanual tasks on the two platfor
 
 For each task, we collect $200$ demonstrations. Multi-view images, robot states, and commanded actions are recorded at $30$~Hz, and timestamped wrench estimates at $100$~Hz.
 
-\begin{figure}[t]
+% Keep the platform figure after the experimental-setup text.
+\begin{figure}[!hb]
     \centering
     \begin{minipage}[c]{0.45\columnwidth}
         \centering
@@ -242,4 +243,4 @@ In failed USB and plug insertion trials, the robot often reached the target regi
 
 In cabinet and drawer opening, pulling sometimes began before stable contact with the handle was established. Recovery required releasing contact, repositioning the gripper, or approaching again. Wiping and object-flipping failures involved contact on an unintended side or loss of the intended contact geometry, requiring a different approach direction.
 
-Reference-update delay further reduced insertion success (Fig.~\ref{fig:latency_sensitivity}). During this delay, the robot could enter a new contact state while the student continued correcting a chunk generated before that change. These failures point to the need for reference updates that initiate retreat, reestablish contact, or change the approach direction.
+Reference-update delay further reduced insertion success (Fig.~\ref{fig:latency_sensitivity}). During this delay, the robot could enter a new contact state while the student continued correcting a chunk generated before that change. These failures point to the need for reference updates that guide the robot to move back, restore contact, or change the approach direction.
