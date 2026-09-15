@@ -66,6 +66,7 @@ assert all(abs(a[1] - b[0]) < 1e-8
 plt.rcParams.update({
     'font.family': 'Times New Roman',
     'mathtext.fontset': 'stix',
+    'pdf.fonttype': 42,  # Embed TrueType fonts; retain selectable text.
     'svg.fonttype': 'none',
 })
 fig, ax = plt.subplots(figsize=(7.2, 2.55))
